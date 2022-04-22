@@ -95,6 +95,118 @@ class CellSegNet_basic_lite(nn.Module):
         output = F.softmax(h, dim=1)
         
         return output
+
+
+class EdgeGatedLayer(nn.Module):
+    def __init__(self, in_channels=64, out_channels=64, kernel_size=1):
+        super(EdgeGatedLayer, self).__init__()
+        self.batchnorm_module=nn.BatchNorm3d(num_features=in_channels)
+        self.conv_edge = nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size)
+        self.conv_main = nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size)
+    def forward(self, x_edge, x_main):
+        x_edge = self.conv_edge(x_edge)
+        x_main = self.conv_edge(x_main)
+        alpha = torch.add(x_edge, x_main)
+        alpha = F.relu(alpha)
+        alpha = F.sigmoid(alpha)
+        x_out = x_edge * alpha + x_edge
+        return x_out
+
+
+class CellSegNet_basic_edge_gated(nn.Module):
+    def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
+        super(CellSegNet_basic_edge_gated, self).__init__()
+
+        self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.bnorm1 = nn.BatchNorm3d(num_features=32)
+        self.conv3 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule1 = ResModule(64, 64)
+        self.edgegatelayer1 = EdgeGatedLayer(64, 64)
+        self.conv4 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule2 = ResModule(64, 64)
+        self.edgegatelayer2 = EdgeGatedLayer(64, 64)
+        self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule3 = ResModule(64, 64)
+
+        self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        # TODO: group norm?
+        self.bnorm2 = nn.BatchNorm3d(num_features=64)
+        self.deconv2 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm3 = nn.BatchNorm3d(num_features=64)
+        self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
+        self.bnorm4 = nn.BatchNorm3d(num_features=32)
+        self.conv6 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+
+        self.e_output = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1)
+
+        self.output_func = output_func
+
+    def forward(self, x):
+        h = self.conv1(x)
+        h = self.conv2(h)
+        c1 = F.relu(self.bnorm1(h))
+
+        h = self.conv3(c1)
+        c2 = self.resmodule1(h)
+
+        h = self.conv4(c2)
+        c3 = self.resmodule2(h)
+
+        h = self.conv5(c3)
+        c4 = self.resmodule3(h)
+
+        # edge gated network
+        e1 = self.edgegatelayer1(c4, c3)
+
+        e2 = self.edgegatelayer2(e1, c2)
+        e_out = self.e_output(e2)
+        e_output = F.softmax(e_out, dim=1)
+
+        c4 = self.deconv1(c4)
+        c4 = F.relu(self.bnorm2(c4))
+        c3_shape = c3.shape
+        delta_c4_x = int(np.floor((c4.shape[2] - c3_shape[2]) / 2))
+        delta_c4_y = int(np.floor((c4.shape[3] - c3_shape[3]) / 2))
+        delta_c4_z = int(np.floor((c4.shape[4] - c3_shape[4]) / 2))
+        c4 = c4[:, :,
+             delta_c4_x:c3_shape[2] + delta_c4_x,
+             delta_c4_y:c3_shape[3] + delta_c4_y,
+             delta_c4_z:c3_shape[4] + delta_c4_z]
+
+        h = c4 + c3
+
+        h = self.deconv2(h)
+        c2_2 = F.relu(self.bnorm3(h))
+        c2_shape = c2.shape
+        delta_c2_2_x = int(np.floor((c2_2.shape[2] - c2_shape[2]) / 2))
+        delta_c2_2_y = int(np.floor((c2_2.shape[3] - c2_shape[3]) / 2))
+        delta_c2_2_z = int(np.floor((c2_2.shape[4] - c2_shape[4]) / 2))
+        c2_2 = c2_2[:, :,
+               delta_c2_2_x:c2_shape[2] + delta_c2_2_x,
+               delta_c2_2_y:c2_shape[3] + delta_c2_2_y,
+               delta_c2_2_z:c2_shape[4] + delta_c2_2_z]
+
+        h = c2_2 + c2
+
+        h = self.deconv3(h)
+        c1_2 = F.relu(self.bnorm4(h))
+        c1_shape = c1.shape
+        delta_c1_2_x = int(np.floor((c1_2.shape[2] - c1_shape[2]) / 2))
+        delta_c1_2_y = int(np.floor((c1_2.shape[3] - c1_shape[3]) / 2))
+        delta_c1_2_z = int(np.floor((c1_2.shape[4] - c1_shape[4]) / 2))
+        c1_2 = c1_2[:, :,
+               delta_c1_2_x:c1_shape[2] + delta_c1_2_x,
+               delta_c1_2_y:c1_shape[3] + delta_c1_2_y,
+               delta_c1_2_z:c1_shape[4] + delta_c1_2_z]
+
+        h = c1_2 + c1
+
+        h = self.conv6(h)
+
+        output = F.softmax(h, dim=1)
+
+        return output, e_output
     
 class VoxResNet(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func = "softmax"):

@@ -1,6 +1,6 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite
+from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
 from func.ultis import save_obj, load_obj
 
@@ -26,7 +26,7 @@ num_workers = 4
 # ----------
 
 # init model
-model=CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_edge_gated(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -64,12 +64,21 @@ for ith_epoch in range(0, max_epoch):
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
     
-        seg_output=model(img_input)
+        seg_output, e_output = model(img_input)
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
-        
-        loss=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
+
+        seg_output_e = e_output[:, 2, :, :, :]
+        e_output_bb = torch.cat((e_output[:, 0, :, :, :], e_output[:, 1, :, :, :]), dim=1)
+
+        loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
+
+        loss_2 = dice_loss_org_weights(e_output_bb, seg_groundtruth_bb, weights_bb) + \
+                 dice_loss_II_weights(seg_output_e, seg_groundtruth_f, weights_f)
+
+        loss = loss_1 + loss_2
+
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         
         optimizer.zero_grad()
