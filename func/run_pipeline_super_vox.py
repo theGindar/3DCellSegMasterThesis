@@ -439,16 +439,16 @@ class Cluster_Super_Vox():
         
         self.val_outlayer_area = dict()
         for idx, unique_val in enumerate(self.unique_vals):
-            print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)), end="\r")
+            # print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)))
             self.val_outlayer_area[unique_val] = self.A_LARGE_NUM
         
         for idx, current_val in enumerate(self.unique_vals):
-            print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val), end="\r")
+            # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
             if self.val_labels[current_val]!=self.UN_PROCESSED:
                 continue
             valid_neighbor_vals = self.regionQuery(current_val)
             if len(valid_neighbor_vals)>0:
-                print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(valid_neighbor_vals), end="\r")
+                # print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(valid_neighbor_vals))
                 self.val_labels[current_val] = current_val
                 self.growCluster(valid_neighbor_vals, current_val)
             else:

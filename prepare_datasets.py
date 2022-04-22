@@ -4,10 +4,10 @@ import os
 
 
 ##### HMS #####
-source_path_raw_img = "/data/CellSeg_dataset/HMS/raw"
-source_path_seg_img = "/data/CellSeg_dataset/HMS/segmentation_delete_fake_cells"
-processed_path_raw_img = "/data/CellSeg_dataset/HMS_processed/raw"
-processed_path_seg_img = "/data/CellSeg_dataset/HMS_processed/segmentation"
+source_path_raw_img = "data/CellSeg_dataset/HMS/raw"
+source_path_seg_img = "data/CellSeg_dataset/HMS/segmentation_delete_fake_cells"
+processed_path_raw_img = "data/CellSeg_dataset/HMS_processed/raw"
+processed_path_seg_img = "data/CellSeg_dataset/HMS_processed/segmentation"
 
 # step 1
 run_py_script = "python prepare_dataset/prepare_HMS_dataset.py "+\
@@ -27,7 +27,7 @@ os.system(run_py_script)
 ##### HMS #####
 
 
-
+"""
 ##### ATAS #####
 # please change if needed
 source_path = "/data/CellSeg_dataset/ATAS"
@@ -62,9 +62,9 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_ATAS_pre_cropped
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### ATAS #####
+"""
 
-
-
+"""
 ##### LRP #####
 source_file_path = "/data/CellSeg_dataset/LateralRootPrimordia"
 output_file_path = "/data/CellSeg_dataset/LateralRootPrimordia_processed_wide_boundary"
@@ -92,12 +92,12 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_LateralRootPrimo
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### LRP #####
+"""
 
-
-
+"""
 ##### Ovules #####
-source_file_path = "/data/CellSeg_dataset/Ovules"
-output_file_path = "/data/CellSeg_dataset/Ovules_processed_thin_boundary"
+source_file_path = "data/CellSeg_dataset/Ovules"
+output_file_path = "data/CellSeg_dataset/Ovules_processed_thin_boundary"
 
 # step 1
 run_py_script = "python prepare_dataset/prepare_Ovules_dataset.py "+\
@@ -114,3 +114,4 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_Ovules.py "+\
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### Ovules #####
+"""

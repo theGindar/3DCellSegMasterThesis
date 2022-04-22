@@ -4,11 +4,12 @@ import sys
 # getting the name of the directory
 # where the this file is present.
 current = os.path.dirname(os.path.realpath(__file__))
-  
+print(f"current directory: {current}")
+
 # Getting the parent directory name
 # where the current directory is present.
 parent = os.path.dirname(current)
-  
+print(f"parent directory: {parent}")
 # adding the parent directory to 
 # the sys.path.
 sys.path.append(parent)
@@ -86,7 +87,7 @@ for category in pic_dict.keys():
         print("processing: "+pic_dict[category][case_name])
         hf = h5py.File(pic_dict[category][case_name], 'r')
         #print(np.array(hf["segmentation"]))
-        label = np.array(hf["label"], dtype=np.int)
+        label = np.array(hf["label"], dtype=int)
         raw = np.array(hf["raw"], dtype=np.float32)
         hf.close()
         
@@ -98,8 +99,8 @@ for category in pic_dict.keys():
         raw = img_3d_interpolate(raw, output_size = output_size, device = device)
         label = img_3d_interpolate(label, output_size = output_size, device = device)
         
-        raw = np.array(raw, dtype=np.float)
-        label = np.array(label, dtype=np.int)
+        raw = np.array(raw, dtype=float)
+        label = np.array(label, dtype=int)
         
         print("raw size: "+str(raw.shape))
         print("label size: "+str(label.shape))
