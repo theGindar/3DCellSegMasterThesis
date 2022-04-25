@@ -212,6 +212,8 @@ class CellSegNet_basic_edge_gated(nn.Module):
 
         h = self.conv6(h)
 
+        e_output = F.softmax(e_output, dim=1)
+
         output = F.softmax(h, dim=1)
 
         return output, e_output
