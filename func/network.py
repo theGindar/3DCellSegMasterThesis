@@ -54,6 +54,7 @@ class CellSegNet_basic_lite(nn.Module):
         c4 = self.deconv1(c4)
         c4 = F.relu(self.bnorm2(c4))
         c3_shape=c3.shape
+
         delta_c4_x=int(np.floor((c4.shape[2]-c3_shape[2])/2))
         delta_c4_y=int(np.floor((c4.shape[3]-c3_shape[3])/2))
         delta_c4_z=int(np.floor((c4.shape[4]-c3_shape[4])/2))
@@ -101,12 +102,18 @@ class EdgeGatedLayer(nn.Module):
     def __init__(self, in_channels=64, out_channels=64, kernel_size=1):
         super(EdgeGatedLayer, self).__init__()
         self.batchnorm_module=nn.BatchNorm3d(num_features=in_channels)
+        self.upsample_edge = nn.Upsample(scale_factor=2, mode='nearest')
         self.conv_edge = nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size)
         self.conv_main = nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size)
     def forward(self, x_edge, x_main):
-        x_edge = self.conv_edge(x_edge)
-        x_main = self.conv_edge(x_main)
-        alpha = torch.add(x_edge, x_main)
+        x_edge = self.upsample_edge(x_edge)
+        x_e = self.conv_edge(x_edge)
+        x_m = self.conv_main(x_main)
+
+        print(f"x_e shape: {x_e.shape}")
+        print(f"x_m shape: {x_m.shape}")
+
+        alpha = x_e + x_m
         alpha = F.relu(alpha)
         alpha = F.sigmoid(alpha)
         x_out = x_edge * alpha + x_edge
@@ -155,7 +162,8 @@ class CellSegNet_basic_edge_gated(nn.Module):
 
         h = self.conv5(c3)
         c4 = self.resmodule3(h)
-
+        print(f"c3 shape: {c3.shape}")
+        print(f"c4 shape: {c4.shape}")
         # edge gated network
         e1 = self.edgegatelayer1(c4, c3)
 
