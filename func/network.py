@@ -101,17 +101,14 @@ class CellSegNet_basic_lite(nn.Module):
 class EdgeGatedLayer(nn.Module):
     def __init__(self, in_channels=64, out_channels=64, kernel_size=1):
         super(EdgeGatedLayer, self).__init__()
-        self.batchnorm_module=nn.BatchNorm3d(num_features=in_channels)
         self.upsample_edge = nn.Upsample(scale_factor=2, mode='nearest')
         self.conv_edge = nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size)
-        self.conv_main = nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size)
+        self.conv_main = nn.Conv3d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size)
     def forward(self, x_edge, x_main):
         x_edge = self.upsample_edge(x_edge)
+
         x_e = self.conv_edge(x_edge)
         x_m = self.conv_main(x_main)
-
-        print(f"x_e shape: {x_e.shape}")
-        print(f"x_m shape: {x_m.shape}")
 
         alpha = x_e + x_m
         alpha = F.relu(alpha)
@@ -135,6 +132,8 @@ class CellSegNet_basic_edge_gated(nn.Module):
         self.edgegatelayer2 = EdgeGatedLayer(64, 64)
         self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
         self.resmodule3 = ResModule(64, 64)
+        self.edge_conv1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=1, stride=1)
+        self.edgegatelayer3 = EdgeGatedLayer(32, 32)
 
         self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         # TODO: group norm?
@@ -145,7 +144,7 @@ class CellSegNet_basic_edge_gated(nn.Module):
         self.bnorm4 = nn.BatchNorm3d(num_features=32)
         self.conv6 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
 
-        self.e_output = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1)
+        self.e_output = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1)
 
         self.output_func = output_func
 
@@ -162,14 +161,14 @@ class CellSegNet_basic_edge_gated(nn.Module):
 
         h = self.conv5(c3)
         c4 = self.resmodule3(h)
-        print(f"c3 shape: {c3.shape}")
-        print(f"c4 shape: {c4.shape}")
+
         # edge gated network
         e1 = self.edgegatelayer1(c4, c3)
 
         e2 = self.edgegatelayer2(e1, c2)
-        e_out = self.e_output(e2)
-        e_output = F.softmax(e_out, dim=1)
+
+        e_conv_1 = self.edge_conv1(e2)
+        e3 = self.edgegatelayer3(e_conv_1, c1)
 
         c4 = self.deconv1(c4)
         c4 = F.relu(self.bnorm2(c4))
@@ -212,9 +211,10 @@ class CellSegNet_basic_edge_gated(nn.Module):
 
         h = self.conv6(h)
 
-        e_output = F.softmax(e_output, dim=1)
-
         output = F.softmax(h, dim=1)
+
+        e_out = self.e_output(e3)
+        e_output = F.softmax(e_out, dim=1)
 
         return output, e_output
     
