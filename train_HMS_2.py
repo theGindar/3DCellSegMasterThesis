@@ -1,7 +1,8 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated
-from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
+from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
+    WeightedCrossEntropyLoss
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -51,6 +52,7 @@ print('num of train files: '+str(len(HMS_data_dict['train'].keys())))
 print('max epoch: '+str(max_epoch))
 
 start_time = time.time()
+WCELoss = WeightedCrossEntropyLoss()
 
 for ith_epoch in range(0, max_epoch):
     for ith_batch, batch in enumerate(dataset_loader):
@@ -65,6 +67,7 @@ for ith_epoch in range(0, max_epoch):
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
     
         seg_output, e_output = model(img_input)
+
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
 
@@ -74,8 +77,8 @@ for ith_epoch in range(0, max_epoch):
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
-        loss_2 = dice_loss_org_weights(e_output_bb, seg_groundtruth_bb, weights_bb) + \
-                 dice_loss_II_weights(seg_output_e, seg_groundtruth_f, weights_f)
+        # TODO change!
+        loss_2 = WCELoss.forward(seg_output_e, seg_groundtruth_f)
 
         loss = loss_1 + loss_2
 

@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 
-
+"""
 ##### HMS #####
 source_path_raw_img = "data/CellSeg_dataset/HMS/raw"
 source_path_seg_img = "data/CellSeg_dataset/HMS/segmentation_delete_fake_cells"
@@ -11,6 +11,30 @@ processed_path_seg_img = "data/CellSeg_dataset/HMS_processed/segmentation"
 
 # step 1
 run_py_script = "python prepare_dataset/prepare_HMS_dataset.py "+\
+"--raw_img_file_path "+source_path_raw_img+" "+\
+"--seg_img_file_path "+source_path_seg_img+" "+\
+"--processed_raw_img_output_file_path "+processed_path_raw_img+" "+\
+"--processed_seg_img_output_file_path "+processed_path_seg_img
+print("run "+run_py_script)
+os.system(run_py_script)
+
+# step2
+run_py_script = "python prepare_dataset/get_the_dataset_info_of_HMS.py "+\
+"--processed_raw_img_file_path "+processed_path_raw_img+" "+\
+"--processed_seg_img_file_path "+processed_path_seg_img
+print("run "+run_py_script)
+os.system(run_py_script)
+##### HMS #####
+"""
+
+##### HMS with edges #####
+source_path_raw_img = "data/CellSeg_dataset/HMS/raw"
+source_path_seg_img = "data/CellSeg_dataset/HMS/segmentation_delete_fake_cells"
+processed_path_raw_img = "data/CellSeg_dataset/HMS_processed/raw"
+processed_path_seg_img = "data/CellSeg_dataset/HMS_processed/segmentation"
+
+# step 1
+run_py_script = "python prepare_dataset/prepare_HMS_dataset_with_edges.py "+\
 "--raw_img_file_path "+source_path_raw_img+" "+\
 "--seg_img_file_path "+source_path_seg_img+" "+\
 "--processed_raw_img_output_file_path "+processed_path_raw_img+" "+\

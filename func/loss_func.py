@@ -1,5 +1,8 @@
 import torch
 import numpy as np
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Variable
 
 def dice_loss_org_weights(pred, target, weights):
     """
@@ -138,3 +141,27 @@ def dice_accuracy(pred, target):
     B_sum = torch.sum(torch.mul(tflat, tflat))
         
     return (intersection) / (A_sum + B_sum + 0.0001)
+
+
+class WeightedCrossEntropyLoss(nn.Module):
+    # from https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/losses.py
+    """WeightedCrossEntropyLoss (WCE) as described in https://arxiv.org/pdf/1707.03237.pdf
+    """
+
+    def __init__(self, ignore_index=-1):
+        super(WeightedCrossEntropyLoss, self).__init__()
+        self.ignore_index = ignore_index
+
+    def forward(self, input, target):
+        weight = self._class_weights(input)
+        return F.cross_entropy(input, target, weight=weight, ignore_index=self.ignore_index)
+
+    @staticmethod
+    def _class_weights(input):
+        # normalize the input first
+        input = F.softmax(input, dim=1)
+        flattened = torch.flatten(input)
+        nominator = (1. - flattened).sum(-1)
+        denominator = flattened.sum(-1)
+        class_weights = Variable(nominator / denominator, requires_grad=False)
+        return class_weights
