@@ -105,27 +105,32 @@ class Cell_Seg_3D_Dataset(Dataset):
             raw_3d_img = np.load(self.data_dict[name]["raw"])
             seg_boundary = np.load(self.data_dict[name]["boundary"])
             seg_foreground = np.load(self.data_dict[name]["foreground"])
+            seg_edge = np.load(self.data_dict[name]["edge"])
             #seg_background = np.load(self.data_dict[name]["background"])
         elif file_format == ".tif":
             raw_3d_img = io.imread(self.data_dict[name]["raw"])                
             seg_boundary = io.imread(self.data_dict[name]["boundary"])
             seg_foreground = io.imread(self.data_dict[name]["foreground"])
+            seg_edge = io.imread(self.data_dict[name]["edge"])
             #seg_background = io.imread(self.data_dict[name]["background"])
         elif file_format == ".h5":
             hf = h5py.File(self.data_dict[name], 'r+')
             raw_3d_img = np.array(hf["raw"])
             seg_boundary = np.array(hf["boundary"])
             seg_foreground = np.array(hf["foreground"])
+            seg_edge = np.array(hf["edge"])
             hf.close()
         elif file_format == ".npz":
             npz_file = np.load(self.data_dict[name])
             raw_3d_img = np.array(npz_file["raw"])
             seg_boundary = np.array(npz_file["boundary"])
             seg_foreground = np.array(npz_file["foreground"])
+            seg_edge = np.array(npz_file["edge"])
                 
         raw_3d_img = np.nan_to_num(raw_3d_img, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_boundary = np.nan_to_num(seg_boundary, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_foreground = np.nan_to_num(seg_foreground, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_edge = np.nan_to_num(seg_edge, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_background = np.array((seg_boundary+seg_foreground)==0, dtype=np.int)
             
         #raw_3d_img=normalization(raw_3d_img)
@@ -134,6 +139,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_background = np.array(seg_background, float)
         seg_boundary = np.array(seg_boundary, float)
         seg_foreground = np.array(seg_foreground, float)
+        seg_edge = np.array(seg_edge, float)
             
         assert raw_3d_img.shape == seg_background.shape
         assert seg_background.shape == seg_boundary.shape
@@ -144,13 +150,18 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_background=random3dcrop(seg_background, start_points=start_points)
         seg_boundary=random3dcrop(seg_boundary, start_points=start_points)
         seg_foreground=random3dcrop(seg_foreground, start_points=start_points)
+        seg_edge = random3dcrop(seg_edge, start_points=start_points)
         
         raw_3d_img = np.expand_dims(raw_3d_img, axis=0)
         seg_background = np.expand_dims(seg_background, axis=0)
         seg_boundary = np.expand_dims(seg_boundary, axis=0)
         seg_foreground = np.expand_dims(seg_foreground, axis=0)
 
-        output = {'raw': raw_3d_img, 'background': seg_background, 'boundary': seg_boundary, 'foreground': seg_foreground}
+        output = {'raw': raw_3d_img,
+                  'background': seg_background,
+                  'boundary': seg_boundary,
+                  'foreground': seg_foreground,
+                  'edge': seg_edge}
         
         output.update(self.get_weights(output, boundary_importance))
         
@@ -166,12 +177,17 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_background=images['background']
         seg_boundary=images['boundary']*boundary_importance # boundary is boundary_importance times more important than others
         seg_foreground=images['foreground']
+        seg_edge = images['edge']
         
         seg_background_zeros=np.array(seg_background==0, dtype=int)*0.5
         seg_boundary_zeros=np.array(seg_boundary==0, dtype=int)*0.5
         seg_foreground_zeros=np.array(seg_foreground==0, dtype=int)*0.5
+        seg_edge_zeros = np.array(seg_edge == 0, dtype=int) * 0.5
         
-        return {'weights_background': seg_background+seg_background_zeros, 'weights_boundary': seg_boundary+seg_boundary_zeros, 'weights_foreground': seg_foreground+seg_foreground_zeros}
+        return {'weights_background': seg_background+seg_background_zeros,
+                'weights_boundary': seg_boundary+seg_boundary_zeros,
+                'weights_foreground': seg_foreground+seg_foreground_zeros,
+                'weights_edge': seg_foreground+seg_edge_zeros}
 
     def to_tensor(self, images):
         images_tensor={}
