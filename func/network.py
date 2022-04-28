@@ -134,6 +134,7 @@ class CellSegNet_basic_edge_gated(nn.Module):
         self.resmodule3 = ResModule(64, 64)
         self.edge_conv1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=1, stride=1)
         self.edgegatelayer3 = EdgeGatedLayer(32, 32)
+        self.edge_conv2 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=1, stride=1)
 
         self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         # TODO: group norm?
@@ -169,6 +170,7 @@ class CellSegNet_basic_edge_gated(nn.Module):
 
         e_conv_1 = self.edge_conv1(e2)
         e3 = self.edgegatelayer3(e_conv_1, c1)
+        conv_e3 = self.edge_conv2(e3)
 
         c4 = self.deconv1(c4)
         c4 = F.relu(self.bnorm2(c4))
@@ -207,13 +209,14 @@ class CellSegNet_basic_edge_gated(nn.Module):
                delta_c1_2_y:c1_shape[3] + delta_c1_2_y,
                delta_c1_2_z:c1_shape[4] + delta_c1_2_z]
 
-        h = c1_2 + c1
+        # finally add edge gated stream to decoder
+        h = c1_2 + c1 + e3
 
         h = self.conv6(h)
 
         output = F.softmax(h, dim=1)
 
-        e_out = self.e_output(e3)
+        e_out = self.e_output(conv_e3)
         e_output = F.softmax(e_out, dim=1)
 
         return output, e_output
