@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 import os
 import time
+from torch.nn import CrossEntropyLoss
 
 # hyperparameters
 # ----------
@@ -52,7 +53,7 @@ print('num of train files: '+str(len(HMS_data_dict['train'].keys())))
 print('max epoch: '+str(max_epoch))
 
 start_time = time.time()
-WCELoss = WeightedCrossEntropyLoss()
+CELoss = CrossEntropyLoss()
 
 for ith_epoch in range(0, max_epoch):
     for ith_batch, batch in enumerate(dataset_loader):
@@ -62,6 +63,8 @@ for ith_epoch in range(0, max_epoch):
         seg_groundtruth_f=torch.tensor(batch['foreground']>0, dtype=torch.float).to(device)
         seg_groundtruth_bb=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
             torch.tensor(batch['boundary']>0, dtype=torch.float)), dim=1).to(device)
+
+        seg_edge_groundtruth = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
         
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
@@ -78,7 +81,7 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        loss_2 = WCELoss.forward(seg_output_e, seg_groundtruth_f)
+        loss_2 = CELoss(seg_output_e, seg_edge_groundtruth)
 
         loss = loss_1 + loss_2
 
