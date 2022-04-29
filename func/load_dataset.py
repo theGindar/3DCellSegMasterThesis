@@ -156,7 +156,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         raw_3d_img = np.expand_dims(raw_3d_img, axis=0)
         seg_background = np.expand_dims(seg_background, axis=0)
         seg_boundary = np.expand_dims(seg_boundary, axis=0)
-        seg_edge = np.expand_dims(seg_boundary, axis=0)
+        seg_edge = np.expand_dims(seg_edge, axis=0)
         seg_foreground = np.expand_dims(seg_foreground, axis=0)
 
         output = {'raw': raw_3d_img,
