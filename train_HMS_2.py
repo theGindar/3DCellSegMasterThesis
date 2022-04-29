@@ -81,6 +81,8 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
+        print(f"CELoss seg_output_e shape: {seg_output_e.shape}")
+        print(f"CELoss seg_edge_groundtruth shape: {seg_edge_groundtruth.shape}")
         loss_2 = CELoss(seg_output_e, seg_edge_groundtruth)
 
         loss = loss_1 + loss_2
