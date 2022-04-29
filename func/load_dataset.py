@@ -144,6 +144,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         assert raw_3d_img.shape == seg_background.shape
         assert seg_background.shape == seg_boundary.shape
         assert seg_boundary.shape == seg_foreground.shape
+        assert seg_edge.shape == seg_boundary.shape
             
         start_points=random3dcrop.random_crop_start_point(raw_3d_img.shape)
         raw_3d_img=random3dcrop(raw_3d_img, start_points=start_points)
@@ -155,6 +156,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         raw_3d_img = np.expand_dims(raw_3d_img, axis=0)
         seg_background = np.expand_dims(seg_background, axis=0)
         seg_boundary = np.expand_dims(seg_boundary, axis=0)
+        seg_edge = np.expand_dims(seg_boundary, axis=0)
         seg_foreground = np.expand_dims(seg_foreground, axis=0)
 
         output = {'raw': raw_3d_img,
