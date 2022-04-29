@@ -74,15 +74,10 @@ for ith_epoch in range(0, max_epoch):
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
 
-        #seg_output_e = e_output[:, 2, :, :, :]
-        #e_output_bb = torch.cat((e_output[:, 0, :, :, :], e_output[:, 1, :, :, :]), dim=1)
-
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        print(f"CELoss e_output shape: {e_output.shape}")
-        print(f"CELoss seg_edge_groundtruth shape: {seg_edge_groundtruth.shape}")
         loss_2 = CELoss(e_output, seg_edge_groundtruth)
 
         loss = loss_1 + loss_2
