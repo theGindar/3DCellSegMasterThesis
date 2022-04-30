@@ -95,12 +95,16 @@ for ith_epoch in range(0, max_epoch):
             "batch [{2}]\t"
             "time(s) {time:.2f}\t"
             "loss {loss:.5f}\t"
+            "loss_1 {loss_1:.5f}\t"
+            "loss_2 {loss_2:.5f}\t"
             "acc {acc:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
                 ith_batch,
                 time = time_consumption,
                 loss = loss.item(),
+                loss_1=loss_1.item(),
+                loss_2=loss_2.item(),
                 acc = accuracy.item()))
     
     if (ith_epoch+1)%model_save_freq==0:
