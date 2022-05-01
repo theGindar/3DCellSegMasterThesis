@@ -1,0 +1,35 @@
+num of train files: 32
+max epoch: 500
+Traceback (most recent call last):
+  File "train_HMS_2.py", line 59, in <module>
+    for ith_batch, batch in enumerate(dataset_loader):
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 530, in __next__
+    data = self._next_data()
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1224, in _next_data
+    return self._process_data(data)
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1250, in _process_data
+    data.reraise()
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torch/_utils.py", line 457, in reraise
+    raise exception
+ValueError: Caught ValueError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torch/utils/data/_utils/worker.py", line 287, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 49, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 49, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/home/ubuntu/cell_segmentation/GitHub/3DCellSegMasterThesis/func/load_dataset.py", line 78, in __getitem__
+    return self.get(idx, file_format=self.para["file_format"], \
+  File "/home/ubuntu/cell_segmentation/GitHub/3DCellSegMasterThesis/func/load_dataset.py", line 174, in get
+    output = self.transform_the_tensor(output, prob=0.5)
+  File "/home/ubuntu/cell_segmentation/GitHub/3DCellSegMasterThesis/func/load_dataset.py", line 204, in transform_the_tensor
+    dict_imgs_tio[item]=tio.ScalarImage(tensor=image_tensors[item])
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torchio/data/image.py", line 749, in __init__
+    super().__init__(*args, **kwargs)
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torchio/data/image.py", line 142, in __init__
+    tensor = self._parse_tensor(tensor)
+  File "/home/ubuntu/cellsegvenv/lib/python3.8/site-packages/torchio/data/image.py", line 456, in _parse_tensor
+    raise ValueError(f'Input tensor must be 4D, but it is {ndim}D')
+ValueError: Input tensor must be 4D, but it is 5D
+
