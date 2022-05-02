@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 import os
 import time
-from torch.nn import CrossEntropyLoss
+from torch.nn import CrossEntropyLoss, BCEWithLogitsLoss
 from torchvision.ops import sigmoid_focal_loss
 
 # hyperparameters
@@ -54,7 +54,7 @@ print('num of train files: '+str(len(HMS_data_dict['train'].keys())))
 print('max epoch: '+str(max_epoch))
 
 start_time = time.time()
-CELoss = CrossEntropyLoss()
+BCELoss = BCEWithLogitsLoss()
 
 for ith_epoch in range(0, max_epoch):
     for ith_batch, batch in enumerate(dataset_loader):
@@ -79,8 +79,8 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        # loss_2 = CELoss(e_output, seg_edge_groundtruth)
-        loss_2 = sigmoid_focal_loss(e_output, seg_edge_groundtruth, reduction="mean")
+        loss_2 = BCELoss(e_output, seg_edge_groundtruth)
+        # loss_2 = sigmoid_focal_loss(e_output, seg_edge_groundtruth, reduction="mean")
 
         loss = loss_1 + loss_2
 
