@@ -126,15 +126,15 @@ class CellSegNet_basic_edge_gated(nn.Module):
         self.bnorm1 = nn.BatchNorm3d(num_features=32)
         self.conv3 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
         self.resmodule1 = ResModule(64, 64)
-        self.edgegatelayer1 = EdgeGatedLayer(64, 64)
+        # edge gated here
         self.conv4 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
         self.resmodule2 = ResModule(64, 64)
-        self.edgegatelayer2 = EdgeGatedLayer(64, 64)
+        # edge gated here
         self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
         self.resmodule3 = ResModule(64, 64)
-        self.edge_conv1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=1, stride=1)
-        self.edgegatelayer3 = EdgeGatedLayer(32, 32)
-        self.edge_conv2 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=1, stride=1)
+        # edge conv1 here
+        # edge gated here
+        # edge conv2 here
 
         self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         # TODO: group norm?
@@ -144,6 +144,12 @@ class CellSegNet_basic_edge_gated(nn.Module):
         self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4 = nn.BatchNorm3d(num_features=32)
         self.conv6 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+
+        self.edgegatelayer1 = EdgeGatedLayer(64, 64)
+        self.edgegatelayer2 = EdgeGatedLayer(64, 64)
+        self.edge_conv1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=1, stride=1)
+        self.edgegatelayer3 = EdgeGatedLayer(32, 32)
+        self.edge_conv2 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=1, stride=1)
 
         self.e_output = nn.Conv3d(in_channels=32, out_channels=1, kernel_size=1)
 

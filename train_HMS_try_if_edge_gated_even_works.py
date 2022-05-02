@@ -5,6 +5,7 @@ from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, di
     WeightedCrossEntropyLoss
 from func.ultis import save_obj, load_obj
 from torchvision.ops import sigmoid_focal_loss
+from torch.nn import BCEWithLogitsLoss
 
 import numpy as np
 import torch
@@ -53,6 +54,7 @@ print('num of train files: '+str(len(HMS_data_dict['train'].keys())))
 print('max epoch: '+str(max_epoch))
 
 start_time = time.time()
+BCELoss = BCEWithLogitsLoss()
 
 for ith_epoch in range(0, max_epoch):
     for ith_batch, batch in enumerate(dataset_loader):
@@ -70,7 +72,7 @@ for ith_epoch in range(0, max_epoch):
         
         # loss=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
         #     dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
-        loss = sigmoid_focal_loss(seg_output, seg_edge_groundtruth, reduction="mean")
+        loss = BCELoss(seg_output, seg_edge_groundtruth)
 
         accuracy=dice_accuracy(seg_output, seg_edge_groundtruth)
         
