@@ -59,10 +59,6 @@ for ith_epoch in range(0, max_epoch):
 
         img_input=batch['raw'].to(device)
 
-        seg_groundtruth_f=torch.tensor(batch['foreground']>0, dtype=torch.float).to(device)
-        seg_groundtruth_bb=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
-            torch.tensor(batch['boundary']>0, dtype=torch.float)), dim=1).to(device)
-
         seg_edge_groundtruth = torch.tensor(batch['edge'] > 0, dtype=torch.float).to(device)
         
         weights_f=batch['weights_foreground'].to(device)
@@ -76,7 +72,7 @@ for ith_epoch in range(0, max_epoch):
         #     dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
         loss = sigmoid_focal_loss(seg_output, seg_edge_groundtruth, reduction="mean")
 
-        accuracy=dice_accuracy(seg_output, seg_groundtruth_f)
+        accuracy=dice_accuracy(seg_output, seg_edge_groundtruth)
         
         optimizer.zero_grad()
         loss.backward()
