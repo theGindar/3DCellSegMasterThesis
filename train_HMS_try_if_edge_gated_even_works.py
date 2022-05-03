@@ -2,7 +2,7 @@
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss
+    WeightedCrossEntropyLoss, dice_loss_org
 from func.ultis import save_obj, load_obj
 from torchvision.ops import sigmoid_focal_loss
 from torch.nn import BCEWithLogitsLoss
@@ -61,7 +61,7 @@ for ith_epoch in range(0, max_epoch):
 
         img_input=batch['raw'].to(device)
 
-        seg_edge_groundtruth = torch.tensor(batch['edge'] > 0, dtype=torch.float).to(device)
+        seg_edge_groundtruth = torch.tensor(batch['foreground'] > 0, dtype=torch.float).to(device)
         
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
@@ -72,7 +72,7 @@ for ith_epoch in range(0, max_epoch):
         
         # loss=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
         #     dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
-        loss = BCELoss(seg_output, seg_edge_groundtruth)
+        loss = dice_loss_org(seg_output, seg_edge_groundtruth)
 
         accuracy=dice_accuracy(seg_output, seg_edge_groundtruth)
         
