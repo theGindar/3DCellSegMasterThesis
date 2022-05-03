@@ -142,6 +142,19 @@ def dice_accuracy(pred, target):
         
     return (intersection) / (A_sum + B_sum + 0.0001)
 
+def flatten(tensor):
+    """Flattens a given tensor such that the channel axis is first.
+    The shapes are transformed as follows:
+       (N, C, D, H, W) -> (C, N * D * H * W)
+    """
+    # number of channels
+    C = tensor.size(1)
+    # new axis order
+    axis_order = (1, 0) + tuple(range(2, tensor.dim()))
+    # Transpose: (N, C, D, H, W) -> (C, N, D, H, W)
+    transposed = tensor.permute(axis_order)
+    # Flatten: (C, N, D, H, W) -> (C, N * D * H * W)
+    return transposed.contiguous().view(C, -1)
 
 class WeightedCrossEntropyLoss(nn.Module):
     # from https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/losses.py
@@ -165,7 +178,7 @@ class WeightedCrossEntropyLoss(nn.Module):
     def _class_weights(input):
         # normalize the input first
         input = F.softmax(input, dim=1)
-        flattened = torch.flatten(input)
+        flattened = flatten(input)
         nominator = (1. - flattened).sum(-1)
         denominator = flattened.sum(-1)
         class_weights = Variable(nominator / denominator, requires_grad=False)
