@@ -154,12 +154,12 @@ class WeightedCrossEntropyLoss(nn.Module):
 
     def forward(self, input, target):
         # reshape from (batch, 1, 64, 64, 64) to (batch, 64, 64, 64)
-        inp = torch.reshape(input, (input.shape[0],
-                                    input.shape[2],
-                                    input.shape[3],
-                                    input.shape[4]))
-        weight = self._class_weights(inp)
-        return F.cross_entropy(inp, target, weight=weight, ignore_index=self.ignore_index)
+        #inp = torch.reshape(input, (input.shape[0],
+        #                            input.shape[2],
+        #                            input.shape[3],
+        #                            input.shape[4]))
+        weight = self._class_weights(input)
+        return F.cross_entropy(input, target, weight=weight, ignore_index=self.ignore_index)
 
     @staticmethod
     def _class_weights(input):
