@@ -65,7 +65,13 @@ for ith_epoch in range(0, max_epoch):
         seg_groundtruth_bb=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
             torch.tensor(batch['boundary']>0, dtype=torch.float)), dim=1).to(device)
 
-        seg_edge_groundtruth = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
+        seg_edge_border_groundtruth = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
+        seg_edge_foreground_groundtruth = torch.tensor(batch['edge_foreground'] > 0, dtype=torch.float).to(device)
+        seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
+
+        groundtruth_target = torch.cat((seg_edge_background_groundtruth,
+                                        seg_edge_border_groundtruth,
+                                        seg_edge_foreground_groundtruth), dim=1).to(device)
         
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
@@ -79,10 +85,10 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        loss_2 = dice_loss_org(e_output, seg_groundtruth_f)
+        loss_2 = dice_loss_org(e_output, groundtruth_target)
         # loss_2 = sigmoid_focal_loss(e_output, seg_edge_groundtruth, reduction="mean")
 
-        loss = loss_1 + loss_2
+        loss = loss_1 + 0.1 * loss_2
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         

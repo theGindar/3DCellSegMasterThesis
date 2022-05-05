@@ -63,6 +63,8 @@ for name in names:
         HMS_data_dict["test"][name]["raw"] = os.path.join(HMS_path_raw, name+".npy")
         HMS_data_dict["test"][name]["background"] = os.path.join(HMS_path_seg, name+"/"+name+"_background_3d_mask.npy")
         HMS_data_dict["test"][name]["edge"] = os.path.join(HMS_path_seg, name + "/" + name + "_edge_3d_mask.npy")
+        HMS_data_dict["test"][name]["edge_foreground"] = os.path.join(HMS_path_seg, name + "/" + name + "_edge_foreground_3d_mask.npy")
+        HMS_data_dict["test"][name]["edge_background"] = os.path.join(HMS_path_seg, name + "/" + name + "_edge_background_3d_mask.npy")
         HMS_data_dict["test"][name]["boundary"] = os.path.join(HMS_path_seg, name+"/"+name+"_boundary_3d_mask.npy")
         HMS_data_dict["test"][name]["foreground"] = os.path.join(HMS_path_seg, name+"/"+name+"_foreground_3d_mask.npy")
         HMS_data_dict["test"][name]["ins"] = os.path.join(HMS_path_seg, name+"/"+name+"_ins.npy")
@@ -71,6 +73,8 @@ for name in names:
         HMS_data_dict["train"][name]["raw"] = os.path.join(HMS_path_raw, name+".npy")
         HMS_data_dict["train"][name]["background"] = os.path.join(HMS_path_seg, name+"/"+name+"_background_3d_mask.npy")
         HMS_data_dict["train"][name]["edge"] = os.path.join(HMS_path_seg, name + "/" + name + "_edge_3d_mask.npy")
+        HMS_data_dict["train"][name]["edge_foreground"] = os.path.join(HMS_path_seg, name + "/" + name + "_edge_foreground_3d_mask.npy")
+        HMS_data_dict["train"][name]["edge_background"] = os.path.join(HMS_path_seg, name + "/" + name + "_edge_background_3d_mask.npy")
         HMS_data_dict["train"][name]["boundary"] = os.path.join(HMS_path_seg, name+"/"+name+"_boundary_3d_mask.npy")
         HMS_data_dict["train"][name]["foreground"] = os.path.join(HMS_path_seg, name+"/"+name+"_foreground_3d_mask.npy")
 

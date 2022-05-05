@@ -20,7 +20,7 @@ from medpy.io import load as medpyload
 import matplotlib.pyplot as plt
 import argparse
 
-from func.dataset_preprocess import process_one_cuboid_with_edges
+from func.dataset_preprocess import process_one_cuboid_with_all_edges
 
 parser = argparse.ArgumentParser(description='prepare_HMS_dataset')
 parser.add_argument('--raw_img_file_path', default="/data/CellSeg_dataset/HMS/raw", type=str,
@@ -57,13 +57,18 @@ for file_name in seg_img_file_names:
     except:
         loading_file_name_path=seg_img_file_path+'/'+file_name+'.npy'
         img_3d = np.load(loading_file_name_path).astype(float)
-    background_3d_mask, edge_3d_mask, boundary_3d_mask, foreground_3d_mask, cell_ins_3d_mask, center_dict=process_one_cuboid_with_edges(img_3d, width_of_membrane = args.width_of_membrane)
+    background_3d_mask, boundary_3d_mask, foreground_3d_mask, edge_background_3d_mask, edge_boundary_3d_mask, edge_foreground_3d_mask, cell_ins_3d_mask, center_dict = \
+        process_one_cuboid_with_all_edges(img_3d, width_of_membrane = args.width_of_membrane)
     if not os.path.exists(process_seg_img_output_file_path+'/'+file_name):
         os.mkdir(process_seg_img_output_file_path+'/'+file_name)
     np.save(process_seg_img_output_file_path+'/'+file_name+'/'+file_name+'_background_3d_mask.npy', background_3d_mask)
     np.save(process_seg_img_output_file_path+'/'+file_name+'/'+file_name+'_boundary_3d_mask.npy', boundary_3d_mask)
     np.save(process_seg_img_output_file_path + '/' + file_name + '/' + file_name + '_edge_3d_mask.npy',
-            edge_3d_mask)
+            edge_boundary_3d_mask)
+    np.save(process_seg_img_output_file_path + '/' + file_name + '/' + file_name + '_edge_foreground_3d_mask.npy',
+            edge_foreground_3d_mask)
+    np.save(process_seg_img_output_file_path + '/' + file_name + '/' + file_name + '_edge_background_3d_mask.npy',
+            edge_background_3d_mask)
     np.save(process_seg_img_output_file_path+'/'+file_name+'/'+file_name+'_foreground_3d_mask.npy', foreground_3d_mask)
     np.save(process_seg_img_output_file_path+'/'+file_name+'/'+file_name+'_ins.npy', cell_ins_3d_mask)
 
