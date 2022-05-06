@@ -29,7 +29,7 @@ num_workers = 4
 # ----------
 
 # init model
-model=CellSegNet_basic_lite(input_channel=1, n_classes=1, output_func = "softmax")
+model=CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
