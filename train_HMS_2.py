@@ -15,6 +15,9 @@ from torchvision.ops import sigmoid_focal_loss
 
 import pandas as pd
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 # hyperparameters
 # ----------
 save_path = 'output/model_HMS_2.pkl'
@@ -139,11 +142,11 @@ for ith_epoch in range(0, max_epoch):
         loss_df = loss_df.append({"epoch": ith_epoch + 1,
                                   "batch": ith_batch,
                                   "time": time_consumption,
-                                  "total_loss": loss.detach().clone(),
-                                  "loss_1": loss_1.detach().clone(),
-                                  "loss_2": loss_2.detach().clone(),
-                                  "accuracy_1": accuracy.detach().clone(),
-                                  "accuracy_2": accuracy_2.detach().clone()}, ignore_index=True)
+                                  "total_loss": loss.item(),
+                                  "loss_1": loss_1.item(),
+                                  "loss_2": loss_2.item(),
+                                  "accuracy_1": accuracy.item(),
+                                  "accuracy_2": accuracy_2.item()}, ignore_index=True)
     
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
