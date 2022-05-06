@@ -13,11 +13,12 @@ import time
 from torch.nn import CrossEntropyLoss, BCEWithLogitsLoss
 from torchvision.ops import sigmoid_focal_loss
 
-import pandas as pd
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+import pandas as pd
 
 # hyperparameters
 # ----------
