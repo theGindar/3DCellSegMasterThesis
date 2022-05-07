@@ -474,7 +474,7 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
 
     edge_background_3d_mask_borders = ndimage.generic_filter(edge_background_3d_mask_temp, get_boundaries,
                                                            footprint=footprint,
-                                                           mode='constant')
+                                                           mode='reflect')
     edge_background_3d_mask[np.logical_and(background_3d_mask==1, edge_background_3d_mask_borders==1)] = 1
 
 
