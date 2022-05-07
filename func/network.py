@@ -117,9 +117,9 @@ class EdgeGatedLayer(nn.Module):
         return x_out
 
 
-class CellSegNet_basic_edge_gated(nn.Module):
+class CellSegNet_basic_edge_gated_I(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
-        super(CellSegNet_basic_edge_gated, self).__init__()
+        super(CellSegNet_basic_edge_gated_I, self).__init__()
 
         self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
         self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
@@ -223,6 +223,123 @@ class CellSegNet_basic_edge_gated(nn.Module):
         output = F.softmax(h, dim=1)
 
         e_out = self.e_output(conv_e3)
+        e_output = F.softmax(e_out, dim=1)
+
+        return output, e_output
+
+class CellSegNet_basic_edge_gated(nn.Module):
+    def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
+        super(CellSegNet_basic_edge_gated, self).__init__()
+
+        self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.bnorm1 = nn.BatchNorm3d(num_features=32)
+        self.conv3 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule1 = ResModule(64, 64)
+        # edge gated here
+        self.conv4 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule2 = ResModule(64, 64)
+        # edge gated here
+        self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule3 = ResModule(64, 64)
+        # edge conv1 here
+        # edge gated here
+        # edge conv2 here
+
+        self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        # TODO: group norm?
+        self.bnorm2 = nn.BatchNorm3d(num_features=64)
+        self.deconv2 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm3 = nn.BatchNorm3d(num_features=64)
+        self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
+        self.bnorm4 = nn.BatchNorm3d(num_features=32)
+        self.conv6 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+
+        self.resmodule_edge_1 = ResModule(64, 64)
+        self.edgegatelayer1 = EdgeGatedLayer(64, 64)
+        self.resmodule_edge_2 = ResModule(64, 64)
+        self.edgegatelayer2 = EdgeGatedLayer(64, 64)
+        self.edge_conv1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=1, stride=1)
+        self.resmodule_edge_3 = ResModule(32, 32)
+        self.edgegatelayer3 = EdgeGatedLayer(32, 32)
+        # self.edge_conv2 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=1, stride=1)
+
+        self.e_output = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1)
+
+        self.output_func = output_func
+
+    def forward(self, x):
+        h = self.conv1(x)
+        h = self.conv2(h)
+        c1 = F.relu(self.bnorm1(h))
+
+        h = self.conv3(c1)
+        c2 = self.resmodule1(h)
+
+        h = self.conv4(c2)
+        c3 = self.resmodule2(h)
+
+        h = self.conv5(c3)
+        c4 = self.resmodule3(h)
+
+        # edge gated network
+        res_edge_1 = self.resmodule_edge_1(c4)
+        e1 = self.edgegatelayer1(res_edge_1, c3)
+
+        res_edge_2 = self.resmodule_edge_2(e1)
+        e2 = self.edgegatelayer2(res_edge_2, c2)
+
+        e_conv_1 = self.edge_conv1(e2)
+        res_edge_3 = self.resmodule_edge_3(e_conv_1)
+        e3 = self.edgegatelayer3(res_edge_3, c1)
+
+        c4 = self.deconv1(c4)
+        c4 = F.relu(self.bnorm2(c4))
+        c3_shape = c3.shape
+        delta_c4_x = int(np.floor((c4.shape[2] - c3_shape[2]) / 2))
+        delta_c4_y = int(np.floor((c4.shape[3] - c3_shape[3]) / 2))
+        delta_c4_z = int(np.floor((c4.shape[4] - c3_shape[4]) / 2))
+        c4 = c4[:, :,
+             delta_c4_x:c3_shape[2] + delta_c4_x,
+             delta_c4_y:c3_shape[3] + delta_c4_y,
+             delta_c4_z:c3_shape[4] + delta_c4_z]
+
+        h = c4 + c3
+
+        h = self.deconv2(h)
+        c2_2 = F.relu(self.bnorm3(h))
+        c2_shape = c2.shape
+        delta_c2_2_x = int(np.floor((c2_2.shape[2] - c2_shape[2]) / 2))
+        delta_c2_2_y = int(np.floor((c2_2.shape[3] - c2_shape[3]) / 2))
+        delta_c2_2_z = int(np.floor((c2_2.shape[4] - c2_shape[4]) / 2))
+        c2_2 = c2_2[:, :,
+               delta_c2_2_x:c2_shape[2] + delta_c2_2_x,
+               delta_c2_2_y:c2_shape[3] + delta_c2_2_y,
+               delta_c2_2_z:c2_shape[4] + delta_c2_2_z]
+
+        h = c2_2 + c2
+
+        h = self.deconv3(h)
+        c1_2 = F.relu(self.bnorm4(h))
+        c1_shape = c1.shape
+        delta_c1_2_x = int(np.floor((c1_2.shape[2] - c1_shape[2]) / 2))
+        delta_c1_2_y = int(np.floor((c1_2.shape[3] - c1_shape[3]) / 2))
+        delta_c1_2_z = int(np.floor((c1_2.shape[4] - c1_shape[4]) / 2))
+        c1_2 = c1_2[:, :,
+               delta_c1_2_x:c1_shape[2] + delta_c1_2_x,
+               delta_c1_2_y:c1_shape[3] + delta_c1_2_y,
+               delta_c1_2_z:c1_shape[4] + delta_c1_2_z]
+
+        # finally add edge gated stream to decoder
+        h = c1_2 + c1
+
+        h = torch.cat((h, e3), dim=1)
+
+        h = self.conv6(h)
+
+        output = F.softmax(h, dim=1)
+
+        e_out = self.e_output(e3)
         e_output = F.softmax(e_out, dim=1)
 
         return output, e_output
