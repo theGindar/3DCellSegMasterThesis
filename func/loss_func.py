@@ -54,7 +54,7 @@ def dice_loss_org_individually(pred, target):
     pred: tensor with first dimension as batch
     target: tensor with first dimension as batch
     """
-    smooth = 1
+    epsilon = 1e-7
 
     # get batchsize
     N = pred.size(0)
@@ -68,7 +68,7 @@ def dice_loss_org_individually(pred, target):
     A_sum = torch.sum(torch.mul(iflat, iflat), dim=1)
     B_sum = torch.sum(torch.mul(tflat, tflat), dim=1)
 
-    return torch.mean(1 - ((intersection + smooth) / (A_sum + B_sum + smooth)))
+    return torch.mean(1 - ((intersection) / (A_sum + B_sum + epsilon)))
 
 
 def balanced_cross_entropy(pred, target):
