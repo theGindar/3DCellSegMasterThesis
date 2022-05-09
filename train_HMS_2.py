@@ -2,7 +2,7 @@
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss, dice_loss_org
+    WeightedCrossEntropyLoss, dice_loss_org_individually, balanced_cross_entropy
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -102,7 +102,8 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        loss_2 = dice_loss_org(e_output, groundtruth_target) + F.binary_cross_entropy(e_output, groundtruth_target)
+        loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + \
+                 .5 * balanced_cross_entropy(e_output, groundtruth_target)
         # loss_2 = sigmoid_focal_loss(e_output, seg_edge_groundtruth, reduction="mean")
 
         loss = loss_1 + 0.1 * loss_2

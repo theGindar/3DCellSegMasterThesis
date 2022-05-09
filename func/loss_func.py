@@ -47,6 +47,46 @@ def dice_loss_org(pred, target):
         
     return 1 - ((intersection + smooth) / (A_sum + B_sum + smooth))
 
+
+def dice_loss_org_individually(pred, target):
+    """
+    Computes the sum of dice loss of every sample in the minibatch.
+    pred: tensor with first dimension as batch
+    target: tensor with first dimension as batch
+    """
+    smooth = 1
+
+    # get batchsize
+    N = pred.size(0)
+    # have to use contiguous since they may from a torch.view op
+    # iflat and tflat are of size (N, C*X*Y*Z)
+    iflat = pred.contiguous().view(N, -1)
+    tflat = target.contiguous().view(N, -1)
+
+    intersection = 2. * torch.sum(torch.mul(iflat, tflat), dim=1)
+
+    A_sum = torch.sum(torch.mul(iflat, iflat), dim=1)
+    B_sum = torch.sum(torch.mul(tflat, tflat), dim=1)
+
+    return torch.mean(1 - ((intersection + smooth) / (A_sum + B_sum + smooth)))
+
+
+def balanced_cross_entropy(pred, target):
+    N = pred.size(0)
+    iflat = pred.contiguous().view(N, -1)
+    tflat = target.contiguous().view(N, -1)
+    # parameter for weighting positive and negatives, beta is the percentage of non-edge voxels to edge voxels
+    edge_percentage = torch.sum(tflat, dim=1) / tflat.size(dim=1)
+    beta = 1. - edge_percentage
+
+    tflat_inverted = 1 - tflat
+
+    weight = torch.unsqueeze(beta, dim=1).expand_as(tflat) * tflat + \
+             torch.unsqueeze(edge_percentage, dim=1).expand_as(tflat_inverted) * tflat_inverted
+
+    return F.binary_cross_entropy(iflat, tflat, weight=weight)
+
+
 def dice_loss_II_weights(pred, target, weights):
     """
     This definition generalize to real valued pred and target vector.
