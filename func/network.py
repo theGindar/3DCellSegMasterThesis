@@ -147,9 +147,9 @@ class CellSegNet_basic_edge_gated_I(nn.Module):
 
         self.edgegatelayer1 = EdgeGatedLayer(64, 64)
         self.edgegatelayer2 = EdgeGatedLayer(64, 64)
-        self.edge_conv1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=1, stride=1)
+        self.edge_conv1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.edgegatelayer3 = EdgeGatedLayer(32, 32)
-        self.edge_conv2 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=1, stride=1)
+        self.edge_conv2 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1)
 
         self.e_output = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1 ,padding=1)
 
