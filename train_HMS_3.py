@@ -82,13 +82,13 @@ for ith_epoch in range(0, max_epoch):
         seg_groundtruth_bb=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
             torch.tensor(batch['boundary']>0, dtype=torch.float)), dim=1).to(device)
 
-        seg_edge_border_groundtruth = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
-        seg_edge_foreground_groundtruth = torch.tensor(batch['edge_foreground'] > 0, dtype=torch.float).to(device)
-        seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
+        groundtruth_target = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
+        #seg_edge_foreground_groundtruth = torch.tensor(batch['edge_foreground'] > 0, dtype=torch.float).to(device)
+        #seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
 
-        groundtruth_target = torch.cat((seg_edge_background_groundtruth,
-                                        seg_edge_border_groundtruth,
-                                        seg_edge_foreground_groundtruth), dim=1).to(device)
+        #groundtruth_target = torch.cat((seg_edge_background_groundtruth,
+        #                                seg_edge_border_groundtruth,
+        #                                seg_edge_foreground_groundtruth), dim=1).to(device)
         
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)

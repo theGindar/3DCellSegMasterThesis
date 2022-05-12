@@ -395,7 +395,7 @@ class CellSegNet_basic_edge_gated_II(nn.Module):
         self.bnorm3_edge = nn.BatchNorm3d(num_features=64)
         self.deconv3_edge = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4_edge = nn.BatchNorm3d(num_features=32)
-        self.conv6_edge = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        self.conv6_edge = nn.Conv3d(in_channels=32, out_channels=1, kernel_size=3, stride=1, padding=1)
 
         self.output_func = output_func
 
