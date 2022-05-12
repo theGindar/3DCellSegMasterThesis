@@ -501,7 +501,7 @@ class CellSegNet_basic_edge_gated_II(nn.Module):
 
 
         # main stream
-        h = h + h_edge_bridge
+        h = torch.cat((h, h_edge_bridge), dim=1)
         h = self.conv6(h)
 
         output = F.softmax(h, dim=1)
