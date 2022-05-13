@@ -102,11 +102,11 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + \
-                 .5 * balanced_cross_entropy(e_output, groundtruth_target)
-        # loss_2 = sigmoid_focal_loss(e_output, seg_edge_groundtruth, reduction="mean")
+        # loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + \
+        #          .5 * balanced_cross_entropy(e_output, groundtruth_target)
+        loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
 
-        loss = loss_1 + .1 * loss_2
+        loss = loss_1 + loss_2
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         accuracy_2 = dice_accuracy(e_output, groundtruth_target)
