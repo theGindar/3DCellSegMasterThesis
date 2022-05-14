@@ -35,7 +35,7 @@ class CellSegNet_basic_lite(nn.Module):
         self.deconv3=nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4=nn.BatchNorm3d(num_features=32)
         self.conv6=nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
-        
+
         self.output_func = output_func
     def forward(self, x):
         h = self.conv1(x)
@@ -91,9 +91,9 @@ class CellSegNet_basic_lite(nn.Module):
         
         h = c1_2 + c1
         
-        h = self.conv6(h)
+        output = self.conv6(h)
         
-        output = F.softmax(h, dim=1)
+        # output = F.softmax(h, dim=1)
         
         return output
 

@@ -1,8 +1,7 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite
-from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss, dice_loss_org_individually, balanced_cross_entropy
+from func.loss_func import dice_loss_org_individually, balanced_cross_entropy, DiceLoss, WeightedCrossEntropyLoss, dice_accuracy
 from func.ultis import save_obj, load_obj
 from torchvision.ops import sigmoid_focal_loss
 from torch.nn import BCEWithLogitsLoss
@@ -29,7 +28,7 @@ num_workers = 4
 # ----------
 
 # init model
-model=CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func = "")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -54,7 +53,10 @@ print('num of train files: '+str(len(HMS_data_dict['train'].keys())))
 print('max epoch: '+str(max_epoch))
 
 start_time = time.time()
-BCELoss = BCEWithLogitsLoss()
+
+dice_weights = torch.tensor([.2, .4, .4], dtype=torch.float).to(device)
+dice_loss = DiceLoss(weight=dice_weights, normalization='softmax')
+wce_loss = WeightedCrossEntropyLoss()
 
 for ith_epoch in range(0, max_epoch):
     for ith_batch, batch in enumerate(dataset_loader):
@@ -72,8 +74,8 @@ for ith_epoch in range(0, max_epoch):
                                         seg_edge_border_groundtruth,
                                         seg_edge_foreground_groundtruth), dim=1).to(device)
         
-        weights_f=batch['weights_foreground'].to(device)
-        weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
+        # weights_f=batch['weights_foreground'].to(device)
+        # weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
     
         seg_output=model(img_input)
         #seg_output_f=seg_output[:,2,:,:,:]
@@ -81,8 +83,8 @@ for ith_epoch in range(0, max_epoch):
         
         # loss=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
         #     dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
-        loss = dice_loss_org_individually(seg_output, groundtruth_target) + \
-               .5 * balanced_cross_entropy(seg_output, groundtruth_target)
+        loss = dice_loss.dice(seg_output, groundtruth_target) + \
+               .5 * wce_loss.forward(seg_output, groundtruth_target)
 
         accuracy=dice_accuracy(seg_output, groundtruth_target)
         
