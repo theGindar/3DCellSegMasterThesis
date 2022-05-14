@@ -8,12 +8,18 @@ from torch.nn import BCEWithLogitsLoss
 import torch.nn.functional as F
 
 import numpy as np
-import pandas as pd
+
 import torch
 from torch.utils.data import DataLoader
 import os
 import time
 
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+import pandas as pd
 # hyperparameters
 # ----------
 save_path = 'output/model_HMS_edge_gated_2.pkl'
@@ -96,7 +102,7 @@ for ith_epoch in range(0, max_epoch):
                .5 * torch.mean(wce_loss.forward(seg_output, groundtruth_target))
 
         seg_output_softmax = F.softmax(seg_output, dim=1)
-        accuracy=dice_accuracy(seg_output, groundtruth_target)
+        accuracy=dice_accuracy(seg_output_softmax, groundtruth_target)
         
         optimizer.zero_grad()
         loss.backward()
