@@ -270,7 +270,7 @@ class DiceLoss(_AbstractDiceLoss):
     def __init__(self, weight=None, normalization='sigmoid'):
         super().__init__(weight, normalization)
 
-    def dice(self, input, target, weight):
+    def dice(self, input, target):
         return compute_per_channel_dice(input, target, weight=self.weight)
 
 

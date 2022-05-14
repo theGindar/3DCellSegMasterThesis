@@ -5,6 +5,7 @@ from func.loss_func import dice_loss_org_individually, balanced_cross_entropy, D
 from func.ultis import save_obj, load_obj
 from torchvision.ops import sigmoid_focal_loss
 from torch.nn import BCEWithLogitsLoss
+import torch.nn.functional as F
 
 import numpy as np
 import torch
@@ -83,9 +84,10 @@ for ith_epoch in range(0, max_epoch):
         
         # loss=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
         #     dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
-        loss = dice_loss.dice(seg_output, groundtruth_target) + \
-               .5 * wce_loss.forward(seg_output, groundtruth_target)
+        loss = torch.mean(dice_loss.dice(seg_output, groundtruth_target)) + \
+               .5 * torch.mean(wce_loss.forward(seg_output, groundtruth_target))
 
+        seg_output_softmax = F.softmax(seg_output, dim=1)
         accuracy=dice_accuracy(seg_output, groundtruth_target)
         
         optimizer.zero_grad()
