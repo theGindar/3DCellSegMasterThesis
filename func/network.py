@@ -397,6 +397,8 @@ class CellSegNet_basic_edge_gated_II(nn.Module):
         self.bnorm4_edge = nn.BatchNorm3d(num_features=32)
         self.conv6_edge = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
 
+        self.sigmoid_edge = nn.Sigmoid()
+
         self.output_func = output_func
 
     def forward(self, x):
@@ -497,7 +499,7 @@ class CellSegNet_basic_edge_gated_II(nn.Module):
 
         h_edge = self.conv6_edge(h_edge_bridge)
 
-        output_edge = torch.nn.Sigmoid(h_edge)
+        output_edge = self.sigmoid_edge(h_edge)
 
 
         # main stream
