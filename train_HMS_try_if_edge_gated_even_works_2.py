@@ -15,9 +15,9 @@ import time
 
 # hyperparameters
 # ----------
-save_path = 'output/model_HMS_edge_gated.pkl'
+save_path = 'output/model_HMS_edge_gated_2.pkl'
 need_resume = True
-load_path = 'output/model_HMS_edge_gated.pkl'
+load_path = 'output/model_HMS_edge_gated_2.pkl'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
