@@ -497,7 +497,7 @@ class CellSegNet_basic_edge_gated_II(nn.Module):
 
         h_edge = self.conv6_edge(h_edge_bridge)
 
-        output_edge = F.softmax(h_edge, dim=1)
+        output_edge = torch.nn.Sigmoid(h_edge)
 
 
         # main stream
