@@ -8,6 +8,7 @@ from torch.nn import BCEWithLogitsLoss
 import torch.nn.functional as F
 
 import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 import os
@@ -18,6 +19,7 @@ import time
 save_path = 'output/model_HMS_edge_gated_2.pkl'
 need_resume = True
 load_path = 'output/model_HMS_edge_gated_2.pkl'
+loss_save_path = 'output/loss_try_edge_transform_3.csv'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
@@ -54,6 +56,12 @@ print('num of train files: '+str(len(HMS_data_dict['train'].keys())))
 print('max epoch: '+str(max_epoch))
 
 start_time = time.time()
+
+loss_df = pd.DataFrame({"epoch":[],
+                        "batch": [],
+                        "time": [],
+                        "total_loss": [],
+                        "accuracy": []})
 
 dice_weights = torch.tensor([.2, .4, .4], dtype=torch.float).to(device)
 dice_loss = DiceLoss(weight=dice_weights, normalization='softmax')
@@ -108,6 +116,12 @@ for ith_epoch in range(0, max_epoch):
                 time = time_consumption,
                 loss = loss.item(),
                 acc = accuracy.item()))
+
+        loss_df = loss_df.append({"epoch": ith_epoch + 1,
+                                  "batch": ith_batch,
+                                  "time": time_consumption,
+                                  "total_loss": loss.item(),
+                                  "accuracy": accuracy.item()}, ignore_index=True)
     
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
