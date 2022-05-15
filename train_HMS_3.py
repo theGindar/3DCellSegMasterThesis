@@ -1,8 +1,8 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_II
+from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_III
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss, dice_loss_org_individually, balanced_cross_entropy
+    WeightedCrossEntropyLoss, dice_loss_org_individually, balanced_cross_entropy, DiceLoss
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -38,7 +38,7 @@ num_workers = 4
 # ----------
 
 # init model
-model=CellSegNet_basic_edge_gated_II(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_III(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -73,6 +73,11 @@ loss_df = pd.DataFrame({"epoch":[],
                         "accuracy_1": [],
                         "accuracy_2": []})
 
+dice_weights = torch.tensor([.2, .4, .4], dtype=torch.float).to(device)
+dice_loss = DiceLoss(weight=dice_weights, normalization='softmax')
+wce_loss = WeightedCrossEntropyLoss()
+
+
 for ith_epoch in range(0, max_epoch):
     for ith_batch, batch in enumerate(dataset_loader):
 
@@ -84,9 +89,12 @@ for ith_epoch in range(0, max_epoch):
 
         seg_edge_border_groundtruth = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
         seg_edge_foreground_groundtruth = torch.tensor(batch['edge_foreground'] > 0, dtype=torch.float).to(device)
-        seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
+        # seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
 
-        groundtruth_target = torch.cat((seg_edge_background_groundtruth,
+        seg_non_edge = torch.where(
+            torch.logical_or(seg_edge_border_groundtruth > 1, seg_edge_foreground_groundtruth > 1), 0., 1.).to(device)
+
+        groundtruth_target = torch.cat((seg_non_edge,
                                         seg_edge_border_groundtruth,
                                         seg_edge_foreground_groundtruth), dim=1).to(device)
         
@@ -102,9 +110,11 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + \
-                 .5 * balanced_cross_entropy(e_output, groundtruth_target)
+        #loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + \
+        #         .5 * balanced_cross_entropy(e_output, groundtruth_target)
         #loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
+        loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
+                  .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
 
         loss = loss_1 + loss_2
 
