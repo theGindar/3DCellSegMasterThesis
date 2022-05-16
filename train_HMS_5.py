@@ -39,6 +39,7 @@ boundary_importance = 1
 batch_size = 5
 num_workers = 4
 # ----------
+"""
 import subprocess
 from io import StringIO
 import pandas as pd
@@ -56,7 +57,7 @@ def get_free_gpu():
 
 free_gpu_id = get_free_gpu()
 torch.cuda.set_device(free_gpu_id)
-
+"""
 # init model
 model=CellSegNet_basic_edge_gated_IV(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
