@@ -39,6 +39,23 @@ boundary_importance = 1
 batch_size = 5
 num_workers = 4
 # ----------
+import subprocess
+from io import StringIO
+import pandas as pd
+
+def get_free_gpu():
+    gpu_stats = subprocess.check_output(["nvidia-smi", "--format=csv", "--query-gpu=memory.used,memory.free"])
+    gpu_df = pd.read_csv(StringIO(gpu_stats),
+                         names=['memory.used', 'memory.free'],
+                         skiprows=1)
+    print('GPU usage:\n{}'.format(gpu_df))
+    gpu_df['memory.free'] = gpu_df['memory.free'].map(lambda x: x.rstrip(' [MiB]'))
+    idx = gpu_df['memory.free'].idxmax()
+    print('Returning GPU{} with {} free MiB'.format(idx, gpu_df.iloc[idx]['memory.free']))
+    return idx
+
+free_gpu_id = get_free_gpu()
+torch.cuda.set_device(free_gpu_id)
 
 # init model
 model=CellSegNet_basic_edge_gated_IV(input_channel=1, n_classes=3, output_func = "softmax")
