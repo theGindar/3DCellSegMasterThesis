@@ -119,7 +119,7 @@ def dice_loss_org_individually_with_cellsegloss_and_weights(pred, target, weight
     A_sum = torch.sum(torch.mul(iflat, iflat), dim=1)
     B_sum = torch.sum(torch.mul(tflat, tflat), dim=1)
 
-    return torch.mean(1 - ((intersection) / (A_sum + B_sum + epsilon)))
+    return 1 - ((intersection) / (A_sum + B_sum + epsilon))
 
 
 # ohne non-edge class
