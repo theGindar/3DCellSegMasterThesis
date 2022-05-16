@@ -3,7 +3,7 @@
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_IV
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss, dice_loss_org_individually_with_weights_sum, \
+    WeightedCrossEntropyLoss, dice_loss_org_individually_with_weights, \
     dice_loss_org_individually_with_cellsegloss_and_weights, \
     balanced_cross_entropy, DiceLoss
 from func.ultis import save_obj, load_obj
@@ -141,7 +141,7 @@ for ith_epoch in range(0, max_epoch):
 
         # TODO change!
         loss_2 = (dice_loss_org_individually_with_cellsegloss_and_weights(e_output_f, seg_edge_foreground_groundtruth, e_weights_f) + \
-                 dice_loss_org_individually_with_weights_sum(e_output_bb, groundtruth_target_bb, e_weights_bb))/3 + \
+                 dice_loss_org_individually_with_weights(e_output_bb, groundtruth_target_bb, e_weights_bb))/2 + \
                  .5 * balanced_cross_entropy(e_output, groundtruth_target)
         #loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \

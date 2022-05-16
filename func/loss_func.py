@@ -72,7 +72,7 @@ def dice_loss_org_individually(pred, target):
 
 
 # ohne non-edge class
-def dice_loss_org_individually_with_weights_sum(pred, target, weights):
+def dice_loss_org_individually_with_weights(pred, target, weights):
     """
     Computes the sum of dice loss of every sample in the minibatch.
     pred: tensor with first dimension as batch
@@ -93,8 +93,7 @@ def dice_loss_org_individually_with_weights_sum(pred, target, weights):
     A_sum = torch.sum(torch.mul(iflat, iflat), dim=1)
     B_sum = torch.sum(torch.mul(tflat, tflat), dim=1)
 
-    # ACHTUNG SUM, NICHT MEAN!!!
-    return torch.sum(1 - ((intersection) / (A_sum + B_sum + epsilon)))
+    return torch.mean(1 - ((intersection) / (A_sum + B_sum + epsilon)))
 
 
 # ohne non-edge class
@@ -120,7 +119,7 @@ def dice_loss_org_individually_with_cellsegloss_and_weights(pred, target, weight
     A_sum = torch.sum(torch.mul(iflat, iflat), dim=1)
     B_sum = torch.sum(torch.mul(tflat, tflat), dim=1)
 
-    return 1 - ((intersection) / (A_sum + B_sum + epsilon))
+    return torch.mean(1 - ((intersection) / (A_sum + B_sum + epsilon)))
 
 
 # ohne non-edge class
