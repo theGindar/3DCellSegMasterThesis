@@ -138,9 +138,7 @@ for ith_epoch in range(0, max_epoch):
 
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
-
-        print(dice_loss_org_individually_with_cellsegloss_and_weights(e_output_f, seg_edge_foreground_groundtruth, e_weights_f))
-        print(dice_loss_org_individually_with_weights(e_output_bb, groundtruth_target_bb, e_weights_bb))
+            
         # TODO change!
         loss_2 = (dice_loss_org_individually_with_cellsegloss_and_weights(e_output_f, seg_edge_foreground_groundtruth, e_weights_f) + \
                  dice_loss_org_individually_with_weights(e_output_bb, groundtruth_target_bb, e_weights_bb))/2 + \
