@@ -271,15 +271,20 @@ class SuperVoxToNxGraph():
 class VoxelGraphDataset(DGLDataset):
     def __init__(self, nx_graph_list):
         self.nx_graph_list = nx_graph_list
-
-
-        print(self.nx_graph_list)
+        super().__init__(name='voxel_graph')
 
     def process(self):
         self.graphs = []
         for nx_graph in self.nx_graph_list:
             n_nodes = nx.number_of_nodes(nx_graph)
             graph = dgl.from_networkx(nx_graph, node_attrs=["feat", "label"], edge_attrs=["weight"])
+            graph = dgl.add_self_loop(graph)
+
+            # unsqueeze features since they are only scalars
+            graph.ndata['feat'] = torch.unsqueeze(graph.ndata['feat'], dim=1)
+
+            graph.ndata['label'] = graph.ndata['label'].type(torch.LongTensor)
+            graph.ndata['feat'] = graph.ndata['feat'].float()
 
             # is it a good idea to use validation set?
             n_train = int(n_nodes * 0.8)
