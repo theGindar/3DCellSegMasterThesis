@@ -4,6 +4,8 @@ import numpy as np
 import torch
 from dgl.data import DGLDataset
 
+import torch.nn.functional as F
+
 from func.run_pipeline_super_vox import get_outlayer_of_a_3d_shape, get_crop_by_pixel_val
 
 
@@ -280,8 +282,14 @@ class VoxelGraphDataset(DGLDataset):
             graph = dgl.from_networkx(nx_graph, node_attrs=["feat", "label"], edge_attrs=["weight"])
             graph = dgl.add_self_loop(graph)
 
+
             # unsqueeze features since they are only scalars
             graph.ndata['feat'] = torch.unsqueeze(graph.ndata['feat'], dim=1)
+            graph.edata['weight'] = torch.unsqueeze(graph.edata['weight'], dim=1)
+
+            # normalize the features
+            graph.ndata['feat'] = F.normalize(graph.ndata['feat'], p=2.0)
+            graph.edata['weight'] = F.normalize(graph.edata['weight'], p=2.0)
 
             graph.ndata['label'] = graph.ndata['label'].type(torch.LongTensor)
             graph.ndata['feat'] = graph.ndata['feat'].float()
