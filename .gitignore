@@ -7,3 +7,5 @@ seg_foreground_comp.pickle
 .DS_Store
 .DS_Store
 .DS_Store
+func/__pycache__/__init__.cpython-38.pyc
+*.pyc
