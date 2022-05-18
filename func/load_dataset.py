@@ -107,6 +107,7 @@ class Cell_Seg_3D_Dataset(Dataset):
             seg_foreground = np.load(self.data_dict[name]["foreground"])
             seg_edge = np.load(self.data_dict[name]["edge"])
             seg_edge_foreground = np.load(self.data_dict[name]["edge_foreground"])
+            seg_centroid_foreground = np.load(self.data_dict[name]["centroid_foreground"])
             seg_edge_background = np.load(self.data_dict[name]["edge_background"])
             #seg_background = np.load(self.data_dict[name]["background"])
         elif file_format == ".tif":
@@ -115,6 +116,7 @@ class Cell_Seg_3D_Dataset(Dataset):
             seg_foreground = io.imread(self.data_dict[name]["foreground"])
             seg_edge = io.imread(self.data_dict[name]["edge"])
             seg_edge_foreground = io.imread(self.data_dict[name]["edge_foreground"])
+            seg_centroid_foreground = io.imread(self.data_dict[name]["centroid_foreground"])
             seg_edge_background= io.imread(self.data_dict[name]["edge_background"])
             #seg_background = io.imread(self.data_dict[name]["background"])
         elif file_format == ".h5":
@@ -124,6 +126,7 @@ class Cell_Seg_3D_Dataset(Dataset):
             seg_foreground = np.array(hf["foreground"])
             seg_edge = np.array(hf["edge"])
             seg_edge_foreground = np.array(hf["edge_foreground"])
+            seg_centroid_foreground = np.array(hf["centroid_foreground"])
             seg_edge_background = np.array(hf["edge_background"])
             hf.close()
         elif file_format == ".npz":
@@ -133,6 +136,7 @@ class Cell_Seg_3D_Dataset(Dataset):
             seg_foreground = np.array(npz_file["foreground"])
             seg_edge = np.array(npz_file["edge"])
             seg_edge_foreground = np.array(npz_file["edge_foreground"])
+            seg_centroid_foreground = np.array(npz_file["centroid_foreground"])
             seg_edge_background = np.array(npz_file["edge_background"])
                 
         raw_3d_img = np.nan_to_num(raw_3d_img, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
@@ -140,6 +144,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_foreground = np.nan_to_num(seg_foreground, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_edge = np.nan_to_num(seg_edge, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_edge_foreground = np.nan_to_num(seg_edge_foreground, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_centroid_foreground = np.nan_to_num(seg_centroid_foreground, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_edge_background = np.nan_to_num(seg_edge_background, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_background = np.array((seg_boundary+seg_foreground)==0, dtype=np.int)
             
@@ -151,6 +156,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_foreground = np.array(seg_foreground, float)
         seg_edge = np.array(seg_edge, float)
         seg_edge_foreground = np.array(seg_edge_foreground, float)
+        seg_centroid_foreground = np.array(seg_centroid_foreground, float)
         seg_edge_background = np.array(seg_edge_background, float)
             
         assert raw_3d_img.shape == seg_background.shape
@@ -165,6 +171,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_foreground=random3dcrop(seg_foreground, start_points=start_points)
         seg_edge = random3dcrop(seg_edge, start_points=start_points)
         seg_edge_foreground = random3dcrop(seg_edge_foreground, start_points=start_points)
+        seg_centroid_foreground = random3dcrop(seg_centroid_foreground, start_points=start_points)
         seg_edge_background = random3dcrop(seg_edge_background, start_points=start_points)
         
         raw_3d_img = np.expand_dims(raw_3d_img, axis=0)
@@ -172,6 +179,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_boundary = np.expand_dims(seg_boundary, axis=0)
         seg_edge = np.expand_dims(seg_edge, axis=0)
         seg_edge_foreground = np.expand_dims(seg_edge_foreground, axis=0)
+        seg_centroid_foreground = np.expand_dims(seg_centroid_foreground, axis=0)
         seg_edge_background = np.expand_dims(seg_edge_background, axis=0)
         seg_foreground = np.expand_dims(seg_foreground, axis=0)
 
@@ -181,6 +189,7 @@ class Cell_Seg_3D_Dataset(Dataset):
                   'foreground': seg_foreground,
                   'edge': seg_edge,
                   'edge_foreground': seg_edge_foreground,
+                  'centroid_foreground': seg_centroid_foreground,
                   'edge_background': seg_edge_background}
         
         output.update(self.get_weights(output, boundary_importance))
@@ -199,6 +208,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_foreground=images['foreground']
         seg_edge = images['edge']
         seg_edge_foreground = images['edge_foreground']
+        seg_centroid_foreground = images['centroid_foreground']
         seg_edge_background = images['edge_background']
         
         seg_background_zeros=np.array(seg_background==0, dtype=int)*0.5
@@ -206,6 +216,7 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_foreground_zeros=np.array(seg_foreground==0, dtype=int)*0.5
         seg_edge_zeros = np.array(seg_edge == 0, dtype=int) * 0.5
         seg_edge_foreground_zeros = np.array(seg_edge_foreground == 0, dtype=int) * 0.5
+        seg_centroid_foreground_zeros = np.array(seg_centroid_foreground == 0, dtype=int) * 0.5
         seg_edge_background_zeros = np.array(seg_edge_background == 0, dtype=int) * 0.5
         
         return {'weights_background': seg_background+seg_background_zeros,
@@ -213,6 +224,7 @@ class Cell_Seg_3D_Dataset(Dataset):
                 'weights_foreground': seg_foreground+seg_foreground_zeros,
                 'weights_edge': seg_foreground+seg_edge_zeros,
                 'weights_edge_foreground': seg_foreground+seg_edge_foreground_zeros,
+                'weights_centroid_foreground': seg_foreground + seg_centroid_foreground_zeros,
                 'weights_edge_background': seg_foreground+seg_edge_background_zeros}
 
     def to_tensor(self, images):

@@ -363,6 +363,7 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
     boundary_3d_mask=np.zeros(input_3d_image_shape)
     edge_boundary_3d_mask=np.zeros(input_3d_image_shape)
     edge_foreground_3d_mask=np.zeros(input_3d_image_shape)
+    centroid_foreground_3d_mask=np.zeros(input_3d_image_shape)
     edge_background_3d_mask=np.zeros(input_3d_image_shape)
     foreground_3d_mask=np.zeros(input_3d_image_shape)
     cell_ins_3d_mask=np.zeros(input_3d_image_shape)
@@ -406,6 +407,11 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
         temp_foreground_3d_mask[np.where(temp_3d_img_dt>k)]=1 #temp_3d_img_dt[np.where(temp_3d_img_dt>k)]
         foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]=temp_foreground_3d_mask
 
+        # foreground centroid
+        temp_centroid_foreground_3d_mask=copy.deepcopy(centroid_foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1])
+        temp_centroid_foreground_3d_mask[np.where(temp_3d_img_dt>k)]=1 #temp_3d_img_dt[np.where(temp_3d_img_dt>k)]
+        centroid_foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]=temp_centroid_foreground_3d_mask
+
         # cell instances
         seg_single_cells, clustering_labels_unique, clustering_labels_counts = \
         dbscan(temp_3d_img_dt)
@@ -432,6 +438,7 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
         seg_img_fg,
         black_border=True, order='F',
         parallel=1)
+    centroid_foreground_3d_mask = seg_img_fg_dt
     del seg_img_fg
     seg_img_max=np.max(seg_img_fg_dt)
     seg_img_fg_dt=-seg_img_fg_dt+seg_img_max+1
@@ -474,7 +481,8 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
 
     edge_background_3d_mask_borders = ndimage.generic_filter(edge_background_3d_mask_temp, get_boundaries,
                                                            footprint=footprint,
-                                                           mode='reflect')
+                                                           mode='reflect',
+                                                             )
     edge_background_3d_mask[np.logical_and(background_3d_mask==1, edge_background_3d_mask_borders==1)] = 1
 
 
@@ -484,5 +492,6 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
            edge_background_3d_mask, \
            edge_boundary_3d_mask, \
            edge_foreground_3d_mask, \
+           centroid_foreground_3d_mask, \
            cell_ins_3d_mask, \
            center_dict
