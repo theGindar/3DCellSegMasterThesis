@@ -91,7 +91,7 @@ class CellSegNet_basic_lite(nn.Module):
         
         h = c1_2 + c1
         
-        output = self.conv6(h)
+        h = self.conv6(h)
         
         output = F.softmax(h, dim=1)
         
