@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from scipy import ndimage
 
+from skimage.measure import label
+from skimage.measure import regionprops
+
 def revised_crop_and_stride(img_shape, crop_cube_size, stride):
     for i in range(len(img_shape)):
         if img_shape[i]<=crop_cube_size[i]:
@@ -349,6 +352,80 @@ def process_one_cuboid_with_edges(input_3d_image, width_of_membrane=1.5, need_ce
     return background_3d_mask, edge_boundary_3d_mask, boundary_3d_mask, foreground_3d_mask, cell_ins_3d_mask, center_dict
 
 
+def inner_distance_transform_3d(mask, bins=None,
+                                erosion_width=None,
+                                alpha=.1, beta=1,
+                                sampling=[0.5, 0.217, 0.217]):
+    """Transform a label mask for a z-stack with an inner distance transform.
+
+    .. code-block:: python
+
+        inner_distance = 1 / (1 + beta * alpha * distance_to_center)
+
+    Args:
+        mask (numpy.array): A label mask (``y`` data).
+        bins (int): The number of transformed distance classes.
+        erosion_width (int): Number of pixels to erode edges of each labels
+        alpha (float, str): Coefficent to reduce the magnitude of the distance
+            value. If ``'auto'``, determines alpha for each cell based on the
+            cell area.
+        beta (float): Scale parameter that is used when ``alpha`` is "auto".
+        sampling (list): Spacing of pixels along each dimension.
+
+    Returns:
+        numpy.array: A mask of same shape as input mask,
+        with each label being a distance class from 1 to ``bins``.
+
+    Raises:
+        ValueError: ``alpha`` is a string but not set to "auto".
+    """
+    # Check input to alpha
+    if isinstance(alpha, str):
+        if alpha.lower() != 'auto':
+            raise ValueError('alpha must be set to "auto"')
+
+    # mask = np.squeeze(mask)
+    # mask = erode_edges(mask, erosion_width)
+
+    # distance = ndimage.distance_transform_edt(mask, sampling=sampling)
+    distance = ndimage.distance_transform_edt(mask)
+    distance = distance.astype(float)
+
+    label_matrix = label(mask)
+
+    inner_distance = np.zeros(distance.shape, dtype=float)
+
+    for prop in regionprops(label_matrix, distance):
+        coords = prop.coords
+        center = prop.weighted_centroid
+        distance_to_center = (coords - center) * np.array(sampling)
+        distance_to_center = np.sum(distance_to_center ** 2, axis=1)
+
+        # Determine alpha to use
+        if str(alpha).lower() == 'auto':
+            _alpha = 1 / np.cbrt(prop.area)
+        else:
+            _alpha = float(alpha)
+
+        center_transform = 1 / (1 + beta * _alpha * distance_to_center)
+        coords_z = coords[:, 0]
+        coords_x = coords[:, 1]
+        coords_y = coords[:, 2]
+        inner_distance[coords_z, coords_x, coords_y] = center_transform
+
+    if bins is None:
+        return inner_distance
+
+    # divide into bins
+    min_dist = np.amin(inner_distance.flatten())
+    max_dist = np.amax(inner_distance.flatten())
+    distance_bins = np.linspace(min_dist - 1e-07,
+                                max_dist + 1e-07,
+                                num=bins + 1)
+    inner_distance = np.digitize(inner_distance, distance_bins, right=True)
+    return inner_distance - 1  # minimum distance should be 0, not 1
+
+
 def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, need_cell_center_info = False):
     input_3d_image=np.array(input_3d_image)
     # background 3D mask
@@ -408,9 +485,9 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
         foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]=temp_foreground_3d_mask
 
         # foreground centroid
-        temp_centroid_foreground_3d_mask=copy.deepcopy(centroid_foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1])
-        temp_centroid_foreground_3d_mask[np.where(temp_3d_img_dt>k)]=1 #temp_3d_img_dt[np.where(temp_3d_img_dt>k)]
-        centroid_foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]=temp_centroid_foreground_3d_mask
+        #temp_centroid_foreground_3d_mask=copy.deepcopy(centroid_foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1])
+        #temp_centroid_foreground_3d_mask[np.where(temp_3d_img_dt>k)]=1 #temp_3d_img_dt[np.where(temp_3d_img_dt>k)]
+        #centroid_foreground_3d_mask[x_min:x_max+1, y_min:y_max+1, z_min:z_max+1]=temp_centroid_foreground_3d_mask
 
         # cell instances
         seg_single_cells, clustering_labels_unique, clustering_labels_counts = \
@@ -438,7 +515,7 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
         seg_img_fg,
         black_border=True, order='F',
         parallel=1)
-    centroid_foreground_3d_mask = seg_img_fg_dt
+    #centroid_foreground_3d_mask = seg_img_fg_dt
     del seg_img_fg
     seg_img_max=np.max(seg_img_fg_dt)
     seg_img_fg_dt=-seg_img_fg_dt+seg_img_max+1
@@ -484,6 +561,12 @@ def process_one_cuboid_with_all_edges(input_3d_image, width_of_membrane=1.5, nee
                                                            mode='reflect',
                                                              )
     edge_background_3d_mask[np.logical_and(background_3d_mask==1, edge_background_3d_mask_borders==1)] = 1
+
+    foreground_3d_mask_ones = foreground_3d_mask
+    foreground_3d_mask_ones[foreground_3d_mask_ones > 0] = 1.
+    centroid_foreground_3d_mask = inner_distance_transform_3d(foreground_3d_mask_ones, alpha=1)
+    #centroid_foreground_3d_mask = (centroid_foreground_3d_mask - np.min(centroid_foreground_3d_mask)) / (
+    #            np.max(centroid_foreground_3d_mask) - np.min(centroid_foreground_3d_mask))
 
 
     return background_3d_mask, \

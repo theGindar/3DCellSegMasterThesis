@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch
 import numpy as np
 
+
 class ResModule(nn.Module):
     def __init__(self, in_channels=64, out_channels=64, kernel_size=3, padding=1, dilation=1):
         super(ResModule, self).__init__()
@@ -13,6 +14,7 @@ class ResModule(nn.Module):
         h=F.relu(self.batchnorm_module(x))
         h=self.conv_module(h)
         return h+x
+
 
 class CellSegNet_basic_lite(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func = "softmax"):
@@ -808,6 +810,7 @@ class CellSegNet_basic_edge_gated_IV(nn.Module):
 
         output = F.softmax(h, dim=1)
         return output, output_edge
+
     
 class VoxResNet(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func = "softmax"):
