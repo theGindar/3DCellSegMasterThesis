@@ -119,7 +119,7 @@ for ith_epoch in range(0, max_epoch):
         loss = loss_1 + loss_2
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
-        accuracy_2 = dice_accuracy(e_output, groundtruth_target)
+        accuracy_2 = dice_accuracy(e_output_edge, groundtruth_target)
         
         optimizer.zero_grad()
         loss.backward()
