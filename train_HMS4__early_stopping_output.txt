@@ -1,0 +1,78 @@
+num of train files: 32
+max epoch: 500
+epoch [1/500]	batch [0]	time(s) 27.09	loss 1.86476	loss_1 1.05453	loss_2 0.81023	acc 0.54233	
+epoch [1/500]	batch [1]	time(s) 41.92	loss 1.77917	loss_1 0.98102	loss_2 0.79815	acc 0.53202	
+epoch [1/500]	batch [2]	time(s) 54.84	loss 1.82583	loss_1 0.97418	loss_2 0.85165	acc 0.48114	
+epoch [1/500]	batch [3]	time(s) 67.19	loss 1.68516	loss_1 0.88492	loss_2 0.80023	acc 0.46809	
+epoch [1/500]	batch [4]	time(s) 79.12	loss 1.77514	loss_1 0.93593	loss_2 0.83921	acc 0.41881	
+epoch [1/500]	batch [5]	time(s) 90.78	loss 1.54516	loss_1 0.77096	loss_2 0.77420	acc 0.39956	
+epoch [1/500]	batch [6]	time(s) 96.61	loss 1.48821	loss_1 0.75226	loss_2 0.73596	acc 0.38158	
+epoch [2/500]	batch [0]	time(s) 121.99	loss 1.46399	loss_1 0.69431	loss_2 0.76967	acc 0.36854	
+epoch [2/500]	batch [1]	time(s) 136.18	loss 1.48856	loss_1 0.73001	loss_2 0.75854	acc 0.38694	
+epoch [2/500]	batch [2]	time(s) 149.55	loss 1.32707	loss_1 0.58221	loss_2 0.74486	acc 0.44938	
+epoch [2/500]	batch [3]	time(s) 162.72	loss 1.36091	loss_1 0.65408	loss_2 0.70683	acc 0.39627	
+epoch [2/500]	batch [4]	time(s) 174.92	loss 1.45682	loss_1 0.62825	loss_2 0.82857	acc 0.55040	
+epoch [2/500]	batch [5]	time(s) 187.38	loss 1.25164	loss_1 0.51510	loss_2 0.73654	acc 0.55116	
+epoch [2/500]	batch [6]	time(s) 192.52	loss 1.23884	loss_1 0.48701	loss_2 0.75183	acc 0.59957	
+epoch [3/500]	batch [0]	time(s) 214.73	loss 1.16773	loss_1 0.47101	loss_2 0.69672	acc 0.58128	
+epoch [3/500]	batch [1]	time(s) 228.79	loss 1.27381	loss_1 0.58425	loss_2 0.68956	acc 0.50852	
+epoch [3/500]	batch [2]	time(s) 242.41	loss 1.18586	loss_1 0.50279	loss_2 0.68307	acc 0.56535	
+epoch [3/500]	batch [3]	time(s) 254.82	loss 1.14993	loss_1 0.47992	loss_2 0.67001	acc 0.56294	
+epoch [3/500]	batch [4]	time(s) 267.31	loss 1.21879	loss_1 0.51272	loss_2 0.70607	acc 0.55127	
+epoch [3/500]	batch [5]	time(s) 279.84	loss 1.08949	loss_1 0.41939	loss_2 0.67011	acc 0.65074	
+epoch [3/500]	batch [6]	time(s) 285.45	loss 1.04937	loss_1 0.40519	loss_2 0.64418	acc 0.62785	
+epoch [4/500]	batch [0]	time(s) 310.92	loss 1.07947	loss_1 0.43169	loss_2 0.64778	acc 0.65382	
+epoch [4/500]	batch [1]	time(s) 325.07	loss 1.10045	loss_1 0.45747	loss_2 0.64297	acc 0.56000	
+epoch [4/500]	batch [2]	time(s) 338.41	loss 1.06562	loss_1 0.40071	loss_2 0.66492	acc 0.64592	
+epoch [4/500]	batch [3]	time(s) 350.74	loss 1.20143	loss_1 0.51788	loss_2 0.68355	acc 0.54239	
+epoch [4/500]	batch [4]	time(s) 363.56	loss 1.12608	loss_1 0.50036	loss_2 0.62572	acc 0.54202	
+epoch [4/500]	batch [5]	time(s) 375.84	loss 1.14957	loss_1 0.53382	loss_2 0.61575	acc 0.51765	
+epoch [4/500]	batch [6]	time(s) 381.89	loss 1.87149	loss_1 1.20118	loss_2 0.67032	acc 0.29304	
+epoch [5/500]	batch [0]	time(s) 408.14	loss 1.22934	loss_1 0.58601	loss_2 0.64333	acc 0.46587	
+epoch [5/500]	batch [1]	time(s) 422.24	loss 1.13341	loss_1 0.47189	loss_2 0.66152	acc 0.54406	
+epoch [5/500]	batch [2]	time(s) 434.44	loss 1.15960	loss_1 0.53362	loss_2 0.62598	acc 0.46860	
+epoch [5/500]	batch [3]	time(s) 446.54	loss 1.21730	loss_1 0.61056	loss_2 0.60674	acc 0.44289	
+epoch [5/500]	batch [4]	time(s) 458.54	loss 1.11937	loss_1 0.49993	loss_2 0.61944	acc 0.49655	
+epoch [5/500]	batch [5]	time(s) 470.77	loss 1.18818	loss_1 0.56260	loss_2 0.62558	acc 0.50179	
+epoch [5/500]	batch [6]	time(s) 476.22	loss 2.00998	loss_1 1.20602	loss_2 0.80396	acc 0.10556	
+epoch [6/500]	batch [0]	time(s) 499.30	loss 1.13311	loss_1 0.52386	loss_2 0.60925	acc 0.53891	
+epoch [6/500]	batch [1]	time(s) 513.82	loss 1.07815	loss_1 0.47358	loss_2 0.60457	acc 0.61602	
+epoch [6/500]	batch [2]	time(s) 526.82	loss 1.14048	loss_1 0.50843	loss_2 0.63205	acc 0.58010	
+epoch [6/500]	batch [3]	time(s) 538.98	loss 1.17405	loss_1 0.52708	loss_2 0.64696	acc 0.67602	
+epoch [6/500]	batch [4]	time(s) 551.18	loss 1.09826	loss_1 0.48903	loss_2 0.60923	acc 0.57449	
+epoch [6/500]	batch [5]	time(s) 563.74	loss 1.13537	loss_1 0.53541	loss_2 0.59997	acc 0.57496	
+epoch [6/500]	batch [6]	time(s) 569.56	loss 1.11826	loss_1 0.50715	loss_2 0.61111	acc 0.58006	
+epoch [7/500]	batch [0]	time(s) 595.13	loss 1.04315	loss_1 0.42733	loss_2 0.61582	acc 0.63200	
+epoch [7/500]	batch [1]	time(s) 609.72	loss 1.05671	loss_1 0.44153	loss_2 0.61518	acc 0.64512	
+epoch [7/500]	batch [2]	time(s) 622.76	loss 1.06184	loss_1 0.43180	loss_2 0.63004	acc 0.60259	
+epoch [7/500]	batch [3]	time(s) 635.27	loss 1.12649	loss_1 0.51504	loss_2 0.61145	acc 0.50223	
+epoch [7/500]	batch [4]	time(s) 647.49	loss 1.14737	loss_1 0.52851	loss_2 0.61886	acc 0.48411	
+epoch [7/500]	batch [5]	time(s) 659.70	loss 1.06793	loss_1 0.41044	loss_2 0.65749	acc 0.57967	
+epoch [7/500]	batch [6]	time(s) 665.12	loss 1.04341	loss_1 0.44359	loss_2 0.59981	acc 0.61542	
+epoch [8/500]	batch [0]	time(s) 687.32	loss 1.02870	loss_1 0.41894	loss_2 0.60976	acc 0.59495	
+epoch [8/500]	batch [1]	time(s) 701.76	loss 1.25466	loss_1 0.63607	loss_2 0.61859	acc 0.47110	
+epoch [8/500]	batch [2]	time(s) 714.50	loss 1.14220	loss_1 0.50150	loss_2 0.64069	acc 0.60378	
+epoch [8/500]	batch [3]	time(s) 726.85	loss 1.02878	loss_1 0.41988	loss_2 0.60890	acc 0.59084	
+epoch [8/500]	batch [4]	time(s) 739.32	loss 1.04869	loss_1 0.45305	loss_2 0.59564	acc 0.59156	
+epoch [8/500]	batch [5]	time(s) 751.62	loss 0.99685	loss_1 0.39699	loss_2 0.59987	acc 0.63957	
+epoch [8/500]	batch [6]	time(s) 757.37	loss 1.31285	loss_1 0.68875	loss_2 0.62410	acc 0.48335	
+epoch [9/500]	batch [0]	time(s) 780.50	loss 1.16208	loss_1 0.56811	loss_2 0.59397	acc 0.53533	
+epoch [9/500]	batch [1]	time(s) 794.80	loss 1.01326	loss_1 0.41162	loss_2 0.60164	acc 0.67540	
+epoch [9/500]	batch [2]	time(s) 808.24	loss 1.20625	loss_1 0.56965	loss_2 0.63660	acc 0.53962	
+epoch [9/500]	batch [3]	time(s) 821.02	loss 1.09419	loss_1 0.48232	loss_2 0.61187	acc 0.61980	
+epoch [9/500]	batch [4]	time(s) 833.46	loss 1.03128	loss_1 0.43840	loss_2 0.59288	acc 0.65456	
+epoch [9/500]	batch [5]	time(s) 845.92	loss 1.03523	loss_1 0.44065	loss_2 0.59458	acc 0.66212	
+epoch [9/500]	batch [6]	time(s) 851.73	loss 1.58395	loss_1 0.88104	loss_2 0.70292	acc 0.41972	
+epoch [10/500]	batch [0]	time(s) 876.89	loss 1.15649	loss_1 0.49491	loss_2 0.66158	acc 0.61390	
+epoch [10/500]	batch [1]	time(s) 890.76	loss 1.18347	loss_1 0.55711	loss_2 0.62636	acc 0.59593	
+epoch [10/500]	batch [2]	time(s) 903.56	loss 1.04866	loss_1 0.44164	loss_2 0.60701	acc 0.63999	
+epoch [10/500]	batch [3]	time(s) 916.02	loss 1.06231	loss_1 0.44576	loss_2 0.61655	acc 0.66157	
+epoch [10/500]	batch [4]	time(s) 928.09	loss 1.16848	loss_1 0.52046	loss_2 0.64801	acc 0.65454	
+epoch [10/500]	batch [5]	time(s) 940.92	loss 1.15857	loss_1 0.52923	loss_2 0.62933	acc 0.59576	
+epoch [10/500]	batch [6]	time(s) 946.23	loss 1.29888	loss_1 0.66841	loss_2 0.63047	acc 0.51061	
+Traceback (most recent call last):
+  File "train_HMS_4_early_stopping.py", line 229, in <module>
+    accuracy_val = dice_accuracy(seg_val_output, val_gt)
+  File "/home/ubuntu/cell_segmentation/GitHub/3DCellSegMasterThesis/func/loss_func.py", line 227, in dice_accuracy
+    iflat = pred.contiguous().view(-1)
+AttributeError: 'tuple' object has no attribute 'contiguous'
