@@ -16,8 +16,8 @@ save_path = 'output/model_HMS.pkl'
 need_resume = True
 load_path = 'output/model_HMS.pkl'
 learning_rate = 1e-4
-max_epoch = 300
-model_save_freq = 20
+max_epoch = 500
+model_save_freq = 50
 train_file_format = '.npy'
 train_img_crop_size = (64, 64, 64)
 boundary_importance = 1
@@ -94,5 +94,5 @@ for ith_epoch in range(0, max_epoch):
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
         model.to(torch.device('cpu'))
-        torch.save({'model_state_dict': model.state_dict()}, save_path)
+        torch.save({'model_state_dict': model.state_dict()}, f'output/model_HMS_epoch_{ith_epoch}.pkl')
         model.to(device)
