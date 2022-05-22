@@ -228,7 +228,18 @@ def semantic_segment_crop_and_cat_2_channel_output(raw_img, model, device, crop_
                 
     return {'boundary': seg_boundary, 'foreground': seg_foreground}#{'background': seg_background, 'boundary': seg_boundary, 'foreground': seg_foreground}
 
+import matplotlib.pyplot as plt
+import time
+from func.network import CellSegNet_basic_lite
 def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_cube_size=64, stride=64):
+    model = CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func="softmax")
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+
+    load_path = 'output/model_HMS.pkl'
+    checkpoint = torch.load(load_path)
+    model.load_state_dict(checkpoint['model_state_dict'], strict=False)
     # raw_img: 3d matrix, numpy.array
     assert isinstance(crop_cube_size, (int, list))
     if isinstance(crop_cube_size, int):
@@ -281,11 +292,19 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
                 else:
                     z_start=img_shape[2]-crop_cube_size[2]
                     z_end=img_shape[2]
-                
+                torch.cuda.empty_cache()
                 raw_img_crop=raw_img[x_start:x_end, y_start:y_end, z_start:z_end]
-                raw_img_crop=raw_img_crop.reshape(1, 1, crop_cube_size[0], crop_cube_size[1], crop_cube_size[2])
-                raw_img_crop=from_numpy(raw_img_crop).float().to(device)
-                
+                # raw_img_crop=raw_
+                # img_crop.reshape(1, 1, crop_cube_size[0], crop_cube_size[1], crop_cube_size[2])
+                raw_img_crop=torch.from_numpy(raw_img_crop).float().to(device)
+
+                raw_img_crop = torch.unsqueeze(raw_img_crop, 0)
+                raw_img_crop = torch.unsqueeze(raw_img_crop, 0)
+                """
+                plt.figure()
+                plt.title("raw_img")
+                plt.imshow(raw_img_crop.detach().numpy()[0, 0, :, 50, :])
+                """
                 seg_log_crop=seg_log[x_start:x_end, y_start:y_end, z_start:z_end]
                 seg_background_crop=seg_background[x_start:x_end, y_start:y_end, z_start:z_end]
                 seg_boundary_crop=seg_boundary[x_start:x_end, y_start:y_end, z_start:z_end]
@@ -293,8 +312,21 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
                 
                 with torch.no_grad():
                     seg_crop_output=model(raw_img_crop)
-                seg_crop_output_np=seg_crop_output.cpu().detach().numpy()
-                
+                seg_crop_output_np=seg_crop_output.detach().numpy()
+                """
+                plt.figure()
+                plt.title("model output background")
+                plt.imshow(seg_crop_output_np[0, 0, :, 50, :])
+
+                plt.figure()
+                plt.title("model output border")
+                plt.imshow(seg_crop_output_np[0, 1, :, 50, :])
+
+                plt.figure()
+                plt.title("model output foreground")
+                plt.imshow(seg_crop_output_np[0, 2, :, 50, :])
+                """
+
                 seg_crop_output_np_bg=seg_crop_output_np[0,0,:,:,:]
                 seg_crop_output_np_bd=seg_crop_output_np[0,1,:,:,:]
                 seg_crop_output_np_fg=seg_crop_output_np[0,2,:,:,:]
@@ -322,8 +354,16 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
                 
     return {'background': seg_background, 'boundary': seg_boundary, 'foreground': seg_foreground}
 
-
+from func.network import CellSegNet_basic_edge_gated_IV
 def semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img, model, device, crop_cube_size=64, stride=64):
+    model = CellSegNet_basic_edge_gated_IV(input_channel=1, n_classes=3, output_func="softmax")
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+
+    load_path = 'output/model_HMS_4.pkl'
+    checkpoint = torch.load(load_path)
+    model.load_state_dict(checkpoint['model_state_dict'], strict=False)
     # raw_img: 3d matrix, numpy.array
     assert isinstance(crop_cube_size, (int, list))
     if isinstance(crop_cube_size, int):
