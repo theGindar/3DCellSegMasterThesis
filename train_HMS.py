@@ -16,12 +16,12 @@ save_path = 'output/model_HMS.pkl'
 need_resume = True
 load_path = 'output/model_HMS.pkl'
 learning_rate = 1e-4
-max_epoch = 500
+max_epoch = 300
 model_save_freq = 20
 train_file_format = '.npy'
 train_img_crop_size = (64, 64, 64)
 boundary_importance = 1
-batch_size = 5
+batch_size = 7
 num_workers = 4
 # ----------
 

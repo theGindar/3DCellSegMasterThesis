@@ -174,7 +174,8 @@ class SuperVoxToNxGraph():
         # if both supervoxels have the same groundtruth cell label, 0 otherwise
         for idx, col in enumerate(neighbors_and_touching_area):
             if groundtruth_labels[col[0]] == groundtruth_labels[col[1]]:
-                neighbors_and_touching_area[idx, 3] = 1
+                if groundtruth_labels[col[0]] != 0.:
+                    neighbors_and_touching_area[idx, 3] = 1
 
         return neighbors_and_touching_area
 
