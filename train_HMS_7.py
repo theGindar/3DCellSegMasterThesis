@@ -26,7 +26,7 @@ import pandas as pd
 save_path = 'output/model_HMS_7.pkl'
 need_resume = True
 load_path = 'output/model_HMS_7.pkl'
-loss_save_path = 'output/loss_HMS_4.csv'
+loss_save_path = 'output/loss_HMS_7.csv'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
