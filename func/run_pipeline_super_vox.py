@@ -356,14 +356,16 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
 
 from func.network import CellSegNet_basic_edge_gated_IV
 def semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img, model, device, crop_cube_size=64, stride=64):
+
     model = CellSegNet_basic_edge_gated_IV(input_channel=1, n_classes=3, output_func="softmax")
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    load_path = 'output/model_HMS_4.pkl'
+    load_path = 'output/model_HMS_6.pkl'
     checkpoint = torch.load(load_path)
     model.load_state_dict(checkpoint['model_state_dict'], strict=False)
+
     # raw_img: 3d matrix, numpy.array
     assert isinstance(crop_cube_size, (int, list))
     if isinstance(crop_cube_size, int):
