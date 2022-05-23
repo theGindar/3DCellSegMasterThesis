@@ -312,7 +312,7 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
                 
                 with torch.no_grad():
                     seg_crop_output=model(raw_img_crop)
-                seg_crop_output_np=seg_crop_output.detach().numpy()
+                seg_crop_output_np=seg_crop_output.cpu().detach().numpy()
                 """
                 plt.figure()
                 plt.title("model output background")
@@ -354,15 +354,15 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
                 
     return {'background': seg_background, 'boundary': seg_boundary, 'foreground': seg_foreground}
 
-from func.network import CellSegNet_basic_edge_gated_IV
+from func.network import CellSegNet_basic_edge_gated_V
 def semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img, model, device, crop_cube_size=64, stride=64):
 
-    model = CellSegNet_basic_edge_gated_IV(input_channel=1, n_classes=3, output_func="softmax")
+    model = CellSegNet_basic_edge_gated_V(input_channel=1, n_classes=3, output_func="softmax")
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    load_path = 'output/model_HMS_6.pkl'
+    load_path = 'output/model_HMS_7.pkl'
     checkpoint = torch.load(load_path)
     model.load_state_dict(checkpoint['model_state_dict'], strict=False)
 
@@ -439,7 +439,7 @@ def semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img, mod
 
                 with torch.no_grad():
                     seg_crop_output, _ = model(raw_img_crop)
-                seg_crop_output_np = seg_crop_output.detach().numpy()
+                seg_crop_output_np = seg_crop_output.cpu().detach().numpy()
                 """
                 plt.figure()
                 plt.title("model output background")

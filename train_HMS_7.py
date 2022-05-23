@@ -1,6 +1,6 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_IV
+from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_V
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
     WeightedCrossEntropyLoss, dice_loss_org_individually, balanced_cross_entropy, DiceLoss
 from func.ultis import save_obj, load_obj
@@ -38,7 +38,7 @@ num_workers = 4
 # ----------
 
 # init model
-model=CellSegNet_basic_edge_gated_IV(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_V(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
