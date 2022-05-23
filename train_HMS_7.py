@@ -23,9 +23,9 @@ import pandas as pd
 
 # hyperparameters
 # ----------
-save_path = 'output/model_HMS_7.pkl'
+save_path = 'output/model_HMS_7.pt'
 need_resume = True
-load_path = 'output/model_HMS_7.pkl'
+load_path = 'output/model_HMS_7.pt'
 loss_save_path = 'output/loss_HMS_7.csv'
 learning_rate = 1e-4
 max_epoch = 500
@@ -164,6 +164,6 @@ for ith_epoch in range(0, max_epoch):
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
         model.to(torch.device('cpu'))
-        torch.save({'model_state_dict': model.state_dict()}, save_path)
+        torch.save(model.state_dict(), save_path)
         model.to(device)
         loss_df.to_csv(loss_save_path)
