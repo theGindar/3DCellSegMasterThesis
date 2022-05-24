@@ -18,7 +18,7 @@ class ResModule(nn.Module):
 
 class ResModule_w_groupnorm(nn.Module):
     def __init__(self, in_channels=64, out_channels=64, kernel_size=3, padding=1, dilation=1):
-        super(ResModule, self).__init__()
+        super(ResModule_w_groupnorm, self).__init__()
         self.groupnorm_module = nn.GroupNorm(1, in_channels)
         self.conv_module=nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, padding=padding, dilation=dilation)
     def forward(self, x):
