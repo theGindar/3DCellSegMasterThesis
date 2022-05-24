@@ -113,7 +113,7 @@ class CellSegNet_basic_lite(nn.Module):
 
 class CellSegNet_basic_lite_w_groupnorm(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
-        super(CellSegNet_basic_lite, self).__init__()
+        super(CellSegNet_basic_lite_w_groupnorm, self).__init__()
 
         self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
         self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
@@ -1063,7 +1063,7 @@ class CellSegNet_basic_edge_gated_V(nn.Module):
 
 class CellSegNet_basic_edge_gated_VI(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
-        super(CellSegNet_basic_edge_gated_IV, self).__init__()
+        super(CellSegNet_basic_edge_gated_VI, self).__init__()
 
         self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
         self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
