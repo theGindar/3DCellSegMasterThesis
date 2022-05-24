@@ -232,6 +232,7 @@ import matplotlib.pyplot as plt
 import time
 from func.network import CellSegNet_basic_lite
 def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_cube_size=64, stride=64):
+    """
     model = CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func="softmax")
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -240,6 +241,7 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
     load_path = 'output/model_HMS.pkl'
     checkpoint = torch.load(load_path)
     model.load_state_dict(checkpoint['model_state_dict'], strict=False)
+    """
     # raw_img: 3d matrix, numpy.array
     assert isinstance(crop_cube_size, (int, list))
     if isinstance(crop_cube_size, int):
@@ -354,18 +356,18 @@ def semantic_segment_crop_and_cat_3_channel_output(raw_img, model, device, crop_
                 
     return {'background': seg_background, 'boundary': seg_boundary, 'foreground': seg_foreground}
 
-from func.network import CellSegNet_basic_edge_gated_V
+from func.network import CellSegNet_basic_edge_gated_IV
 def semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img, model, device, crop_cube_size=64, stride=64):
-
-    model = CellSegNet_basic_edge_gated_V(input_channel=1, n_classes=3, output_func="softmax")
+    """
+    model = CellSegNet_basic_edge_gated_IV(input_channel=1, n_classes=3, output_func="softmax")
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    load_path = 'output/model_HMS_7.pkl'
+    load_path = 'output/model_HMS_4.pkl'
     checkpoint = torch.load(load_path)
     model.load_state_dict(checkpoint['model_state_dict'], strict=False)
-
+    """
     # raw_img: 3d matrix, numpy.array
     assert isinstance(crop_cube_size, (int, list))
     if isinstance(crop_cube_size, int):
@@ -419,7 +421,8 @@ def semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img, mod
                 else:
                     z_start = img_shape[2] - crop_cube_size[2]
                     z_end = img_shape[2]
-                torch.cuda.empty_cache()
+                #torch.cuda.empty_cache()
+
                 raw_img_crop = raw_img[x_start:x_end, y_start:y_end, z_start:z_end]
                 # raw_img_crop=raw_
                 # img_crop.reshape(1, 1, crop_cube_size[0], crop_cube_size[1], crop_cube_size[2])
