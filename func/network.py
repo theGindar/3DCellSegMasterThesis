@@ -22,7 +22,7 @@ class ResModule_w_groupnorm(nn.Module):
         self.groupnorm_module = nn.GroupNorm(1, in_channels)
         self.conv_module=nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, padding=padding, dilation=dilation)
     def forward(self, x):
-        h=F.relu(self.batchnorm_module(x))
+        h=F.relu(self.groupnorm_module(x))
         h=self.conv_module(h)
         return h+x
 
