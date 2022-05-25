@@ -1368,7 +1368,7 @@ class CellSegNet_basic_edge_gated_VII(nn.Module):
 
 
         output = F.softmax(h, dim=1)
-        return output, output_edge
+        return output
 
     
 class VoxResNet(nn.Module):

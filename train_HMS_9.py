@@ -66,9 +66,6 @@ for ith_epoch in range(0, max_epoch):
     
         seg_output=model(img_input)
 
-        print('output shape')
-        print(seg_output.shape)
-
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
         
