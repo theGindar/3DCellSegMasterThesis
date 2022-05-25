@@ -217,23 +217,50 @@ class SuperVoxToNxGraph():
 
         return np.vstack(all_combinations)
 
-    def build_networkx_graph(self, neighbors, edges_with_voxel_size, with_ground_truth=False):
+    def build_networkx_graph(self, neighbors, edges_with_voxel_size, input_3d_img, with_ground_truth=False):
         G = nx.DiGraph()
 
         # add nodes
         G.add_nodes_from(list(neighbors[:,0]))
 
+        unique_vals_all, unique_val_counts = np.unique(input_3d_img, return_counts=True)
+
+        # np array: voxel_id, size
+        voxel_sizes = np.transpose(np.stack((unique_vals_all, unique_val_counts)))
+
         # add node attributes
-        # feat = touching area
+        # feat = [size of bigger voxel, size of smaller voxel, touching area]
         # label = 1 if the node belongs to the same cell, 0 otherwise
         attributes_dict = {}
         if with_ground_truth:
             for neighbor_pair in neighbors:
-                attributes_dict[neighbor_pair[0]] = {"feat": neighbor_pair[3],
+
+                # size of first voxel of the pair
+                v_1_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[1])]
+                v_2_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[2])]
+
+                # the bigger voxel should come first
+                if v_1_size >= v_2_size:
+                    feature = np.array([v_1_size, v_2_size, neighbor_pair[3]])
+                else:
+                    feature = np.array([v_2_size, v_1_size, neighbor_pair[3]])
+
+                attributes_dict[neighbor_pair[0]] = {"feat": feature,
                                                      "label": neighbor_pair[4]}
         else:
             for neighbor_pair in neighbors:
-                attributes_dict[neighbor_pair[0]] = {"feat": neighbor_pair[3]}
+
+                # size of first voxel of the pair
+                v_1_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[1])]
+                v_2_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[2])]
+
+                # the bigger voxel should come first
+                if v_1_size >= v_2_size:
+                    feature = np.array([v_1_size, v_2_size, neighbor_pair[3]])
+                else:
+                    feature = np.array([v_2_size, v_1_size, neighbor_pair[3]])
+
+                attributes_dict[neighbor_pair[0]] = {"feat": feature}
         nx.set_node_attributes(G, attributes_dict)
 
         # add edges of shared super voxels. the weight of each edge is the size of the shared super edges_with_voxel_size
@@ -267,7 +294,8 @@ class SuperVoxToNxGraph():
         print("calculate edges")
         edges_with_voxel_size = self.get_edges_with_voxel_size(neighbors, seg_foreground_super_voxel_by_ws)
         print("build networkx graph")
-        graph = self.build_networkx_graph(neighbors_with_gt, edges_with_voxel_size, with_ground_truth=True)
+        graph = self.build_networkx_graph(neighbors_with_gt, edges_with_voxel_size, seg_foreground_super_voxel_by_ws,
+                                          with_ground_truth=True)
         return graph
 
 

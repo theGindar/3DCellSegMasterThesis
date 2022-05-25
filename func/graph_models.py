@@ -18,6 +18,7 @@ class GCN(nn.Module):
         h = F.relu(h)
         h = self.dropout(h)
         h = self.conv2(g, h)
+        # h = self.activation(h)
         return h
 
 
