@@ -1215,6 +1215,160 @@ class CellSegNet_basic_edge_gated_VI(nn.Module):
         return output, output_edge
 
 
+class CellSegNet_basic_edge_gated_VIII(nn.Module):
+    def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
+        super(CellSegNet_basic_edge_gated_VI, self).__init__()
+
+        self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.bnorm1 = nn.GroupNorm(1, 32)
+        self.conv3 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule1 = ResModule_w_groupnorm(64, 64)
+        self.conv4 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule2 = ResModule_w_groupnorm(64, 64)
+        self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule3 = ResModule_w_groupnorm(64, 64)
+
+        self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm2 = nn.GroupNorm(1, 64)
+        self.deconv2 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm3 = nn.GroupNorm(1, 64)
+        self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
+        self.bnorm4 = nn.GroupNorm(1, 32)
+        self.conv6 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.conv7 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1)
+
+        self.edgegatelayer1 = EdgeGatedLayer_II(64, 64)
+        self.edgegatelayer2 = EdgeGatedLayer_II(64, 64)
+        self.edgegatelayer3 = EdgeGatedLayer_II(32, 32)
+
+        self.edgegatelayer4 = EdgeGatedLayer_II(32, 32)
+
+        self.deconv1_edge = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm2_edge = nn.GroupNorm(1, 64)
+        self.deconv2_edge = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm3_edge = nn.GroupNorm(1, 64)
+        self.deconv3_edge = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
+        self.bnorm4_edge = nn.GroupNorm(1, 32)
+        self.conv6_edge = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.conv7_edge = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1)
+
+        self.sigmoid_edge = nn.Sigmoid()
+
+        self.output_func = output_func
+
+    def forward(self, x):
+        h = self.conv1(x)
+        h = self.conv2(h)
+        c1 = F.relu(self.bnorm1(h))
+
+        h = self.conv3(c1)
+        c2 = self.resmodule1(h)
+
+        h = self.conv4(c2)
+        c3 = self.resmodule2(h)
+
+        h = self.conv5(c3)
+        c4_encoder_end = self.resmodule3(h)
+
+        # decoder
+        c4 = self.deconv1(c4_encoder_end)
+        c4 = F.relu(self.bnorm2(c4))
+        c3_shape = c3.shape
+
+        delta_c4_x = int(np.floor((c4.shape[2] - c3_shape[2]) / 2))
+        delta_c4_y = int(np.floor((c4.shape[3] - c3_shape[3]) / 2))
+        delta_c4_z = int(np.floor((c4.shape[4] - c3_shape[4]) / 2))
+        c4 = c4[:, :,
+             delta_c4_x:c3_shape[2] + delta_c4_x,
+             delta_c4_y:c3_shape[3] + delta_c4_y,
+             delta_c4_z:c3_shape[4] + delta_c4_z]
+
+        h = c4 + c3
+
+        h = self.deconv2(h)
+        c2_2 = F.relu(self.bnorm3(h))
+        c2_shape = c2.shape
+        delta_c2_2_x = int(np.floor((c2_2.shape[2] - c2_shape[2]) / 2))
+        delta_c2_2_y = int(np.floor((c2_2.shape[3] - c2_shape[3]) / 2))
+        delta_c2_2_z = int(np.floor((c2_2.shape[4] - c2_shape[4]) / 2))
+        c2_2 = c2_2[:, :,
+               delta_c2_2_x:c2_shape[2] + delta_c2_2_x,
+               delta_c2_2_y:c2_shape[3] + delta_c2_2_y,
+               delta_c2_2_z:c2_shape[4] + delta_c2_2_z]
+
+        h = c2_2 + c2
+
+        h = self.deconv3(h)
+        c1_2 = F.relu(self.bnorm4(h))
+        c1_shape = c1.shape
+        delta_c1_2_x = int(np.floor((c1_2.shape[2] - c1_shape[2]) / 2))
+        delta_c1_2_y = int(np.floor((c1_2.shape[3] - c1_shape[3]) / 2))
+        delta_c1_2_z = int(np.floor((c1_2.shape[4] - c1_shape[4]) / 2))
+        c1_2 = c1_2[:, :,
+               delta_c1_2_x:c1_shape[2] + delta_c1_2_x,
+               delta_c1_2_y:c1_shape[3] + delta_c1_2_y,
+               delta_c1_2_z:c1_shape[4] + delta_c1_2_z]
+
+        h = c1_2 + c1
+
+        # edge stream
+        c4_edge = self.deconv1_edge(c4_encoder_end)
+        c4_edge = F.relu(self.bnorm2_edge(c4_edge))
+        c3_shape = c3.shape
+
+        delta_c4_edge_x = int(np.floor((c4_edge.shape[2] - c3_shape[2]) / 2))
+        delta_c4_edge_y = int(np.floor((c4_edge.shape[3] - c3_shape[3]) / 2))
+        delta_c4_edge_z = int(np.floor((c4_edge.shape[4] - c3_shape[4]) / 2))
+        c4_edge = c4_edge[:, :,
+             delta_c4_edge_x:c3_shape[2] + delta_c4_edge_x,
+             delta_c4_edge_y:c3_shape[3] + delta_c4_edge_y,
+             delta_c4_edge_z:c3_shape[4] + delta_c4_edge_z]
+
+        h_edge = self.edgegatelayer1(c4_edge, c3)
+
+        h_edge = self.deconv2_edge(h_edge)
+        c2_2_edge = F.relu(self.bnorm3_edge(h_edge))
+        c2_shape = c2.shape
+        delta_c2_2_edge_x = int(np.floor((c2_2_edge.shape[2] - c2_shape[2]) / 2))
+        delta_c2_2_edge_y = int(np.floor((c2_2_edge.shape[3] - c2_shape[3]) / 2))
+        delta_c2_2_edge_z = int(np.floor((c2_2_edge.shape[4] - c2_shape[4]) / 2))
+        c2_2_edge = c2_2_edge[:, :,
+               delta_c2_2_edge_x:c2_shape[2] + delta_c2_2_edge_x,
+               delta_c2_2_edge_y:c2_shape[3] + delta_c2_2_edge_y,
+               delta_c2_2_edge_z:c2_shape[4] + delta_c2_2_edge_z]
+
+        h_edge = self.edgegatelayer2(c2_2_edge, c2)
+
+        h_edge = self.deconv3_edge(h_edge)
+        c1_2_edge = F.relu(self.bnorm4_edge(h_edge))
+        c1_shape = c1.shape
+        delta_c1_2_edge_x = int(np.floor((c1_2_edge.shape[2] - c1_shape[2]) / 2))
+        delta_c1_2_edge_y = int(np.floor((c1_2_edge.shape[3] - c1_shape[3]) / 2))
+        delta_c1_2_edge_z = int(np.floor((c1_2_edge.shape[4] - c1_shape[4]) / 2))
+        c1_2_edge = c1_2_edge[:, :,
+               delta_c1_2_edge_x:c1_shape[2] + delta_c1_2_edge_x,
+               delta_c1_2_edge_y:c1_shape[3] + delta_c1_2_edge_y,
+               delta_c1_2_edge_z:c1_shape[4] + delta_c1_2_edge_z]
+
+        h_edge = self.edgegatelayer3(c1_2_edge, c1)
+
+        h_edge_bridge = self.conv6_edge(h_edge)
+        output_edge = self.conv7_edge(h_edge_bridge)
+        output_edge = self.sigmoid_edge(output_edge)
+
+        # main stream
+        # h = torch.cat((h, h_edge_bridge), dim=1)
+
+        h = self.conv6(h)
+        h = self.edgegatelayer4(h, h_edge_bridge)
+
+        h = self.conv7(h)
+
+        output = F.softmax(h, dim=1)
+        return output, output_edge
+
+
 class CellSegNet_basic_edge_gated_VII(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
         super(CellSegNet_basic_edge_gated_VII, self).__init__()
@@ -1244,11 +1398,11 @@ class CellSegNet_basic_edge_gated_VII(nn.Module):
 
 
         self.deconv1_edge = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
-        self.bnorm2_edge = nn.BatchNorm3d(num_features=64)
+        self.bnorm2_edge = nn.GroupNorm(1, 64)
         self.deconv2_edge = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
-        self.bnorm3_edge = nn.BatchNorm3d(num_features=64)
+        self.bnorm3_edge = nn.GroupNorm(1, 64)
         self.deconv3_edge = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
-        self.bnorm4_edge = nn.BatchNorm3d(num_features=32)
+        self.bnorm4_edge = nn.GroupNorm(1, 32)
         self.conv6_edge = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.conv7_edge = nn.Conv3d(in_channels=32, out_channels=1, kernel_size=1)
 
