@@ -12,9 +12,9 @@ import time
 
 # hyperparameters
 # ----------
-save_path = 'output/model_HMS.pkl'
+save_path = 'output/model_HMS_9.pkl'
 need_resume = True
-load_path = 'output/model_HMS.pkl'
+load_path = 'output/model_HMS_9.pkl'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 50

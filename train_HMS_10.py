@@ -23,10 +23,10 @@ import pandas as pd
 
 # hyperparameters
 # ----------
-save_path = 'output/model_HMS_8.pkl'
+save_path = 'output/model_HMS_10.pkl'
 need_resume = True
-load_path = 'output/model_HMS_8.pkl'
-loss_save_path = 'output/loss_HMS_8.csv'
+load_path = 'output/model_HMS_10.pkl'
+loss_save_path = 'output/loss_HMS_10.csv'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
