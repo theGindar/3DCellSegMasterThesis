@@ -1217,7 +1217,7 @@ class CellSegNet_basic_edge_gated_VI(nn.Module):
 
 class CellSegNet_basic_edge_gated_VIII(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
-        super(CellSegNet_basic_edge_gated_VI, self).__init__()
+        super(CellSegNet_basic_edge_gated_VIII, self).__init__()
 
         self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
         self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
