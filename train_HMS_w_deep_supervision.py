@@ -25,15 +25,12 @@ boundary_importance = 1
 batch_size = 7
 num_workers = 4
 # ----------
-
+print(f"number of gpus: {torch.cuda.device_count()}")
+torch.cuda.set_device(0)
+print(f"current gpu: {torch.cuda.current_device()}")
 # init model
 model=CellSegNet_basic_lite_w_groupnorm_deep_supervised(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-# get current device
-print(f"current device used: {torch.cuda.current_device()}")
-
-
 model.to(device)
 
 if need_resume and os.path.exists(load_path):
