@@ -2,7 +2,7 @@
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
-from func.ultis import save_obj, load_obj
+from func.ultis import save_obj, load_obj, get_free_gpu
 
 import numpy as np
 import torch
@@ -24,10 +24,11 @@ boundary_importance = 1
 batch_size = 7
 num_workers = 4
 # ----------
+free_gpu_id = get_free_gpu()
+torch.cuda.set_device(free_gpu_id)
 # init model
 model=CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f"device: {torch.cuda.current_device()}")
 model.to(device)
 
 if need_resume and os.path.exists(load_path):
