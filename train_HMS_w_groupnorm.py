@@ -94,5 +94,5 @@ for ith_epoch in range(0, max_epoch):
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
         model.to(torch.device('cpu'))
-        torch.save({'model_state_dict': model.state_dict()}, f'output/model_HMS_epoch_{ith_epoch}.pkl')
+        torch.save({'model_state_dict': model.state_dict()}, f'output/model_HMS_w_groupnorm_7epochs.pkl')
         model.to(device)
