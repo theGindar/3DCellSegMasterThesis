@@ -62,10 +62,26 @@ for ith_epoch in range(0, max_epoch):
         seg_groundtruth_bb_64=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
             torch.tensor(batch['boundary']>0, dtype=torch.float)), dim=1).to(device)
 
-        seg_groundtruth_f_32 = F.interpolate(seg_groundtruth_f_64, size=)
+        seg_groundtruth_f_32 = F.interpolate(seg_groundtruth_f_64, size=(32, 32, 32))
+        seg_groundtruth_bb_32 = F.interpolate(seg_groundtruth_bb_64, size=(32, 32, 32))
+
+        seg_groundtruth_f_16 = F.interpolate(seg_groundtruth_f_32, size=(16, 16, 16))
+        seg_groundtruth_bb_16 = F.interpolate(seg_groundtruth_bb_32, size=(16, 16, 16))
+
+        seg_groundtruth_f_8 = F.interpolate(seg_groundtruth_f_16, size=(8, 8, 8))
+        seg_groundtruth_bb_8 = F.interpolate(seg_groundtruth_bb_16, size=(8, 8, 8))
         
         weights_f_64=batch['weights_foreground'].to(device)
         weights_bb_64=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
+
+        weights_f_32 = F.interpolate(weights_f_64, size=(32, 32, 32))
+        weights_bb_32 = F.interpolate(weights_bb_64, size=(32, 32, 32))
+
+        weights_f_16 = F.interpolate(weights_f_32, size=(16, 16, 16))
+        weights_bb_16 = F.interpolate(weights_bb_32, size=(16, 16, 16))
+
+        weights_f_8 = F.interpolate(weights_f_64, size=(8, 8, 8))
+        weights_bb_8 = F.interpolate(weights_bb_64, size=(8, 8, 8))
     
         seg_output_8, \
             seg_output_16, \
@@ -84,9 +100,23 @@ for ith_epoch in range(0, max_epoch):
         seg_output_f_64 = seg_output_64[:, 2, :, :, :]
         seg_output_bb_64 = torch.cat((seg_output_64[:, 0, :, :, :], seg_output_64[:, 1, :, :, :]), dim=1)
         
-        loss=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
-            dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
-        accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
+        loss_64 = dice_loss_org_weights(seg_output_bb_64, seg_groundtruth_bb_64, weights_bb_64)+\
+            dice_loss_II_weights(seg_output_f_64, seg_groundtruth_f_64, weights_f_64)
+        accuracy = dice_accuracy(seg_output_f_64, seg_groundtruth_f_64)
+
+        loss_32 = dice_loss_org_weights(seg_output_bb_32, seg_groundtruth_bb_32, weights_bb_32) + \
+                  dice_loss_II_weights(seg_output_f_32, seg_groundtruth_f_32, weights_f_32)
+        # accuracy_32 = dice_accuracy(seg_output_f_32, seg_groundtruth_f_32)
+
+        loss_16 = dice_loss_org_weights(seg_output_bb_16, seg_groundtruth_bb_16, weights_bb_16) + \
+                  dice_loss_II_weights(seg_output_f_16, seg_groundtruth_f_16, weights_f_16)
+        # accuracy_16 = dice_accuracy(seg_output_f_16, seg_groundtruth_f_16)
+
+        loss_8 = dice_loss_org_weights(seg_output_bb_8, seg_groundtruth_bb_8, weights_bb_8) + \
+                  dice_loss_II_weights(seg_output_f_8, seg_groundtruth_f_8, weights_f_8)
+        # accuracy_8 = dice_accuracy(seg_output_f_8, seg_groundtruth_f_8)
+
+        loss = (loss_64 + loss_32 + loss_16 + loss_8) / 4
         
         optimizer.zero_grad()
         loss.backward()
@@ -99,12 +129,20 @@ for ith_epoch in range(0, max_epoch):
             "batch [{2}]\t"
             "time(s) {time:.2f}\t"
             "loss {loss:.5f}\t"
+            "l_64 {l_64:.5f}\t"
+            "l_32 {l_32:.5f}\t"
+            "l_16 {l_16:.5f}\t"
+            "l_8 {l_8:.5f}\t"
             "acc {acc:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
                 ith_batch,
                 time = time_consumption,
                 loss = loss.item(),
+                l_64=loss_64.item(),
+                l_32=loss_32.item(),
+                l_16=loss_16.item(),
+                l_8=loss_8.item(),
                 acc = accuracy.item()))
     
     if (ith_epoch+1)%model_save_freq==0:
