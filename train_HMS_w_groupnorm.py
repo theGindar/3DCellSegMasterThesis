@@ -24,6 +24,8 @@ boundary_importance = 1
 batch_size = 7
 num_workers = 4
 # ----------
+print(f"number of gpus: {torch.cuda.device_count()}")
+print(f"current gpu: {torch.cuda.current_device()}")
 free_gpu_id = get_free_gpu()
 torch.cuda.set_device(free_gpu_id)
 # init model
