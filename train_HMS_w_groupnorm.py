@@ -21,7 +21,7 @@ model_save_freq = 50
 train_file_format = '.npy'
 train_img_crop_size = (64, 64, 64)
 boundary_importance = 1
-batch_size = 5
+batch_size = 7
 num_workers = 4
 # ----------
 

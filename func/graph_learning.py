@@ -236,8 +236,12 @@ class SuperVoxToNxGraph():
             for neighbor_pair in neighbors:
 
                 # size of first voxel of the pair
-                v_1_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[1])]
-                v_2_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[2])]
+                # print(voxel_sizes)
+                v_1_size = voxel_sizes[np.where(voxel_sizes[:, 0] == neighbor_pair[1])][0][1]
+                # print(f"v_1_size: {v_1_size}")
+                # print(f"neighbor_pair[1]: {neighbor_pair[1]}")
+                v_2_size = voxel_sizes[np.where(voxel_sizes[:, 0] == neighbor_pair[2])][0][1]
+                # print(f"v_2_size: {v_2_size}")
 
                 # the bigger voxel should come first
                 if v_1_size >= v_2_size:
@@ -251,8 +255,8 @@ class SuperVoxToNxGraph():
             for neighbor_pair in neighbors:
 
                 # size of first voxel of the pair
-                v_1_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[1])]
-                v_2_size = voxel_sizes[np.where(voxel_sizes[1] == neighbor_pair[2])]
+                v_1_size = voxel_sizes[np.where(voxel_sizes[0] == neighbor_pair[1])]
+                v_2_size = voxel_sizes[np.where(voxel_sizes[0] == neighbor_pair[2])]
 
                 # the bigger voxel should come first
                 if v_1_size >= v_2_size:
@@ -313,11 +317,18 @@ class VoxelGraphDataset(DGLDataset):
 
 
             # unsqueeze features since they are only scalars
-            graph.ndata['feat'] = torch.unsqueeze(graph.ndata['feat'], dim=1)
-            graph.edata['weight'] = torch.unsqueeze(graph.edata['weight'], dim=1)
+            # not needed anymore, since features are now a vector
+            # graph.ndata['feat'] = torch.unsqueeze(graph.ndata['feat'], dim=1)
+            # graph.edata['weight'] = torch.unsqueeze(graph.edata['weight'], dim=1)
 
             # normalize the features
-            graph.ndata['feat'] = F.normalize(graph.ndata['feat'], p=2.0)
+            # graph.ndata['feat'][0:2] = F.normalize(graph.ndata['feat'][0:2], p=2.0)
+            # graph.ndata['feat'][2] = F.normalize(graph.ndata['feat'][2], p=2.0)
+            # graph.ndata['feat'] = F.normalize(graph.ndata['feat'], p=2.0)
+            print(graph.number_of_nodes())
+            print(graph.ndata['feat'].shape)
+            print(graph.edata['weight'].shape)
+
             graph.edata['weight'] = F.normalize(graph.edata['weight'], p=2.0)
 
             graph.ndata['label'] = graph.ndata['label'].type(torch.LongTensor)

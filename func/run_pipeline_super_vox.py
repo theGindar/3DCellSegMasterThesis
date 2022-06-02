@@ -80,7 +80,7 @@ def segment_super_vox_3_channel_edge_gated_model(raw_img, model, device,
     for idx, transpose in enumerate(transposes):
         print(str(idx+1)+": Transpose the image to be: "+str(transpose))
         with torch.no_grad():
-            seg_img, _ =\
+            seg_img =\
             semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img.transpose(transpose), model, device, crop_cube_size=crop_cube_size, stride=stride)
         seg_img_background=seg_img['background']
         seg_img_boundary=seg_img['boundary']

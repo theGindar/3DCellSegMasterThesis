@@ -15,3 +15,4 @@ func/__pycache__/__init__.cpython-38.pyc
 func/__pycache__/network.cpython-38.pyc
 img_ws_predictions.npy
 graphs_dataset_train.pkl
+dataset_info/HMS_dataset_info.pkl
