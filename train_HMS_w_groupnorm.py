@@ -60,9 +60,6 @@ for ith_epoch in range(0, max_epoch):
         seg_groundtruth_f=torch.tensor(batch['foreground']>0, dtype=torch.float).to(device)
         seg_groundtruth_bb=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
             torch.tensor(batch['boundary']>0, dtype=torch.float)), dim=1).to(device)
-
-        print("shape:")
-        print(seg_groundtruth_f.shape)
         
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
