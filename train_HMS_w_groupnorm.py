@@ -25,7 +25,7 @@ batch_size = 7
 num_workers = 4
 # ----------
 # get current device
-print(f"current device used: {torch.cuda.current_device()}")
+print(f"current device used: {torch.cuda.device_count()}")
 # init model
 model=CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
