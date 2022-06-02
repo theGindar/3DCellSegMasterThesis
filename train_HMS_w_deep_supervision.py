@@ -1,8 +1,9 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm
+from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm_deep_supervised
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
 from func.ultis import save_obj, load_obj
+import torch.nn.functional as F
 
 import numpy as np
 import torch
@@ -26,7 +27,7 @@ num_workers = 4
 # ----------
 
 # init model
-model=CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_lite_w_groupnorm_deep_supervised(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -57,19 +58,31 @@ for ith_epoch in range(0, max_epoch):
 
         img_input=batch['raw'].to(device)
 
-        seg_groundtruth_f=torch.tensor(batch['foreground']>0, dtype=torch.float).to(device)
-        seg_groundtruth_bb=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
+        seg_groundtruth_f_64=torch.tensor(batch['foreground']>0, dtype=torch.float).to(device)
+        seg_groundtruth_bb_64=torch.cat((torch.tensor(batch['background']>0, dtype=torch.float), \
             torch.tensor(batch['boundary']>0, dtype=torch.float)), dim=1).to(device)
 
-        print("shape:")
-        print(seg_groundtruth_f.shape)
+        seg_groundtruth_f_32 = F.interpolate(seg_groundtruth_f_64, size=)
         
-        weights_f=batch['weights_foreground'].to(device)
-        weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
+        weights_f_64=batch['weights_foreground'].to(device)
+        weights_bb_64=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
     
-        seg_output=model(img_input)
-        seg_output_f=seg_output[:,2,:,:,:]
-        seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
+        seg_output_8, \
+            seg_output_16, \
+            seg_output_32,\
+            seg_output_64 =model(img_input)
+
+        seg_output_f_8=seg_output_8[:,2,:,:,:]
+        seg_output_bb_8=torch.cat((seg_output_8[:,0,:,:,:], seg_output_8[:,1,:,:,:]), dim=1)
+
+        seg_output_f_16 = seg_output_16[:, 2, :, :, :]
+        seg_output_bb_16 = torch.cat((seg_output_16[:, 0, :, :, :], seg_output_16[:, 1, :, :, :]), dim=1)
+
+        seg_output_f_32 = seg_output_32[:, 2, :, :, :]
+        seg_output_bb_32 = torch.cat((seg_output_32[:, 0, :, :, :], seg_output_32[:, 1, :, :, :]), dim=1)
+
+        seg_output_f_64 = seg_output_64[:, 2, :, :, :]
+        seg_output_bb_64 = torch.cat((seg_output_64[:, 0, :, :, :], seg_output_64[:, 1, :, :, :]), dim=1)
         
         loss=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
@@ -97,5 +110,5 @@ for ith_epoch in range(0, max_epoch):
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
         model.to(torch.device('cpu'))
-        torch.save({'model_state_dict': model.state_dict()}, f'output/model_HMS_w_groupnorm_7epochs.pkl')
+        torch.save({'model_state_dict': model.state_dict()}, f'output/model_HMS_w_groupnorm_7epochs_deep_supervision.pkl')
         model.to(device)

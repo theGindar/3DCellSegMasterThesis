@@ -1539,11 +1539,13 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised(nn.Module):
         self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
         self.resmodule3 = ResModule_w_groupnorm(64, 64)
 
+        self.conv_out_8 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1, stride=1)
         self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         self.bnorm2 = nn.GroupNorm(1, 64)
-        self.conv_out_1 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1, stride=1)
+        self.conv_out_16 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1, stride=1)
         self.deconv2 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         self.bnorm3 = nn.GroupNorm(1, 64)
+        self.conv_out_32 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1, stride=1)
         self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4 = nn.GroupNorm(1, 32)
         self.conv6 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
@@ -1564,10 +1566,12 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised(nn.Module):
         h = self.conv5(c3)
         c4 = self.resmodule3(h)
 
+        output_8 = self.conv_out_8(c4)
+
         c4 = self.deconv1(c4)
         c4 = F.relu(self.bnorm2(c4))
 
-        output_1 = self.conv_out_1(c4)
+        output_16 = self.conv_out_16(c4)
 
         c3_shape = c3.shape
 
@@ -1583,6 +1587,9 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised(nn.Module):
 
         h = self.deconv2(h)
         c2_2 = F.relu(self.bnorm3(h))
+
+        output_32 = self.conv_out_32(c2_2)
+
         c2_shape = c2.shape
         delta_c2_2_x = int(np.floor((c2_2.shape[2] - c2_shape[2]) / 2))
         delta_c2_2_y = int(np.floor((c2_2.shape[3] - c2_shape[3]) / 2))
@@ -1611,7 +1618,7 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised(nn.Module):
 
         output_64 = F.softmax(h, dim=1)
 
-        return output_1, output_64
+        return output_8, output_16, output_32, output_64
 
     
 class VoxResNet(nn.Module):
