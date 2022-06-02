@@ -27,7 +27,7 @@ num_workers = 4
 # init model
 model=CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f"device: {device}")
+print(f"device: {torch.cuda.current_device()}")
 model.to(device)
 
 if need_resume and os.path.exists(load_path):
