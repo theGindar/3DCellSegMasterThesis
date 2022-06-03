@@ -1736,12 +1736,12 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_III(nn.Module):
 
         self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         self.bnorm2 = nn.GroupNorm(1, 64)
-        self.conv_out_16 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        self.conv_out_16 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.conv_out_16_2 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1, stride=1, padding=1)
 
         self.deconv2 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         self.bnorm3 = nn.GroupNorm(1, 64)
-        self.conv_out_32 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        self.conv_out_32 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.conv_out_32_2 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1, stride=1, padding=1)
 
         self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
