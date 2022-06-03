@@ -1620,6 +1620,102 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised(nn.Module):
 
         return output_8, output_16, output_32, output_64
 
+
+class CellSegNet_basic_lite_w_groupnorm_deep_supervised_II(nn.Module):
+    def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
+        super(CellSegNet_basic_lite_w_groupnorm_deep_supervised, self).__init__()
+
+        self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.bnorm1 = nn.GroupNorm(1, 32)
+        self.conv3 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule1 = ResModule_w_groupnorm(64, 64)
+        self.conv4 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule2 = ResModule_w_groupnorm(64, 64)
+        self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule3 = ResModule_w_groupnorm(64, 64)
+
+        self.conv_out_8 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm2 = nn.GroupNorm(1, 64)
+        self.conv_out_16 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        self.deconv2 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm3 = nn.GroupNorm(1, 64)
+        self.conv_out_32 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
+        self.bnorm4 = nn.GroupNorm(1, 32)
+        self.conv6 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+
+        self.output_func = output_func
+
+    def forward(self, x):
+        h = self.conv1(x)
+        h = self.conv2(h)
+        c1 = F.relu(self.bnorm1(h))
+
+        h = self.conv3(c1)
+        c2 = self.resmodule1(h)
+
+        h = self.conv4(c2)
+        c3 = self.resmodule2(h)
+
+        h = self.conv5(c3)
+        c4 = self.resmodule3(h)
+
+        output_8 = self.conv_out_8(c4)
+
+        c4 = self.deconv1(c4)
+        c4 = F.relu(self.bnorm2(c4))
+
+        c3_shape = c3.shape
+
+        delta_c4_x = int(np.floor((c4.shape[2] - c3_shape[2]) / 2))
+        delta_c4_y = int(np.floor((c4.shape[3] - c3_shape[3]) / 2))
+        delta_c4_z = int(np.floor((c4.shape[4] - c3_shape[4]) / 2))
+        c4 = c4[:, :,
+             delta_c4_x:c3_shape[2] + delta_c4_x,
+             delta_c4_y:c3_shape[3] + delta_c4_y,
+             delta_c4_z:c3_shape[4] + delta_c4_z]
+
+        h = c4 + c3
+
+        output_16 = self.conv_out_16(h)
+
+        h = self.deconv2(h)
+        c2_2 = F.relu(self.bnorm3(h))
+
+        c2_shape = c2.shape
+        delta_c2_2_x = int(np.floor((c2_2.shape[2] - c2_shape[2]) / 2))
+        delta_c2_2_y = int(np.floor((c2_2.shape[3] - c2_shape[3]) / 2))
+        delta_c2_2_z = int(np.floor((c2_2.shape[4] - c2_shape[4]) / 2))
+        c2_2 = c2_2[:, :,
+               delta_c2_2_x:c2_shape[2] + delta_c2_2_x,
+               delta_c2_2_y:c2_shape[3] + delta_c2_2_y,
+               delta_c2_2_z:c2_shape[4] + delta_c2_2_z]
+
+        h = c2_2 + c2
+
+        output_32 = self.conv_out_32(h)
+
+        h = self.deconv3(h)
+        c1_2 = F.relu(self.bnorm4(h))
+        c1_shape = c1.shape
+        delta_c1_2_x = int(np.floor((c1_2.shape[2] - c1_shape[2]) / 2))
+        delta_c1_2_y = int(np.floor((c1_2.shape[3] - c1_shape[3]) / 2))
+        delta_c1_2_z = int(np.floor((c1_2.shape[4] - c1_shape[4]) / 2))
+        c1_2 = c1_2[:, :,
+               delta_c1_2_x:c1_shape[2] + delta_c1_2_x,
+               delta_c1_2_y:c1_shape[3] + delta_c1_2_y,
+               delta_c1_2_z:c1_shape[4] + delta_c1_2_z]
+
+        h = c1_2 + c1
+
+        h = self.conv6(h)
+
+        output_64 = F.softmax(h, dim=1)
+
+        return output_8, output_16, output_32, output_64
+
     
 class VoxResNet(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func = "softmax"):
