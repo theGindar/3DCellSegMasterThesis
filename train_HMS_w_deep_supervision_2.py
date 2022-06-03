@@ -82,8 +82,8 @@ for ith_epoch in range(0, max_epoch):
         weights_f_16 = F.interpolate(weights_f_32, size=(16, 16, 16))
         weights_bb_16 = F.interpolate(weights_bb_32, size=(16, 16, 16))
 
-        weights_f_8 = F.interpolate(weights_f_8, size=(8, 8, 8))
-        weights_bb_8 = F.interpolate(weights_bb_8, size=(8, 8, 8))
+        weights_f_8 = F.interpolate(weights_f_16, size=(8, 8, 8))
+        weights_bb_8 = F.interpolate(weights_bb_16, size=(8, 8, 8))
     
         seg_output_8, \
             seg_output_16, \
