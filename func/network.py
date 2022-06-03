@@ -1663,6 +1663,7 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_II(nn.Module):
         c4 = self.resmodule3(h)
 
         output_8 = self.conv_out_8(c4)
+        output_8 = F.softmax(output_8, dim=1)
 
         c4 = self.deconv1(c4)
         c4 = F.relu(self.bnorm2(c4))
@@ -1680,6 +1681,7 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_II(nn.Module):
         h = c4 + c3
 
         output_16 = self.conv_out_16(h)
+        output_16 = F.softmax(output_16, dim=1)
 
         h = self.deconv2(h)
         c2_2 = F.relu(self.bnorm3(h))
@@ -1696,6 +1698,7 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_II(nn.Module):
         h = c2_2 + c2
 
         output_32 = self.conv_out_32(h)
+        output_32 = F.softmax(output_32, dim=1)
 
         h = self.deconv3(h)
         c1_2 = F.relu(self.bnorm4(h))
