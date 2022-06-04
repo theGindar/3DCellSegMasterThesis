@@ -1,6 +1,6 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm_deep_supervised_II
+from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm_deep_supervised_IV
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
 from func.ultis import save_obj, load_obj
 import torch.nn.functional as F
@@ -34,7 +34,7 @@ print(f"number of gpus: {torch.cuda.device_count()}")
 torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 # init model
-model=CellSegNet_basic_lite_w_groupnorm_deep_supervised_II(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_lite_w_groupnorm_deep_supervised_IV(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
