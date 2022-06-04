@@ -21,9 +21,14 @@ model_save_freq = 50
 train_file_format = '.npy'
 train_img_crop_size = (64, 64, 64)
 boundary_importance = 1
-batch_size = 7
+batch_size = 5
 num_workers = 4
 # ----------
+torch.manual_seed(0)
+import random
+random.seed(0)
+np.random.seed(0)
+
 print(f"number of gpus: {torch.cuda.device_count()}")
 torch.cuda.set_device(1)
 print(f"current gpu: {torch.cuda.current_device()}")
@@ -96,5 +101,5 @@ for ith_epoch in range(0, max_epoch):
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
         model.to(torch.device('cpu'))
-        torch.save({'model_state_dict': model.state_dict()}, f'output/model_HMS_w_groupnorm_batchsize7.pkl')
+        torch.save({'model_state_dict': model.state_dict()}, f'output/model_HMS_w_groupnorm_batchsize5.pkl')
         model.to(device)
