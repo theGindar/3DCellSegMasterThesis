@@ -1720,6 +1720,7 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_II(nn.Module):
         return output_8, output_16, output_32, output_64
 
 
+# forgot softmax.......
 class CellSegNet_basic_lite_w_groupnorm_deep_supervised_III(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
         super(CellSegNet_basic_lite_w_groupnorm_deep_supervised_III, self).__init__()

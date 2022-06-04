@@ -319,12 +319,12 @@ class VoxelGraphDataset(DGLDataset):
             # unsqueeze features since they are only scalars
             # not needed anymore, since features are now a vector
             # graph.ndata['feat'] = torch.unsqueeze(graph.ndata['feat'], dim=1)
-            # graph.edata['weight'] = torch.unsqueeze(graph.edata['weight'], dim=1)
+            graph.edata['weight'] = torch.unsqueeze(graph.edata['weight'], dim=1)
 
             # normalize the features
             # graph.ndata['feat'][0:2] = F.normalize(graph.ndata['feat'][0:2], p=2.0)
             # graph.ndata['feat'][2] = F.normalize(graph.ndata['feat'][2], p=2.0)
-            # graph.ndata['feat'] = F.normalize(graph.ndata['feat'], p=2.0)
+            graph.ndata['feat'] = F.normalize(graph.ndata['feat'], p=2.0)
             print(graph.number_of_nodes())
             print(graph.ndata['feat'].shape)
             print(graph.edata['weight'].shape)
