@@ -2379,8 +2379,8 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_VIII(nn.Module):
         output_8 = self.upsample_8_2(output_8)
         output_8 = self.conv_out_8_2(output_8)
         output_8 = self.upsample_8_3(output_8)
-        output_8 = self.conv_out_8(output_8)
-        output_8 = F.softmax(output_8, dim=1)
+        output_8_logits = self.conv_out_8(output_8)
+        output_8 = F.softmax(output_8_logits, dim=1)
 
         # output_8_w_attention = self.attention_8(output_8, c4)
 
@@ -2402,8 +2402,8 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_VIII(nn.Module):
         output_16 = self.upsample_16_1(h)
         output_16 = self.conv_out_16_1(output_16)
         output_16 = self.upsample_16_2(output_16)
-        output_16 = self.conv_out_16(output_16)
-        output_16 = F.softmax(output_16, dim=1)
+        output_16_logits = self.conv_out_16(output_16)
+        output_16 = F.softmax(output_16_logits, dim=1)
 
         # output_16_w_attention = self.attention_16(output_16, h)
 
@@ -2422,8 +2422,8 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_VIII(nn.Module):
         h = c2_2 + c2
 
         output_32 = self.upsample_32(h)
-        output_32 = self.conv_out_32(output_32)
-        output_32 = F.softmax(output_32, dim=1)
+        output_32_logits = self.conv_out_32(output_32)
+        output_32 = F.softmax(output_32_logits, dim=1)
 
         # output_32_w_attention = self.attention_32(output_32, h)
 
@@ -2440,15 +2440,15 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_VIII(nn.Module):
 
         h = c1_2 + c1
 
-        out_64 = self.conv6(h)
+        out_64_logits = self.conv6(h)
 
-        output_64 = F.softmax(out_64, dim=1)
+        output_64 = F.softmax(out_64_logits, dim=1)
 
         # output_64_w_attention = self.attention_64(output_64, h)
 
 
 
-        merged_output = output_8 + output_16 + output_32 + output_64
+        merged_output = output_8_logits + output_16_logits + output_32_logits + out_64_logits
 
         merged_output = F.softmax(merged_output, dim=1)
 
