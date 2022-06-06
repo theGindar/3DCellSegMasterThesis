@@ -1,6 +1,6 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm_deep_supervised_VII
+from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm_deep_supervised_VI
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
 from func.ultis import save_obj, load_obj
 import torch.nn.functional as F
@@ -35,7 +35,7 @@ print(f"number of gpus: {torch.cuda.device_count()}")
 torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 # init model
-model=CellSegNet_basic_lite_w_groupnorm_deep_supervised_VII(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_lite_w_groupnorm_deep_supervised_VI(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -76,8 +76,7 @@ for ith_epoch in range(0, max_epoch):
         seg_output_8, \
             seg_output_16, \
             seg_output_32,\
-            seg_output_64,\
-            seg_output_merged =model(img_input)
+            seg_output_64 =model(img_input)
 
         seg_output_f_8=seg_output_8[:,2,:,:,:]
         seg_output_bb_8=torch.cat((seg_output_8[:,0,:,:,:], seg_output_8[:,1,:,:,:]), dim=1)
@@ -90,17 +89,10 @@ for ith_epoch in range(0, max_epoch):
 
         seg_output_f_64 = seg_output_64[:, 2, :, :, :]
         seg_output_bb_64 = torch.cat((seg_output_64[:, 0, :, :, :], seg_output_64[:, 1, :, :, :]), dim=1)
-
-        seg_output_f_merged = seg_output_merged[:, 2, :, :, :]
-        seg_output_bb_merged = torch.cat((seg_output_merged[:, 0, :, :, :], seg_output_merged[:, 1, :, :, :]), dim=1)
-
-        loss_merged = dice_loss_org_weights(seg_output_bb_merged, seg_groundtruth_bb_64, weights_bb_64) + \
-                  dice_loss_II_weights(seg_output_f_merged, seg_groundtruth_f_64, weights_f_64)
-        accuracy = dice_accuracy(seg_output_f_merged, seg_groundtruth_f_64)
-
+        
         loss_64 = dice_loss_org_weights(seg_output_bb_64, seg_groundtruth_bb_64, weights_bb_64)+\
             dice_loss_II_weights(seg_output_f_64, seg_groundtruth_f_64, weights_f_64)
-        # accuracy = dice_accuracy(seg_output_f_64, seg_groundtruth_f_64)
+        accuracy = dice_accuracy(seg_output_f_64, seg_groundtruth_f_64)
 
         loss_32 = dice_loss_org_weights(seg_output_bb_32, seg_groundtruth_bb_64, weights_bb_64) + \
                   dice_loss_II_weights(seg_output_f_32, seg_groundtruth_f_64, weights_f_64)
@@ -127,7 +119,6 @@ for ith_epoch in range(0, max_epoch):
             "batch [{2}]\t"
             "time(s) {time:.2f}\t"
             "loss {loss:.5f}\t"
-            "l_m {l_m:.5f}\t"
             "l_64 {l_64:.5f}\t"
             "l_32 {l_32:.5f}\t"
             "l_16 {l_16:.5f}\t"
@@ -138,7 +129,6 @@ for ith_epoch in range(0, max_epoch):
                 ith_batch,
                 time = time_consumption,
                 loss = loss.item(),
-                l_m=loss_merged.item(),
                 l_64=loss_64.item(),
                 l_32=loss_32.item(),
                 l_16=loss_16.item(),
