@@ -114,7 +114,7 @@ for ith_epoch in range(0, max_epoch):
                   dice_loss_II_weights(seg_output_f_8, seg_groundtruth_f_64, weights_f_64)
         # accuracy_8 = dice_accuracy(seg_output_f_8, seg_groundtruth_f_8)
 
-        loss = (loss_64 + loss_32 + loss_16 + loss_8) / 4
+        loss = (loss_merged + loss_64 + loss_32 + loss_16 + loss_8) / 4
         
         optimizer.zero_grad()
         loss.backward()
