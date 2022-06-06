@@ -2302,7 +2302,7 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_VII(nn.Module):
 
 
 
-        merged_output = output_8_w_attention + output_16_w_attention + output_32_w_attention + output_64_w_attention
+        merged_output = output_8_w_attention # + output_16_w_attention + output_32_w_attention + output_64_w_attention
 
         return output_8, output_16, output_32, output_64, merged_output
 
