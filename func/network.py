@@ -234,6 +234,25 @@ class AttentionMergeBlock(nn.Module):
         return pred * feat
 
 
+class AttentionMergeBlock_II(nn.Module):
+    def __init__(self, in_channels=32):
+        super(AttentionMergeBlock_II, self).__init__()
+        self.conv_feat = nn.Conv3d(in_channels=in_channels, out_channels=12, kernel_size=1)
+        self.conv_pred = nn.Conv3d(in_channels=12, out_channels=12, kernel_size=1)
+    def forward(self, pred, feat):
+        # pred: the intermediate predictions created by the prediction heads
+        # feat: features coming from the feature pyramid
+
+        pred = self.conv_pred(pred)
+
+        # TODO bilinear is not implemented for 5d inputs. alternative implementation?
+        feat = F.interpolate(feat, size=(64, 64, 64), mode="trilinear")
+        feat = self.conv_feat(feat)
+        feat = F.softmax(feat, dim=1)
+
+        return pred * feat
+
+
 
 
 class EdgeGatedLayer_II(nn.Module):
@@ -2598,7 +2617,154 @@ class CellSegNet_basic_lite_w_groupnorm_deep_supervised_IV(nn.Module):
         merged_output = F.softmax(merged_output, dim=1)
 
         return output_8, output_16, output_32, output_64, merged_output
-    
+
+
+class CellSegNet_basic_lite_w_groupnorm_deep_supervised_X(nn.Module):
+    def __init__(self, input_channel=1, n_classes=3, output_func="softmax"):
+        super(CellSegNet_basic_lite_w_groupnorm_deep_supervised_X, self).__init__()
+
+        self.conv1 = nn.Conv3d(in_channels=input_channel, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.bnorm1 = nn.GroupNorm(1, 32)
+        self.conv3 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule1 = ResModule_w_groupnorm(64, 64)
+        self.conv4 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule2 = ResModule_w_groupnorm(64, 64)
+        self.conv5 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=2, padding=1)
+        self.resmodule3 = ResModule_w_groupnorm(64, 64)
+
+        self.upsample_8_1 = nn.Upsample(scale_factor=2)
+        self.conv_out_8_1 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.upsample_8_2 = nn.Upsample(scale_factor=2)
+        self.conv_out_8_2 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.upsample_8_3 = nn.Upsample(scale_factor=2)
+        self.conv_out_8 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+
+        self.deconv1 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm2 = nn.GroupNorm(1, 64)
+
+        self.upsample_16_1 = nn.Upsample(scale_factor=2)
+        self.conv_out_16_1 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.upsample_16_2 = nn.Upsample(scale_factor=2)
+        self.conv_out_16 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+
+        self.deconv2 = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
+        self.bnorm3 = nn.GroupNorm(1, 64)
+
+        self.upsample_32 = nn.Upsample(scale_factor=2)
+        self.conv_out_32 = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        self.conv_feat_reduce_32 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=1, stride=1)
+
+        self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
+        self.bnorm4 = nn.GroupNorm(1, 32)
+
+        self.conv6 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+
+        self.attention_merge_block = AttentionMergeBlock_II(128)
+        self.merge_conv_1 = nn.Conv3d(in_channels=12, out_channels=3, kernel_size=1, stride=1)
+
+        self.output_func = output_func
+
+    def forward(self, x):
+        h = self.conv1(x)
+        h = self.conv2(h)
+        c1 = F.relu(self.bnorm1(h))
+
+        h = self.conv3(c1)
+        c2 = self.resmodule1(h)
+
+        h = self.conv4(c2)
+        c3 = self.resmodule2(h)
+
+        h = self.conv5(c3)
+        c4 = self.resmodule3(h)
+
+        output_8 = self.upsample_8_1(c4)
+        output_8 = self.conv_out_8_1(output_8)
+        output_8 = self.upsample_8_2(output_8)
+        output_8 = self.conv_out_8_2(output_8)
+        output_8_feat = self.upsample_8_3(output_8)
+        output_8_logits = self.conv_out_8(output_8_feat)
+        output_8 = F.softmax(output_8_logits, dim=1)
+
+        #output_8_w_attention = self.attention_8(output_8_logits, output_8_feat)
+
+        c4 = self.deconv1(c4)
+        c4 = F.relu(self.bnorm2(c4))
+
+        c3_shape = c3.shape
+
+        delta_c4_x = int(np.floor((c4.shape[2] - c3_shape[2]) / 2))
+        delta_c4_y = int(np.floor((c4.shape[3] - c3_shape[3]) / 2))
+        delta_c4_z = int(np.floor((c4.shape[4] - c3_shape[4]) / 2))
+        c4 = c4[:, :,
+             delta_c4_x:c3_shape[2] + delta_c4_x,
+             delta_c4_y:c3_shape[3] + delta_c4_y,
+             delta_c4_z:c3_shape[4] + delta_c4_z]
+
+        h = c4 + c3
+
+        output_16 = self.upsample_16_1(h)
+        output_16 = self.conv_out_16_1(output_16)
+        output_16_feat = self.upsample_16_2(output_16)
+        output_16_logits = self.conv_out_16(output_16_feat)
+        output_16 = F.softmax(output_16_logits, dim=1)
+
+        #output_16_w_attention = self.attention_16(output_16_logits, output_16_feat)
+
+        h = self.deconv2(h)
+        c2_2 = F.relu(self.bnorm3(h))
+
+        c2_shape = c2.shape
+        delta_c2_2_x = int(np.floor((c2_2.shape[2] - c2_shape[2]) / 2))
+        delta_c2_2_y = int(np.floor((c2_2.shape[3] - c2_shape[3]) / 2))
+        delta_c2_2_z = int(np.floor((c2_2.shape[4] - c2_shape[4]) / 2))
+        c2_2 = c2_2[:, :,
+               delta_c2_2_x:c2_shape[2] + delta_c2_2_x,
+               delta_c2_2_y:c2_shape[3] + delta_c2_2_y,
+               delta_c2_2_z:c2_shape[4] + delta_c2_2_z]
+
+        h = c2_2 + c2
+
+        output_32_feat = self.upsample_32(h)
+        output_32_logits = self.conv_out_32(output_32_feat)
+        output_32 = F.softmax(output_32_logits, dim=1)
+
+        output_32_feat = self.conv_feat_reduce_32(output_32_feat)
+
+        #output_32_w_attention = self.attention_32(output_32_logits, output_32_feat)
+
+        h = self.deconv3(h)
+        c1_2 = F.relu(self.bnorm4(h))
+        c1_shape = c1.shape
+        delta_c1_2_x = int(np.floor((c1_2.shape[2] - c1_shape[2]) / 2))
+        delta_c1_2_y = int(np.floor((c1_2.shape[3] - c1_shape[3]) / 2))
+        delta_c1_2_z = int(np.floor((c1_2.shape[4] - c1_shape[4]) / 2))
+        c1_2 = c1_2[:, :,
+               delta_c1_2_x:c1_shape[2] + delta_c1_2_x,
+               delta_c1_2_y:c1_shape[3] + delta_c1_2_y,
+               delta_c1_2_z:c1_shape[4] + delta_c1_2_z]
+
+        h = c1_2 + c1
+
+        out_64_logits = self.conv6(h)
+
+        output_64 = F.softmax(out_64_logits, dim=1)
+
+        #output_64_w_attention = self.attention_64(out_64_logits, h)
+
+        # merge the outputs with attention
+        all_features = torch.cat([output_8_feat, output_16_feat, output_32_feat, h], dim=1)
+        all_predictions = torch.cat([output_8_logits, output_16_logits, output_32_logits, out_64_logits], dim=1)
+
+        output_w_attention = self.attention_merge_block(all_predictions, all_features)
+        merged_output = self.merge_conv_1(output_w_attention)
+
+        merged_output = F.softmax(merged_output, dim=1)
+
+        return output_8, output_16, output_32, output_64, merged_output
+
+
 class VoxResNet(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func = "softmax"):
         super(VoxResNet, self).__init__()
