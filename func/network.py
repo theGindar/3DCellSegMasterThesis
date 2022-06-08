@@ -2918,8 +2918,7 @@ class CellSegNet_basic_edge_gated_IX(nn.Module):
         self.bnorm3 = nn.GroupNorm(1, 64)
         self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4 = nn.GroupNorm(1, 32)
-        self.conv6 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.conv7 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1)
+        self.conv6 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
 
         self.edgegatelayer1 = EdgeGatedLayer_II(64, 64)
         self.edgegatelayer2 = EdgeGatedLayer_II(64, 64)
@@ -2931,8 +2930,7 @@ class CellSegNet_basic_edge_gated_IX(nn.Module):
         self.bnorm3_edge = nn.GroupNorm(1, 64)
         self.deconv3_edge = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4_edge = nn.GroupNorm(1, 32)
-        self.conv6_edge = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.conv7_edge = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1)
+        self.conv6_edge = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
 
         self.sigmoid_edge = nn.Sigmoid()
 
@@ -3034,16 +3032,13 @@ class CellSegNet_basic_edge_gated_IX(nn.Module):
 
         h_edge = self.edgegatelayer3(c1_2_edge, c1)
 
-        h_edge_bridge = self.conv6_edge(h_edge)
-        output_edge = self.conv7_edge(h_edge_bridge)
+        output_edge = self.conv6_edge(h_edge)
         output_edge = self.sigmoid_edge(output_edge)
 
         # main stream
-        h = torch.cat((h, h_edge_bridge), dim=1)
+        # h = torch.cat((h, h_edge_bridge), dim=1)
 
         h = self.conv6(h)
-
-        h = self.conv7(h)
 
         output = F.softmax(h, dim=1)
         return output, output_edge
