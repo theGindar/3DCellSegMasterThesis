@@ -37,6 +37,15 @@ boundary_importance = 1
 batch_size = 5
 num_workers = 4
 # ----------
+torch.manual_seed(0)
+import random
+random.seed(0)
+np.random.seed(0)
+
+
+print(f"number of gpus: {torch.cuda.device_count()}")
+torch.cuda.set_device(0)
+print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
 model=CellSegNet_basic_edge_gated_IX(input_channel=1, n_classes=3, output_func = "softmax")
