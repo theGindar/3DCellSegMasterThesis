@@ -218,12 +218,16 @@ class Cell_Seg_3D_Dataset(Dataset):
         seg_edge_foreground_zeros = np.array(seg_edge_foreground == 0, dtype=int) * 0.5
         seg_centroid_foreground_zeros = np.array(seg_centroid_foreground == 0, dtype=int) * 0.5
         seg_edge_background_zeros = np.array(seg_edge_background == 0, dtype=int) * 0.5
+
+        # edge foreground weights
+        edge_foreground_weights = np.ones_like(seg_foreground, dtype=int) * 0.5
+        edge_foreground_weights = edge_foreground_weights + seg_edge_foreground * 0.5 + seg_boundary * 0.5
         
         return {'weights_background': seg_background+seg_background_zeros,
                 'weights_boundary': seg_boundary+seg_boundary_zeros,
                 'weights_foreground': seg_foreground+seg_foreground_zeros,
                 'weights_edge': seg_foreground+seg_edge_zeros,
-                'weights_edge_foreground': seg_foreground+seg_edge_foreground_zeros,
+                'weights_edge_foreground': edge_foreground_weights,
                 'weights_centroid_foreground': seg_foreground + seg_centroid_foreground_zeros,
                 'weights_edge_background': seg_foreground+seg_edge_background_zeros}
 
