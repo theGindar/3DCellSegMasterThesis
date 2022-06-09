@@ -134,7 +134,7 @@ for ith_epoch in range(0, max_epoch):
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
         #          .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
 
-        loss = loss_1 + loss_2
+        loss = loss_1 # + loss_2
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         accuracy_2 = dice_accuracy(e_output, groundtruth_target)
