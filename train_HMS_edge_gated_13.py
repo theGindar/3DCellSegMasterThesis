@@ -126,8 +126,11 @@ for ith_epoch in range(0, max_epoch):
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         # TODO change!
-        loss_2 = dice_loss_org_individually_with_cellsegloss_and_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge) + \
-                 .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
+        # loss_2 = dice_loss_org_individually_with_cellsegloss_and_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge) + \
+        #          .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
+
+        loss_2 = dice_loss_org_individually(e_output, seg_edge_foreground_groundtruth) + \
+                  .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
         #loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
         #          .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
