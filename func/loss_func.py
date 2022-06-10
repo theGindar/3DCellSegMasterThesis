@@ -184,9 +184,6 @@ def balanced_cross_entropy_with_weights(pred, target, boundary):
     # add boundary weights
     weight[boundary_flat > 0] = 0.5
 
-    print(f"weight shape: {weight.shape}")
-    print(f"weight unique: {torch.unique(weight)}")
-
     return F.binary_cross_entropy(iflat, tflat, weight=weight)
 
 

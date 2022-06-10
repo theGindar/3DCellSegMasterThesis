@@ -1,9 +1,9 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_XI
+from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_XII
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss, dice_loss_org_individually, dice_loss_org_individually_with_cellsegloss,\
-    balanced_cross_entropy_with_weights, DiceLoss
+    WeightedCrossEntropyLoss, dice_loss_org_individually, dice_loss_org_individually_with_cellsegloss_and_weights,\
+    balanced_cross_entropy, DiceLoss
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -24,10 +24,10 @@ import pandas as pd
 
 # hyperparameters
 # ----------
-save_path = 'output/model_HMS_edge_gated_16.pkl'
+save_path = 'output/model_HMS_edge_gated_18.pkl'
 need_resume = True
-load_path = 'output/model_HMS_edge_gated_16.pkl'
-loss_save_path = 'output/loss_HMS_edge_gated_16.csv'
+load_path = 'output/model_HMS_edge_gated_18.pkl'
+loss_save_path = 'output/loss_HMS_edge_gated_18.csv'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
@@ -48,7 +48,7 @@ torch.cuda.set_device(1)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
-model=CellSegNet_basic_edge_gated_XI(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_XII(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -101,8 +101,11 @@ for ith_epoch in range(0, max_epoch):
         # seg_edge_groundtruth_bb = torch.cat((torch.tensor(batch['edge_background'] > 0, dtype=torch.float), \
         #                                 torch.tensor(batch['edge'] > 0, dtype=torch.float)), dim=1).to(device)
 
-        seg_border_groundtruth = torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)
+        # seg_edge_border_groundtruth = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
         seg_edge_foreground_groundtruth = torch.tensor(batch['edge_foreground'] > 0, dtype=torch.float).to(device)
+
+        seg_edge_foreground_groundtruth_32 = F.interpolate(seg_edge_foreground_groundtruth, size=(32, 32, 32), mode='trilinear')
+        seg_edge_foreground_groundtruth_16 = F.interpolate(seg_edge_foreground_groundtruth_32, size=(16, 16, 16), mode='trilinear')
         # seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
 
         # seg_non_edge = torch.where(
@@ -115,9 +118,9 @@ for ith_epoch in range(0, max_epoch):
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
 
-        weights_foreground_edge = batch['weights_edge_foreground'].to(device)
+        # weights_foreground_edge = batch['weights_edge_foreground'].to(device)
     
-        seg_output, e_output = model(img_input)
+        seg_output, e_output, e_output_32, e_output_16 = model(img_input)
 
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
@@ -128,17 +131,18 @@ for ith_epoch in range(0, max_epoch):
         # TODO change!
         # loss_2 = dice_loss_org_individually_with_cellsegloss_and_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge) + \
         #          .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
-        loss_2_dice = dice_loss_org_individually(e_output, seg_edge_foreground_groundtruth)
 
-        loss_2_bce = balanced_cross_entropy_with_weights(e_output, seg_edge_foreground_groundtruth, seg_border_groundtruth)
+        # loss_2_dice = dice_loss_org_individually_with_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge)
+        loss_2 = dice_loss_org_individually(e_output, seg_edge_foreground_groundtruth) + .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
+        loss_2_32 = dice_loss_org_individually(e_output_32, seg_edge_foreground_groundtruth_32) + .5 * balanced_cross_entropy(e_output_32, seg_edge_foreground_groundtruth_32)
+        loss_2_16 = dice_loss_org_individually(e_output_16, seg_edge_foreground_groundtruth_16) + .5 * balanced_cross_entropy(e_output_16, seg_edge_foreground_groundtruth_16)
 
-        loss_2 = dice_loss_org_individually(e_output, seg_edge_foreground_groundtruth) + \
-                  .5 * balanced_cross_entropy_with_weights(e_output, seg_edge_foreground_groundtruth, seg_border_groundtruth)
         #loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
         #          .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
+        loss_2_overall = (loss_2 + loss_2_32 + loss_2_16)/3
 
-        loss = loss_1 + loss_2
+        loss = loss_1 + loss_2_overall
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         accuracy_2 = dice_accuracy(e_output, seg_edge_foreground_groundtruth)
@@ -148,7 +152,7 @@ for ith_epoch in range(0, max_epoch):
         optimizer.step()
 
         time_consumption = time.time() - start_time
-
+        
         print(
             "epoch [{0}/{1}]\t"
             "batch [{2}]\t"
@@ -156,19 +160,19 @@ for ith_epoch in range(0, max_epoch):
             "loss {loss:.5f}\t"
             "loss_1 {loss_1:.5f}\t"
             "loss_2 {loss_2:.5f}\t"
-            "loss_2_dice {loss_2_dice:.5f}\t"
-            "loss_2_bce {loss_2_bce:.5f}\t"
+            "loss_2_32 {loss_2_32:.5f}\t"
+            "loss_2_16 {loss_2_16:.5f}\t"
             "acc {acc:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
                 ith_batch,
-                time=time_consumption,
-                loss=loss.item(),
+                time = time_consumption,
+                loss = loss.item(),
                 loss_1=loss_1.item(),
                 loss_2=loss_2.item(),
-                loss_2_dice=loss_2_dice.item(),
-                loss_2_bce=loss_2_bce.item(),
-                acc=accuracy.item()))
+                loss_2_32 = loss_2_32.item(),
+                loss_2_16=loss_2_16.item(),
+                acc = accuracy.item()))
         """
         loss_df = {"epoch": [],
                    "batch": [],
