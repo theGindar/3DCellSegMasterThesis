@@ -101,7 +101,7 @@ for ith_epoch in range(0, max_epoch):
         # seg_edge_groundtruth_bb = torch.cat((torch.tensor(batch['edge_background'] > 0, dtype=torch.float), \
         #                                 torch.tensor(batch['edge'] > 0, dtype=torch.float)), dim=1).to(device)
 
-        # seg_edge_border_groundtruth = torch.tensor(batch['edge']>0, dtype=torch.float).to(device)
+        seg_border_groundtruth = torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)
         seg_edge_foreground_groundtruth = torch.tensor(batch['edge_foreground'] > 0, dtype=torch.float).to(device)
         # seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
 
@@ -130,7 +130,7 @@ for ith_epoch in range(0, max_epoch):
         #          .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
         loss_2_dice = dice_loss_org_individually(e_output, seg_edge_foreground_groundtruth)
 
-        loss_2_bce = balanced_cross_entropy_with_weights(e_output, seg_edge_foreground_groundtruth)
+        loss_2_bce = balanced_cross_entropy_with_weights(e_output, seg_edge_foreground_groundtruth, seg_border_groundtruth)
 
         loss_2 = loss_2_dice + \
                   .5 * loss_2_bce
