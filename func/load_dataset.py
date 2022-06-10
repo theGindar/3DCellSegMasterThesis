@@ -221,7 +221,7 @@ class Cell_Seg_3D_Dataset(Dataset):
 
         # edge foreground weights
         edge_foreground_weights = np.ones_like(seg_foreground, dtype=int)
-        edge_foreground_weights[np.where(np.logical_or(seg_edge_foreground==1, seg_boundary==1))] = 0.5
+        edge_foreground_weights[np.where(np.logical_or(seg_edge_foreground>0, seg_boundary>0))] = 0.5
         # edge_foreground_weights = edge_foreground_weights + seg_edge_foreground * 0.5 + seg_boundary * 0.5
         
         return {'weights_background': seg_background+seg_background_zeros,

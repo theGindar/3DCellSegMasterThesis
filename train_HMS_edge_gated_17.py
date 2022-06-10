@@ -115,7 +115,7 @@ for ith_epoch in range(0, max_epoch):
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
 
-        weights_foreground_edge = batch['weights_foreground'].to(device)
+        weights_foreground_edge = batch['weights_edge_foreground'].to(device)
     
         seg_output, e_output = model(img_input)
 
