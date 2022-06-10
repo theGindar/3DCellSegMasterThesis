@@ -2,7 +2,7 @@
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_XI
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss, dice_loss_org_individually_with_weights, dice_loss_org_individually_with_cellsegloss_and_weights,\
+    WeightedCrossEntropyLoss, dice_loss_org_individually_with_weights, dice_loss_org_individually_with_cellsegloss,\
     balanced_cross_entropy, DiceLoss
 from func.ultis import save_obj, load_obj
 
@@ -128,9 +128,12 @@ for ith_epoch in range(0, max_epoch):
         # TODO change!
         # loss_2 = dice_loss_org_individually_with_cellsegloss_and_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge) + \
         #          .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
+        loss_2_dice = dice_loss_org_individually_with_cellsegloss(e_output, seg_edge_foreground_groundtruth)
 
-        loss_2 = dice_loss_org_individually_with_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge) + \
-                  .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
+        loss_2_bce = balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
+
+        loss_2 = loss_2_dice + \
+                  .5 * loss_2_bce
         #loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
         #          .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
@@ -145,7 +148,7 @@ for ith_epoch in range(0, max_epoch):
         optimizer.step()
 
         time_consumption = time.time() - start_time
-        
+
         print(
             "epoch [{0}/{1}]\t"
             "batch [{2}]\t"
@@ -153,15 +156,19 @@ for ith_epoch in range(0, max_epoch):
             "loss {loss:.5f}\t"
             "loss_1 {loss_1:.5f}\t"
             "loss_2 {loss_2:.5f}\t"
+            "loss_2_dice {loss_2_dice:.5f}\t"
+            "loss_2_bce {loss_2_bce:.5f}\t"
             "acc {acc:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
                 ith_batch,
-                time = time_consumption,
-                loss = loss.item(),
+                time=time_consumption,
+                loss=loss.item(),
                 loss_1=loss_1.item(),
                 loss_2=loss_2.item(),
-                acc = accuracy.item()))
+                loss_2_dice=loss_2_dice.item(),
+                loss_2_bce=loss_2_bce.item(),
+                acc=accuracy.item()))
         """
         loss_df = {"epoch": [],
                    "batch": [],

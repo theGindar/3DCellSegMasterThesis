@@ -125,6 +125,31 @@ def dice_loss_org_individually_with_cellsegloss_and_weights(pred, target, weight
 
 
 # ohne non-edge class
+def dice_loss_org_individually_with_cellsegloss(pred, target):
+    """
+    Computes the sum of dice loss of every sample in the minibatch.
+    pred: tensor with first dimension as batch
+    target: tensor with first dimension as batch
+    """
+    epsilon = 1e-7
+    delta = .1
+
+    # get batchsize
+    N = pred.size(0)
+    # have to use contiguous since they may from a torch.view op
+    # iflat and tflat are of size (N, C*X*Y*Z)
+    iflat = pred.contiguous().view(N, -1)
+    tflat = target.contiguous().view(N, -1)
+
+    intersection = 2. * torch.sum(torch.mul(iflat / (iflat + delta), tflat), dim=1)
+
+    A_sum = torch.sum(torch.mul(iflat, iflat), dim=1)
+    B_sum = torch.sum(torch.mul(tflat, tflat), dim=1)
+
+    return torch.mean(1 - ((intersection) / (A_sum + B_sum + epsilon)))
+
+
+# ohne non-edge class
 def balanced_cross_entropy(pred, target):
     N = pred.size(0)
     iflat = pred.contiguous().view(N, -1)
