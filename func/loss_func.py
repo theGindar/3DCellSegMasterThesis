@@ -93,7 +93,8 @@ def dice_loss_org_individually_with_weights(pred, target, weights):
     intersection = 2. * torch.sum(torch.mul(torch.mul(iflat, tflat), weights_flat), dim=1)
 
     print(f"intersection = {intersection}")
-    print(f"weights unique = {torch.unique(weights_flat)}")
+    # print(f"weights unique = {torch.unique(weights_flat)}")
+    print(f"weights mode = {torch.mode(weights_flat)}")
 
     A_sum = torch.sum(torch.mul(iflat, iflat), dim=1)
     B_sum = torch.sum(torch.mul(tflat, tflat), dim=1)
