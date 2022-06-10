@@ -167,7 +167,7 @@ def balanced_cross_entropy(pred, target):
 
 
 # ohne non-edge class
-def balanced_cross_entropy(pred, target):
+def balanced_cross_entropy_with_weights(pred, target):
     N = pred.size(0)
     iflat = pred.contiguous().view(N, -1)
     tflat = target.contiguous().view(N, -1)
