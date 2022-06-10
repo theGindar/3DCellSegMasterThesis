@@ -2,8 +2,8 @@
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_XI
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
-    WeightedCrossEntropyLoss, dice_loss_org_individually_with_weights, dice_loss_org_individually_with_cellsegloss,\
-    balanced_cross_entropy, DiceLoss
+    WeightedCrossEntropyLoss, dice_loss_org_individually, dice_loss_org_individually_with_cellsegloss,\
+    balanced_cross_entropy_with_weights, DiceLoss
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -128,9 +128,9 @@ for ith_epoch in range(0, max_epoch):
         # TODO change!
         # loss_2 = dice_loss_org_individually_with_cellsegloss_and_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge) + \
         #          .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
-        loss_2_dice = dice_loss_org_individually_with_cellsegloss(e_output, seg_edge_foreground_groundtruth)
+        loss_2_dice = dice_loss_org_individually(e_output, seg_edge_foreground_groundtruth)
 
-        loss_2_bce = balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
+        loss_2_bce = balanced_cross_entropy_with_weights(e_output, seg_edge_foreground_groundtruth)
 
         loss_2 = loss_2_dice + \
                   .5 * loss_2_bce
