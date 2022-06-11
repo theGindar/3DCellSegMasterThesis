@@ -187,6 +187,25 @@ def balanced_cross_entropy_with_weights(pred, target, boundary):
     return F.binary_cross_entropy(iflat, tflat, weight=weight)
 
 
+# ohne non-edge class
+def cross_entropy_with_weights(pred, target, boundary, boundary_edge):
+    # target should be foreground
+    N = pred.size(0)
+    iflat = pred.contiguous().view(N, -1)
+    tflat = target.contiguous().view(N, -1)
+    boundary_flat = boundary.contiguous().view(N, -1)
+    boundary_edge_flat = boundary_edge.contiguous().view(N, -1)
+    # parameter for weighting positive and negatives, beta is the percentage of non-edge voxels to edge voxels
+    weight = torch.ones_like(iflat) * 0.5
+
+
+    # add boundary weights
+    weight[boundary_flat > 0] = 1.0
+    weight[boundary_edge_flat > 0] = 1.0
+
+    return F.binary_cross_entropy(iflat, tflat, weight=weight)
+
+
 def dice_loss_II_weights(pred, target, weights):
     """
     This definition generalize to real valued pred and target vector.
