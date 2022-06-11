@@ -5,7 +5,7 @@ import torch
 
 from func.run_pipeline_super_vox import segment_super_vox_3_channel_edge_gated_model
 from func.cal_accuracy import IOU_and_Dice_Accuracy, VOI
-from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_deep_supervised
+from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_XII
 from func.ultis import save_obj, load_obj
 
 torch.manual_seed(0)
@@ -18,12 +18,12 @@ print(f"number of gpus: {torch.cuda.device_count()}")
 torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 
-model=CellSegNet_basic_edge_gated_deep_supervised(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_XII(input_channel=1, n_classes=3, output_func = "softmax")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
-load_path='output/model_HMS_edge_gated_deep_supervised_15.pkl'
+load_path='output/model_HMS_edge_gated_18.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
