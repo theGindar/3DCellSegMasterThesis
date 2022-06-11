@@ -78,7 +78,8 @@ for ith_epoch in range(0, max_epoch):
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
 
-        boundary_loss = cross_entropy_with_weights(seg_output_f, seg_groundtruth_f, seg_groundtruth_foreground_edge)
+        boundary_loss = cross_entropy_with_weights(seg_output_f, seg_groundtruth_f, seg_groundtruth_boundary,
+                                                   seg_groundtruth_foreground_edge)
 
         loss_cellseg=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
