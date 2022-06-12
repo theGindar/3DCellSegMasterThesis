@@ -128,9 +128,7 @@ for ith_epoch in range(0, max_epoch):
     
         seg_output, e_output, e_output_32, e_output_16 = model(img_input)
 
-
-        print(f"e_output_32 shape: {e_output_32.shape}")
-        print(f"e groundtruth 32 shape: {groundtruth_target_32.shape}")
+        
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
 

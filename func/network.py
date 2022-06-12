@@ -3523,12 +3523,12 @@ class CellSegNet_basic_edge_gated_XIII(nn.Module):
         self.deconv1_edge = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         self.bnorm2_edge = nn.GroupNorm(1, 64)
 
-        self.conv_out_16_edge = nn.Conv3d(in_channels=64, out_channels=1, kernel_size=1, stride=1)
+        self.conv_out_16_edge = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1, stride=1)
 
         self.deconv2_edge = nn.ConvTranspose3d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1)
         self.bnorm3_edge = nn.GroupNorm(1, 64)
 
-        self.conv_out_32_edge = nn.Conv3d(in_channels=64, out_channels=1, kernel_size=1, stride=1)
+        self.conv_out_32_edge = nn.Conv3d(in_channels=64, out_channels=n_classes, kernel_size=1, stride=1)
 
         self.deconv3_edge = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4_edge = nn.GroupNorm(1, 32)
