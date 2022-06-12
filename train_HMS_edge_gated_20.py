@@ -116,7 +116,7 @@ for ith_epoch in range(0, max_epoch):
         seg_edge_foreground_groundtruth_32 = F.interpolate(seg_edge_foreground_groundtruth, size=(32, 32, 32), mode='trilinear')
 
         seg_groundtruth_boundary = torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)
-        seg_groundtruth_boundary_32 = F.interpolate(seg_groundtruth_boundary_32, size=(32, 32, 32), mode='trilinear')
+        seg_groundtruth_boundary_32 = F.interpolate(seg_groundtruth_boundary, size=(32, 32, 32), mode='trilinear')
         # seg_edge_background_groundtruth = torch.tensor(batch['edge_background'] > 0, dtype=torch.float).to(device)
 
         # seg_non_edge = torch.where(
