@@ -304,8 +304,9 @@ class SuperVoxToNxGraph():
 
 
 class VoxelGraphDataset(DGLDataset):
-    def __init__(self, nx_graph_list):
+    def __init__(self, nx_graph_list, with_ground_truth_labels=True):
         self.nx_graph_list = nx_graph_list
+        self.with_ground_truth_labels = with_ground_truth_labels
         super().__init__(name='voxel_graph')
 
     def process(self):
@@ -331,7 +332,9 @@ class VoxelGraphDataset(DGLDataset):
 
             graph.edata['weight'] = F.normalize(graph.edata['weight'], p=2.0)
 
-            graph.ndata['label'] = graph.ndata['label'].type(torch.LongTensor)
+            if self.with_ground_truth_labels:
+                graph.ndata['label'] = graph.ndata['label'].type(torch.LongTensor)
+
             graph.ndata['feat'] = graph.ndata['feat'].float()
 
             # is it a good idea to use validation set?
@@ -354,3 +357,57 @@ class VoxelGraphDataset(DGLDataset):
 
     def __len__(self):
         return len(self.graphs)
+
+
+class Cluster_Super_Vox_Graph():
+    def __init__(self, model):
+        super(Cluster_Super_Vox_Graph, self).__init__
+        self.model = model
+        self.super_vox_to_nx_graph = SuperVoxToNxGraph()
+
+    def fit(self, seg_foreground_super_voxel_by_ws):
+        print("getting neighbor pairs")
+        neighbors = self.super_vox_to_nx_graph.get_neighbors_and_touching_area(seg_foreground_super_voxel_by_ws)
+        """
+        neighbors:
+            -> shape: supervoxel_1, neighbor_1, touching_area(between supervoxel_1 and neighbor_1)
+                      supervoxel_1, neighbor_2, touching_area(between supervoxel_1 and neighbor_2)
+                      ...
+        """
+        print("adding neighbor ids")
+        neighbors = np.c_[np.arange(len(neighbors)), neighbors]
+        """
+        neighbors:
+            -> shape: neighbors_id_1, supervoxel_1, neighbor_1, touching_area(between supervoxel_1 and neighbor_1)
+                      neighbors_id_2, supervoxel_1, neighbor_2, touching_area(between supervoxel_1 and neighbor_2)
+                      ...
+        """
+        # neighbors_with_gt = np.c_[np.arange(len(neighbors)), neighbors]
+        print("calculate edges")
+        edges_with_voxel_size = self.super_vox_to_nx_graph.get_edges_with_voxel_size(neighbors, seg_foreground_super_voxel_by_ws)
+        """
+        edges_with_voxel_size:
+            -> shape: pair_id_1, voxel1(pair1), voxel2(pair1), pair_id_2, voxel(pair2), voxel(pair2), size of shared voxel_x <- pairs that share voxel_x
+        """
+        print("build networkx graph")
+        graph = self.build_networkx_graph(neighbors, edges_with_voxel_size, seg_foreground_super_voxel_by_ws,
+                                          with_ground_truth=False)
+
+        # ugly, but first create a dataset to get normalization
+        dataset = VoxelGraphDataset([graph], with_ground_truth_labels=False)
+
+        voxel_graph = dataset[0]
+
+        # TODO hier model und weights laden
+
+
+        self.model.eval()
+        with torch.no_grad():
+            predictions = self.model(g, g.ndata['feat']).argmax(1).numpy()
+
+
+
+
+
+
+
