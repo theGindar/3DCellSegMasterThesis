@@ -182,7 +182,7 @@ def balanced_cross_entropy_with_weights(pred, target, boundary):
              torch.unsqueeze(edge_percentage, dim=1).expand_as(tflat_inverted) * tflat_inverted
 
     # add boundary weights
-    weight[boundary_flat > 0] = 0.5
+    weight[boundary_flat > 0] = 0.6
 
     return F.binary_cross_entropy(iflat, tflat, weight=weight)
 
@@ -203,6 +203,7 @@ def balanced_cross_entropy_with_weights_II(pred, target, boundary):
              torch.unsqueeze(edge_percentage, dim=1).expand_as(tflat_inverted) * tflat_inverted
 
     # add boundary weights
+    # doesn't work here...
     weight[boundary_flat > 0] = beta
 
     return F.binary_cross_entropy(iflat, tflat, weight=weight)

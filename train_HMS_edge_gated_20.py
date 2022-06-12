@@ -3,7 +3,7 @@ from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_XIII
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
     WeightedCrossEntropyLoss, dice_loss_org_individually, dice_loss_org_individually_with_cellsegloss_and_weights,\
-    balanced_cross_entropy, DiceLoss, balanced_cross_entropy_with_weights_II
+    balanced_cross_entropy, DiceLoss, balanced_cross_entropy_with_weights
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -149,8 +149,8 @@ for ith_epoch in range(0, max_epoch):
         #          .5 * balanced_cross_entropy(e_output, seg_edge_foreground_groundtruth)
 
         # loss_2_dice = dice_loss_org_individually_with_weights(e_output, seg_edge_foreground_groundtruth, weights_foreground_edge)
-        loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + .5 * balanced_cross_entropy(e_output, groundtruth_target) + .5 * balanced_cross_entropy_with_weights_II(seg_output_f_edge, seg_edge_foreground_groundtruth, seg_groundtruth_boundary)
-        loss_2_32 = dice_loss_org_individually(e_output_32, groundtruth_target_32) + .5 * balanced_cross_entropy(e_output_32, groundtruth_target_32) + .5 * balanced_cross_entropy_with_weights_II(seg_output_f_edge_32, seg_edge_foreground_groundtruth_32, seg_groundtruth_boundary_32)
+        loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + .5 * balanced_cross_entropy(e_output, groundtruth_target) + .5 * balanced_cross_entropy_with_weights(seg_output_f_edge, seg_edge_foreground_groundtruth, seg_groundtruth_boundary)
+        loss_2_32 = dice_loss_org_individually(e_output_32, groundtruth_target_32) + .5 * balanced_cross_entropy(e_output_32, groundtruth_target_32) + .5 * balanced_cross_entropy_with_weights(seg_output_f_edge_32, seg_edge_foreground_groundtruth_32, seg_groundtruth_boundary_32)
         loss_2_16 = dice_loss_org_individually(e_output_16, groundtruth_target_16) + .5 * balanced_cross_entropy(e_output_16, groundtruth_target_16)
 
         #loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
