@@ -188,6 +188,27 @@ def balanced_cross_entropy_with_weights(pred, target, boundary):
 
 
 # ohne non-edge class
+def balanced_cross_entropy_with_weights_II(pred, target, boundary):
+    N = pred.size(0)
+    iflat = pred.contiguous().view(N, -1)
+    tflat = target.contiguous().view(N, -1)
+    boundary_flat = boundary.contiguous().view(N, -1)
+    # parameter for weighting positive and negatives, beta is the percentage of non-edge voxels to edge voxels
+    edge_percentage = torch.sum(tflat, dim=1) / tflat.size(dim=1)
+    beta = 1. - edge_percentage
+
+    tflat_inverted = 1 - tflat
+
+    weight = torch.unsqueeze(beta, dim=1).expand_as(tflat) * tflat + \
+             torch.unsqueeze(edge_percentage, dim=1).expand_as(tflat_inverted) * tflat_inverted
+
+    # add boundary weights
+    weight[boundary_flat > 0] = beta
+
+    return F.binary_cross_entropy(iflat, tflat, weight=weight)
+
+
+# ohne non-edge class
 def cross_entropy_with_weights(pred, target, boundary, boundary_edge):
     # target should be foreground
     N = pred.size(0)
