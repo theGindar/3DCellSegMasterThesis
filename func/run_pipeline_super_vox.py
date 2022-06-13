@@ -521,7 +521,7 @@ def semantic_segment_crop_and_cat_3_channel_output_edge_gated_model(raw_img, mod
                 seg_foreground_crop = seg_foreground[x_start:x_end, y_start:y_end, z_start:z_end]
 
                 with torch.no_grad():
-                    seg_crop_output, _, _, _ = model(raw_img_crop)
+                    seg_crop_output, _ = model(raw_img_crop)
                 seg_crop_output_np = seg_crop_output.cpu().detach().numpy()
                 """
                 plt.figure()

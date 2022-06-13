@@ -365,9 +365,14 @@ class Cluster_Super_Vox_Graph():
         self.model = model
         self.super_vox_to_nx_graph = SuperVoxToNxGraph()
 
-    def fit(self, seg_foreground_super_voxel_by_ws):
+        self.UN_PROCESSED = 0
+        self.LONELY_POINT = -1
+        self.A_LARGE_NUM = 100000000
+
+    def fit(self, input_3d_img):
+        self.input_3d_img = input_3d_img
         print("getting neighbor pairs")
-        neighbors = self.super_vox_to_nx_graph.get_neighbors_and_touching_area(seg_foreground_super_voxel_by_ws)
+        neighbors = self.super_vox_to_nx_graph.get_neighbors_and_touching_area(input_3d_img)
         """
         neighbors:
             -> shape: supervoxel_1, neighbor_1, touching_area(between supervoxel_1 and neighbor_1)
@@ -384,13 +389,13 @@ class Cluster_Super_Vox_Graph():
         """
         # neighbors_with_gt = np.c_[np.arange(len(neighbors)), neighbors]
         print("calculate edges")
-        edges_with_voxel_size = self.super_vox_to_nx_graph.get_edges_with_voxel_size(neighbors, seg_foreground_super_voxel_by_ws)
+        edges_with_voxel_size = self.super_vox_to_nx_graph.get_edges_with_voxel_size(neighbors, input_3d_img)
         """
         edges_with_voxel_size:
             -> shape: pair_id_1, voxel1(pair1), voxel2(pair1), pair_id_2, voxel(pair2), voxel(pair2), size of shared voxel_x <- pairs that share voxel_x
         """
         print("build networkx graph")
-        graph = self.build_networkx_graph(neighbors, edges_with_voxel_size, seg_foreground_super_voxel_by_ws,
+        graph = self.build_networkx_graph(neighbors, edges_with_voxel_size, input_3d_img,
                                           with_ground_truth=False)
 
         # ugly, but first create a dataset to get normalization
@@ -398,16 +403,57 @@ class Cluster_Super_Vox_Graph():
 
         voxel_graph = dataset[0]
 
-        # TODO hier model und weights laden
-
-
         self.model.eval()
+
+        print("predict...")
         with torch.no_grad():
-            predictions = self.model(g, g.ndata['feat']).argmax(1).numpy()
+            predictions = self.model(voxel_graph, voxel_graph.ndata['feat']).argmax(1).numpy()
+
+        # TODO predictions of valid neighbors should be np arrays
+
+        unique_vals, unique_val_counts = np.unique(self.input_3d_img, return_counts=True)
+        unique_val_counts = unique_val_counts[unique_vals > 0]
+        unique_vals = unique_vals[unique_vals > 0]
+        sort_locs = np.argsort(unique_val_counts)[::-1]
+        self.unique_vals = unique_vals[sort_locs]
+
+        self.val_labels = dict()
+        for unique_val in self.unique_vals:
+            self.val_labels[unique_val] = self.UN_PROCESSED
 
 
+        # TODO probably useless
+        self.val_outlayer_area = dict()
+        for idx, unique_val in enumerate(self.unique_vals):
+            # print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)))
+            self.val_outlayer_area[unique_val] = self.A_LARGE_NUM
+
+        for idx, current_val in enumerate(self.unique_vals):
+            # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
+            if self.val_labels[current_val] != self.UN_PROCESSED:
+                continue
+            valid_neighbor_vals = self.regionQuery(current_val)
+            if len(valid_neighbor_vals) > 0:
+                # print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(valid_neighbor_vals))
+                self.val_labels[current_val] = current_val
+                self.growCluster(valid_neighbor_vals, current_val)
+            else:
+                self.val_labels[current_val] = self.LONELY_POINT
+
+        self.output_3d_img = self.input_3d_img
 
 
+    def growCluster(self, valid_neighbor_vals, current_val):
+        valid_neighbor_vals = valid_neighbor_vals[valid_neighbor_vals>0]
+        if len(valid_neighbor_vals)>0:
+            for idx, valid_neighbor_val in enumerate(valid_neighbor_vals):
+                self.val_labels[valid_neighbor_val]=current_val
+                self.input_3d_img[self.input_3d_img==valid_neighbor_val]=current_val
+            new_valid_neighbor_vals = self.regionQuery(current_val)
+            print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(new_valid_neighbor_vals), end="\r")
+            self.growCluster(new_valid_neighbor_vals, current_val)
+        else:
+            return
 
 
 
