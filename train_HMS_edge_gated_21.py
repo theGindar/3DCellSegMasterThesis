@@ -127,11 +127,11 @@ for ith_epoch in range(0, max_epoch):
         e_output_f = seg_output[:, 2, :, :, :]
         e_output_bb = torch.cat((e_output[:, 0, :, :, :], e_output[:, 1, :, :, :]), dim=1)
 
-        boundary_loss = cross_entropy_with_weights(seg_output_f, seg_groundtruth_f, seg_groundtruth_boundary,
-                                                   seg_edge_foreground_groundtruth)
+        # boundary_loss = cross_entropy_with_weights(seg_output_f, seg_groundtruth_f, seg_groundtruth_boundary,
+        #                                            seg_edge_foreground_groundtruth)
 
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
-            dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f) + boundary_loss
+            dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f) # + boundary_loss
 
 
         # TODO change!
