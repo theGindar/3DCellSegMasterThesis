@@ -127,17 +127,17 @@ for ith_epoch in range(0, max_epoch):
         # e_output_f = e_output[:, 2, :, :, :]
         # e_output_bb = torch.cat((e_output[:, 0, :, :, :], e_output[:, 1, :, :, :]), dim=1)
 
-        # boundary_loss = cross_entropy_with_weights(seg_output_f, seg_groundtruth_f, seg_groundtruth_boundary,
-        #                                            seg_edge_foreground_groundtruth)
+        boundary_loss = cross_entropy_with_weights(seg_output_f, seg_groundtruth_f, seg_groundtruth_boundary,
+                                                   seg_edge_foreground_groundtruth)
 
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
-            dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f) # + boundary_loss
+            dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f) + boundary_loss
 
 
         # TODO change!
         loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + \
-                 .5 * balanced_cross_entropy(e_output, groundtruth_target) + \
-                 .5 * balanced_cross_entropy_with_weights(seg_output_f_edge, seg_edge_foreground_groundtruth, seg_groundtruth_boundary)
+                 .5 * balanced_cross_entropy(e_output, groundtruth_target) # + \
+                 # .5 * balanced_cross_entropy_with_weights(seg_output_f_edge, seg_edge_foreground_groundtruth, seg_groundtruth_boundary)
         #loss_2 = balanced_cross_entropy(e_output, groundtruth_target)
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
         #          .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
