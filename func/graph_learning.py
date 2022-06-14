@@ -366,6 +366,7 @@ class Cluster_Super_Vox_Graph():
         self.super_vox_to_nx_graph = SuperVoxToNxGraph()
 
         self.UN_PROCESSED = 0
+        self.PROCESSED = 1
         self.LONELY_POINT = -1
         self.A_LARGE_NUM = 100000000
 
@@ -409,6 +410,19 @@ class Cluster_Super_Vox_Graph():
         with torch.no_grad():
             predictions = self.model(voxel_graph, voxel_graph.ndata['feat']).argmax(1).numpy()
 
+        # add predictions column to edges_with_voxel_size
+        edges_with_voxel_size = np.c_[predictions, edges_with_voxel_size]
+
+        """
+        edges_with_voxel_size:
+            -> shape: prediction, pair_id_1, voxel1(pair1), voxel2(pair1), pair_id_2, voxel(pair2), voxel(pair2), size of shared voxel_x <- pairs that share voxel_x
+        """
+
+        # remove the voxel pairs that are predicted as not sharing the same cell
+        prediction_mask = (edges_with_voxel_size[:,0] == 1)
+        edges_with_voxel_size = edges_with_voxel_size[prediction_mask, :]
+
+
         # TODO predictions of valid neighbors should be np arrays
 
         unique_vals, unique_val_counts = np.unique(self.input_3d_img, return_counts=True)
@@ -421,39 +435,51 @@ class Cluster_Super_Vox_Graph():
         for unique_val in self.unique_vals:
             self.val_labels[unique_val] = self.UN_PROCESSED
 
+        def get_valid_neighbors(value_to_check):
+            valid_neighbor_list = []
+
+            # search column 2
+            check_mask_1 = (edges_with_voxel_size[:, 2] == value_to_check)
+            val_neighbors_1 = edges_with_voxel_size[check_mask_1, 3]
+
+            # TODO way too inefficient
+            for i in val_neighbors_1:
+                valid_neighbor_list.append(i)
+
+            # search column 3
+            check_mask_2 = (edges_with_voxel_size[:, 3] == value_to_check)
+            val_neighbors_2 = edges_with_voxel_size[check_mask_1, 2]
+
+            # TODO way too inefficient
+            for i in val_neighbors_2:
+                valid_neighbor_list.append(i)
+
+            # make sure the values in the list are unique.
+            # this should be the case, otherwise the graph would probably contain duplicates!
+            valid_neighbor_set = set(valid_neighbor_list)
+            assert len(valid_neighbor_set) == len(valid_neighbor_list)
+
+            return valid_neighbor_list
 
         # TODO probably useless
-        self.val_outlayer_area = dict()
-        for idx, unique_val in enumerate(self.unique_vals):
-            # print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)))
-            self.val_outlayer_area[unique_val] = self.A_LARGE_NUM
+        # self.val_outlayer_area = dict()
+        # for idx, unique_val in enumerate(self.unique_vals):
+        #     # print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)))
+        #     self.val_outlayer_area[unique_val] = self.A_LARGE_NUM
 
         for idx, current_val in enumerate(self.unique_vals):
             # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
             if self.val_labels[current_val] != self.UN_PROCESSED:
                 continue
-            valid_neighbor_vals = self.regionQuery(current_val)
+            valid_neighbor_vals = get_valid_neighbors(current_val)
+            
             if len(valid_neighbor_vals) > 0:
-                # print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(valid_neighbor_vals))
-                self.val_labels[current_val] = current_val
-                self.growCluster(valid_neighbor_vals, current_val)
-            else:
-                self.val_labels[current_val] = self.LONELY_POINT
+                for val_neighbor in valid_neighbor_vals:
+                    self.input_3d_img[self.input_3d_img == val_neighbor] = current_val
+
+            self.val_labels[current_val] = self.PROCESSED
 
         self.output_3d_img = self.input_3d_img
-
-
-    def growCluster(self, valid_neighbor_vals, current_val):
-        valid_neighbor_vals = valid_neighbor_vals[valid_neighbor_vals>0]
-        if len(valid_neighbor_vals)>0:
-            for idx, valid_neighbor_val in enumerate(valid_neighbor_vals):
-                self.val_labels[valid_neighbor_val]=current_val
-                self.input_3d_img[self.input_3d_img==valid_neighbor_val]=current_val
-            new_valid_neighbor_vals = self.regionQuery(current_val)
-            print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(new_valid_neighbor_vals), end="\r")
-            self.growCluster(new_valid_neighbor_vals, current_val)
-        else:
-            return
 
 
 
