@@ -255,8 +255,12 @@ class SuperVoxToNxGraph():
             for neighbor_pair in neighbors:
 
                 # size of first voxel of the pair
-                v_1_size = voxel_sizes[np.where(voxel_sizes[0] == neighbor_pair[1])]
-                v_2_size = voxel_sizes[np.where(voxel_sizes[0] == neighbor_pair[2])]
+                # print(voxel_sizes)
+                v_1_size = voxel_sizes[np.where(voxel_sizes[:, 0] == neighbor_pair[1])][0][1]
+                # print(f"v_1_size: {v_1_size}")
+                # print(f"neighbor_pair[1]: {neighbor_pair[1]}")
+                v_2_size = voxel_sizes[np.where(voxel_sizes[:, 0] == neighbor_pair[2])][0][1]
+                # print(f"v_2_size: {v_2_size}")
 
                 # the bigger voxel should come first
                 if v_1_size >= v_2_size:
@@ -313,7 +317,11 @@ class VoxelGraphDataset(DGLDataset):
         self.graphs = []
         for nx_graph in self.nx_graph_list:
             n_nodes = nx.number_of_nodes(nx_graph)
-            graph = dgl.from_networkx(nx_graph, node_attrs=["feat", "label"], edge_attrs=["weight"])
+            if self.with_ground_truth_labels:
+                graph = dgl.from_networkx(nx_graph, node_attrs=["feat", "label"], edge_attrs=["weight"])
+            else:
+                graph = dgl.from_networkx(nx_graph, node_attrs=["feat"], edge_attrs=["weight"])
+
             graph = dgl.add_self_loop(graph)
 
 
@@ -396,10 +404,17 @@ class Cluster_Super_Vox_Graph():
             -> shape: pair_id_1, voxel1(pair1), voxel2(pair1), pair_id_2, voxel(pair2), voxel(pair2), size of shared voxel_x <- pairs that share voxel_x
         """
         print("build networkx graph")
-        graph = self.build_networkx_graph(neighbors, edges_with_voxel_size, input_3d_img,
+        graph = self.super_vox_to_nx_graph.build_networkx_graph(neighbors, edges_with_voxel_size, input_3d_img,
                                           with_ground_truth=False)
 
         # ugly, but first create a dataset to get normalization
+
+
+        nx.write_gpickle(graph, "debug_graph.pkl")
+        import pickle
+        with open('filename.pickle', 'wb') as handle:
+            pickle.dump(, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
         dataset = VoxelGraphDataset([graph], with_ground_truth_labels=False)
 
         voxel_graph = dataset[0]
@@ -472,12 +487,14 @@ class Cluster_Super_Vox_Graph():
             if self.val_labels[current_val] != self.UN_PROCESSED:
                 continue
             valid_neighbor_vals = get_valid_neighbors(current_val)
-            
+
             if len(valid_neighbor_vals) > 0:
                 for val_neighbor in valid_neighbor_vals:
                     self.input_3d_img[self.input_3d_img == val_neighbor] = current_val
 
             self.val_labels[current_val] = self.PROCESSED
+
+        print("everything predicted!")
 
         self.output_3d_img = self.input_3d_img
 
