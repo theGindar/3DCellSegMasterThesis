@@ -334,9 +334,9 @@ class VoxelGraphDataset(DGLDataset):
             # graph.ndata['feat'][0:2] = F.normalize(graph.ndata['feat'][0:2], p=2.0)
             # graph.ndata['feat'][2] = F.normalize(graph.ndata['feat'][2], p=2.0)
             graph.ndata['feat'] = F.normalize(graph.ndata['feat'], p=2.0)
-            print(graph.number_of_nodes())
-            print(graph.ndata['feat'].shape)
-            print(graph.edata['weight'].shape)
+            # print(graph.number_of_nodes())
+            # print(graph.ndata['feat'].shape)
+            # print(graph.edata['weight'].shape)
 
             graph.edata['weight'] = F.normalize(graph.edata['weight'], p=2.0)
 
@@ -408,13 +408,6 @@ class Cluster_Super_Vox_Graph():
                                           with_ground_truth=False)
 
         # ugly, but first create a dataset to get normalization
-
-
-        nx.write_gpickle(graph, "debug_graph.pkl")
-        import pickle
-        with open('filename.pickle', 'wb') as handle:
-            pickle.dump(, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
         dataset = VoxelGraphDataset([graph], with_ground_truth_labels=False)
 
         voxel_graph = dataset[0]
@@ -426,16 +419,18 @@ class Cluster_Super_Vox_Graph():
             predictions = self.model(voxel_graph, voxel_graph.ndata['feat']).argmax(1).numpy()
 
         # add predictions column to edges_with_voxel_size
-        edges_with_voxel_size = np.c_[predictions, edges_with_voxel_size]
+        neighbors_w_prediction = np.c_[predictions, neighbors]
 
         """
-        edges_with_voxel_size:
-            -> shape: prediction, pair_id_1, voxel1(pair1), voxel2(pair1), pair_id_2, voxel(pair2), voxel(pair2), size of shared voxel_x <- pairs that share voxel_x
+        neighbors_w_prediction:
+            -> shape: prediction, neighbors_id_1, supervoxel_1, neighbor_1, touching_area(between supervoxel_1 and neighbor_1)
+                      prediction, neighbors_id_2, supervoxel_1, neighbor_2, touching_area(between supervoxel_1 and neighbor_2)
+                      ...
         """
 
         # remove the voxel pairs that are predicted as not sharing the same cell
-        prediction_mask = (edges_with_voxel_size[:,0] == 1)
-        edges_with_voxel_size = edges_with_voxel_size[prediction_mask, :]
+        prediction_mask = (neighbors_w_prediction[:,0] == 1)
+        neighbors_w_prediction = neighbors_w_prediction[prediction_mask, :]
 
 
         # TODO predictions of valid neighbors should be np arrays
@@ -454,16 +449,16 @@ class Cluster_Super_Vox_Graph():
             valid_neighbor_list = []
 
             # search column 2
-            check_mask_1 = (edges_with_voxel_size[:, 2] == value_to_check)
-            val_neighbors_1 = edges_with_voxel_size[check_mask_1, 3]
+            check_mask_1 = (neighbors_w_prediction[:, 2] == value_to_check)
+            val_neighbors_1 = neighbors_w_prediction[check_mask_1, 3]
 
             # TODO way too inefficient
             for i in val_neighbors_1:
                 valid_neighbor_list.append(i)
 
             # search column 3
-            check_mask_2 = (edges_with_voxel_size[:, 3] == value_to_check)
-            val_neighbors_2 = edges_with_voxel_size[check_mask_1, 2]
+            check_mask_2 = (neighbors_w_prediction[:, 3] == value_to_check)
+            val_neighbors_2 = neighbors_w_prediction[check_mask_2, 2]
 
             # TODO way too inefficient
             for i in val_neighbors_2:
@@ -472,6 +467,7 @@ class Cluster_Super_Vox_Graph():
             # make sure the values in the list are unique.
             # this should be the case, otherwise the graph would probably contain duplicates!
             valid_neighbor_set = set(valid_neighbor_list)
+
             assert len(valid_neighbor_set) == len(valid_neighbor_list)
 
             return valid_neighbor_list
