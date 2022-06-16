@@ -92,11 +92,11 @@ for img_name in HMS_data_dict_train.keys():
             'handseg': np.expand_dims(hand_seg, 0)
         }
         output_augmented = transform_the_tensor(output)
-        raw_img = output_augmented['raw'].cpu().detach().numpy()
-        hand_seg = output_augmented['handseg'].cpu().detach().numpy()
+        raw_img = output_augmented['raw']
+        hand_seg = output_augmented['handseg']
 
-        raw_img = torch.squeeze(raw_img, dim=0)
-        hand_seg = torch.squeeze(hand_seg, dim=0)
+        raw_img = torch.squeeze(raw_img, dim=0).cpu().detach().numpy()
+        hand_seg = torch.squeeze(hand_seg, dim=0).cpu().detach().numpy()
 
         start = time.time()
 
