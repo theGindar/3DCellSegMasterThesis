@@ -1,6 +1,6 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_X
+from func.network import VoxResNet, CellSegNet_basic_lite, CellSegNet_basic_edge_gated_XIV
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
     WeightedCrossEntropyLoss, dice_loss_org_individually, dice_loss_org_individually_with_cellsegloss_and_weights,\
     balanced_cross_entropy, DiceLoss
@@ -48,7 +48,7 @@ torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
-model=CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_XIV(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -80,8 +80,10 @@ loss_df = pd.DataFrame({"epoch":[],
                         "total_loss": [],
                         "loss_1": [],
                         "loss_2": [],
+                        "loss_3": [],
                         "accuracy_1": [],
-                        "accuracy_2": []})
+                        "accuracy_2": [],
+                        "accuracy_3": []})
 
 #dice_weights = torch.tensor([.2, .4, .4], dtype=torch.float).to(device)
 #dice_loss = DiceLoss(weight=dice_weights, normalization='softmax')
@@ -115,13 +117,13 @@ for ith_epoch in range(0, max_epoch):
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
     
-        seg_output, e_output = model(img_input)
+        seg_output, e_output, ds_output = model(img_input)
 
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
 
-        e_output_f = seg_output[:, 2, :, :, :]
-        e_output_bb = torch.cat((e_output[:, 0, :, :, :], e_output[:, 1, :, :, :]), dim=1)
+        ds_output_f = ds_output[:, 2, :, :, :]
+        ds_output_bb = torch.cat((ds_output[:, 0, :, :, :], ds_output[:, 1, :, :, :]), dim=1)
 
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
@@ -133,10 +135,14 @@ for ith_epoch in range(0, max_epoch):
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
         #          .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
 
-        loss = loss_1 + loss_2
+        loss_3 = dice_loss_org_weights(ds_output_bb, seg_groundtruth_bb, weights_bb) + \
+                 dice_loss_II_weights(ds_output_f, seg_groundtruth_f, weights_f)
+
+        loss = loss_1 + loss_2 + loss_3
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         accuracy_2 = dice_accuracy(e_output, groundtruth_target)
+        accuracy_3 = dice_accuracy(ds_output_f, seg_groundtruth_f)
         
         optimizer.zero_grad()
         loss.backward()
@@ -151,6 +157,7 @@ for ith_epoch in range(0, max_epoch):
             "loss {loss:.5f}\t"
             "loss_1 {loss_1:.5f}\t"
             "loss_2 {loss_2:.5f}\t"
+            "loss_3 {loss_3:.5f}\t"
             "acc {acc:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
@@ -159,6 +166,7 @@ for ith_epoch in range(0, max_epoch):
                 loss = loss.item(),
                 loss_1=loss_1.item(),
                 loss_2=loss_2.item(),
+                loss_3=loss_3.item(),
                 acc = accuracy.item()))
         """
         loss_df = {"epoch": [],
@@ -175,8 +183,10 @@ for ith_epoch in range(0, max_epoch):
                                   "total_loss": loss.item(),
                                   "loss_1": loss_1.item(),
                                   "loss_2": loss_2.item(),
+                                  "loss_3": loss_3.item(),
                                   "accuracy_1": accuracy.item(),
-                                  "accuracy_2": accuracy_2.item()}, ignore_index=True)
+                                  "accuracy_2": accuracy_2.item(),
+                                  "accuracy_3": accuracy_3.item()}, ignore_index=True)
     
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
