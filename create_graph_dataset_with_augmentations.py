@@ -87,6 +87,9 @@ for img_name in HMS_data_dict_train.keys():
         raw_img = np.load(raw_img_path)
         hand_seg = np.load(hand_seg_path)
 
+        print(f"type raw_img: {type(raw_img)}")
+        print(f"shape raw_img: {raw_img.shape}")
+
         output = {
             'raw': np.expand_dims(raw_img, 0),
             'handseg': np.expand_dims(hand_seg, 0)
@@ -98,6 +101,7 @@ for img_name in HMS_data_dict_train.keys():
         raw_img = torch.squeeze(raw_img, dim=0)
         hand_seg = torch.squeeze(hand_seg, dim=0)
         print(f"type raw_img: {type(raw_img)}")
+        print(f"shape raw_img: {raw_img.shape}")
 
         start = time.time()
 
