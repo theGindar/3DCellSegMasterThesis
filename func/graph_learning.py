@@ -378,7 +378,7 @@ class Cluster_Super_Vox_Graph():
         self.LONELY_POINT = -1
         self.A_LARGE_NUM = 100000000
 
-    def fit(self, input_3d_img):
+    def fit(self, input_3d_img, fake_predictions=False):
         self.input_3d_img = input_3d_img
         print("getting neighbor pairs")
         neighbors = self.super_vox_to_nx_graph.get_neighbors_and_touching_area(input_3d_img)
@@ -417,6 +417,10 @@ class Cluster_Super_Vox_Graph():
         print("predict...")
         with torch.no_grad():
             predictions = self.model(voxel_graph, voxel_graph.ndata['feat']).argmax(1).numpy()
+
+        if fake_predictions:
+            print("FAKE PREDICTIONS")
+            predictions = np.ones_like(predictions)
 
         # add predictions column to edges_with_voxel_size
         neighbors_w_prediction = np.c_[predictions, neighbors]
