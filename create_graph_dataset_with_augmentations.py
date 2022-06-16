@@ -54,7 +54,7 @@ HMS_data_dict = load_obj("dataset_info/HMS_dataset_info")
 HMS_data_dict_train = HMS_data_dict["train"]
 
 model = CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=3, output_func="softmax")
-load_path = 'output/model_HMS_w_groupnorm_batchsize5.pkl.pkl'
+load_path = 'output/model_HMS_w_groupnorm_batchsize5.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 
