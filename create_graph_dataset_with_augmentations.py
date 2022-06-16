@@ -87,6 +87,9 @@ for img_name in HMS_data_dict_train.keys():
         raw_img = np.load(raw_img_path)
         hand_seg = np.load(hand_seg_path)
 
+        print(f"raw_img shape: {raw_img.shape}")
+        print(f"hand_seg shape: {hand_seg.shape}")
+
         output = {
             'raw': np.expand_dims(raw_img, 0),
             'handseg': np.expand_dims(hand_seg, 0)
@@ -94,6 +97,8 @@ for img_name in HMS_data_dict_train.keys():
         output_augmented = transform_the_tensor(output)
         raw_img = output_augmented['raw']
         hand_seg = output_augmented['handseg']
+
+
 
         start = time.time()
 
