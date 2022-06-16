@@ -122,8 +122,8 @@ for ith_epoch in range(0, max_epoch):
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
 
-        ds_output_f = ds_output[:, 2, :, :, :]
-        ds_output_bb = torch.cat((ds_output[:, 0, :, :, :], ds_output[:, 1, :, :, :]), dim=1)
+        # ds_output_f = ds_output[:, 2, :, :, :]
+        # ds_output_bb = torch.cat((ds_output[:, 0, :, :, :], ds_output[:, 1, :, :, :]), dim=1)
 
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
@@ -135,10 +135,10 @@ for ith_epoch in range(0, max_epoch):
         #loss_2 = torch.mean(dice_loss.dice(e_output, groundtruth_target)) + \
         #          .5 * torch.mean(wce_loss.forward(e_output, groundtruth_target))
 
-        loss_3 = dice_loss_org_weights(ds_output_bb, seg_groundtruth_bb, weights_bb) + \
-                 dice_loss_II_weights(ds_output_f, seg_groundtruth_f, weights_f)
+        # loss_3 = dice_loss_org_weights(ds_output_bb, seg_groundtruth_bb, weights_bb) + \
+        #         dice_loss_II_weights(ds_output_f, seg_groundtruth_f, weights_f)
 
-        loss = loss_1 + loss_2 + loss_3
+        loss = 2*loss_1 + loss_2 # + loss_3
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         accuracy_2 = dice_accuracy(e_output, groundtruth_target)

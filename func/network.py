@@ -3854,7 +3854,7 @@ class CellSegNet_basic_edge_gated_XIV(nn.Module):
         self.deconv3 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, stride=2, padding=1)
         self.bnorm4 = nn.GroupNorm(1, 32)
         self.conv6 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.conv6_1_out = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
+        # self.conv6_1_out = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=3, stride=1, padding=1)
         self.conv7 = nn.Conv3d(in_channels=32, out_channels=n_classes, kernel_size=1, stride=1)
 
         self.edgegatelayer1 = EdgeGatedLayer_II(64, 64)
@@ -3974,8 +3974,8 @@ class CellSegNet_basic_edge_gated_XIV(nn.Module):
         h_edge = self.conv7_edge(h_edge_bridge)
         output_edge = self.sigmoid_edge(h_edge)
 
-        h_1 = self.conv6_1_out(h)
-        deep_supervision_out = F.softmax(h_1, dim=1)
+        # h_1 = self.conv6_1_out(h)
+        # deep_supervision_out = F.softmax(h_1, dim=1)
 
         # main stream
         h = torch.cat((h, h_edge_bridge), dim=1)
@@ -3984,7 +3984,7 @@ class CellSegNet_basic_edge_gated_XIV(nn.Module):
         h = self.conv7(h)
 
         output = F.softmax(h, dim=1)
-        return output, output_edge, deep_supervision_out
+        return output, output_edge #, deep_supervision_out
 
 class VoxResNet(nn.Module):
     def __init__(self, input_channel=1, n_classes=3, output_func = "softmax"):
