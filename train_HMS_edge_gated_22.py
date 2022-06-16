@@ -183,10 +183,11 @@ for ith_epoch in range(0, max_epoch):
                                   "total_loss": loss.item(),
                                   "loss_1": loss_1.item(),
                                   "loss_2": loss_2.item(),
-                                  "loss_3": loss_3.item(),
+                                  #"loss_3": loss_3.item(),
                                   "accuracy_1": accuracy.item(),
                                   "accuracy_2": accuracy_2.item(),
-                                  "accuracy_3": accuracy_3.item()}, ignore_index=True)
+                                  #"accuracy_3": accuracy_3.item()
+                                  }, ignore_index=True)
     
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
