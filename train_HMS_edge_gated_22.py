@@ -80,7 +80,7 @@ loss_df = pd.DataFrame({"epoch":[],
                         "total_loss": [],
                         "loss_1": [],
                         "loss_2": [],
-                        "loss_3": [],
+                        #"loss_3": [],
                         "accuracy_1": [],
                         "accuracy_2": [],
                         "accuracy_3": []})
@@ -117,7 +117,7 @@ for ith_epoch in range(0, max_epoch):
         weights_f=batch['weights_foreground'].to(device)
         weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
     
-        seg_output, e_output, ds_output = model(img_input)
+        seg_output, e_output = model(img_input)
 
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
@@ -142,7 +142,7 @@ for ith_epoch in range(0, max_epoch):
 
         accuracy=dice_accuracy(seg_output_f, seg_groundtruth_f)
         accuracy_2 = dice_accuracy(e_output, groundtruth_target)
-        accuracy_3 = dice_accuracy(ds_output_f, seg_groundtruth_f)
+        #accuracy_3 = dice_accuracy(ds_output_f, seg_groundtruth_f)
         
         optimizer.zero_grad()
         loss.backward()
@@ -157,7 +157,7 @@ for ith_epoch in range(0, max_epoch):
             "loss {loss:.5f}\t"
             "loss_1 {loss_1:.5f}\t"
             "loss_2 {loss_2:.5f}\t"
-            "loss_3 {loss_3:.5f}\t"
+            #"loss_3 {loss_3:.5f}\t"
             "acc {acc:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
@@ -166,7 +166,7 @@ for ith_epoch in range(0, max_epoch):
                 loss = loss.item(),
                 loss_1=loss_1.item(),
                 loss_2=loss_2.item(),
-                loss_3=loss_3.item(),
+                #loss_3=loss_3.item(),
                 acc = accuracy.item()))
         """
         loss_df = {"epoch": [],
