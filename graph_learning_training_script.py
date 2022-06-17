@@ -129,7 +129,7 @@ for e in range(500):
         val_mask = sample_graph.ndata['val_mask'].to(device)
 
         # create class weights
-        number_positives = torch.count_nonzero(labels)
+        number_positives = torch.count_nonzero(labels).to(device)
         percentage_positives = number_positives / len(labels)
         percentage_negatives = 1 - percentage_positives
 
@@ -143,7 +143,7 @@ for e in range(500):
         logits = model(sample_graph, features)
 
         # Compute prediction
-        pred = logits.argmax(1)
+        pred = logits.argmax(1).to(device)
 
         # Compute loss
         # Note that you should only compute the losses of the nodes in the training set.

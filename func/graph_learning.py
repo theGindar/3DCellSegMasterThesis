@@ -308,7 +308,7 @@ class SuperVoxToNxGraph():
 
 
 class VoxelGraphDataset(DGLDataset):
-    def __init__(self, nx_graph_list, with_ground_truth_labels=True):
+    def __init__(self, nx_graph_list, with_ground_truth_labels=True, with_edge_weights):
         self.nx_graph_list = nx_graph_list
         self.with_ground_truth_labels = with_ground_truth_labels
         super().__init__(name='voxel_graph')
