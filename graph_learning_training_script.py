@@ -138,8 +138,8 @@ for e in range(500):
         #print(weights)
 
         CELoss = nn.CrossEntropyLoss(weight=weights)
-        train_mask = sample_graph.ndata['train_mask']
-        val_mask = sample_graph.ndata['val_mask']
+        train_mask = sample_graph.ndata['train_mask'].to(device)
+        val_mask = sample_graph.ndata['val_mask'].to(device)
         logits = model(sample_graph, features)
 
         # Compute prediction
@@ -147,7 +147,7 @@ for e in range(500):
 
         # Compute loss
         # Note that you should only compute the losses of the nodes in the training set.
-        loss = CELoss(logits[train_mask], labels[train_mask])
+        loss = CELoss(logits[train_mask], labels[train_mask]).to(device)
 
 
 
