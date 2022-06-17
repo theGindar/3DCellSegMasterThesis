@@ -122,18 +122,18 @@ for e in range(500):
     #for graph_number in rand_graph_numbers:
         # Forward
         model.train()
-        sample_graph = dataset[graph_number]
-        features = sample_graph.ndata['feat']
-        labels = sample_graph.ndata['label']
-        train_mask = sample_graph.ndata['train_mask']
-        val_mask = sample_graph.ndata['val_mask']
+        sample_graph = dataset[graph_number].to(device)
+        features = sample_graph.ndata['feat'].to(device)
+        labels = sample_graph.ndata['label'].to(device)
+        train_mask = sample_graph.ndata['train_mask'].to(device)
+        val_mask = sample_graph.ndata['val_mask'].to(device)
 
         # create class weights
         number_positives = torch.count_nonzero(labels)
         percentage_positives = number_positives / len(labels)
         percentage_negatives = 1 - percentage_positives
 
-        weights = torch.tensor([1 - percentage_negatives, 1 - percentage_positives])
+        weights = torch.tensor([1 - percentage_negatives, 1 - percentage_positives]).to(device)
         #weights = torch.tensor([0.95, 0.05])
         #print(weights)
 
