@@ -149,7 +149,7 @@ for e in range(500):
         # Note that you should only compute the losses of the nodes in the training set.
         loss = CELoss(logits[train_mask], labels[train_mask]).to(device)
 
-
+ 
 
         epoch_loss.append(loss.item())
 
@@ -158,8 +158,8 @@ for e in range(500):
         train_acc = (pred[train_mask] == labels[train_mask]).float().mean()
         val_acc = (pred[val_mask] == labels[val_mask]).float().mean()
 
-        train_f1_score = f1(pred[train_mask], labels[train_mask])
-        val_f1_score = f1(pred[val_mask], labels[val_mask])
+        train_f1_score = f1(pred[train_mask].to(device), labels[train_mask].to(device))
+        val_f1_score = f1(pred[val_mask].to(device), labels[val_mask].to(device))
 
 
         epoch_accuracy.append(train_acc.item())
