@@ -132,7 +132,7 @@ for ith_epoch in range(0, max_epoch):
 
         weights_boundary = (batch['weights_boundary'].to(device) + weights_consistency).to(device)
 
-        weights_bb = torch.cat((batch['weights_background'], weights_boundary), dim=1).to(device)
+        weights_bb = torch.cat((batch['weights_background'].to(device), weights_boundary), dim=1).to(device)
 
         """
         END CALCULATE CONSISTENCY WEIGHTS
