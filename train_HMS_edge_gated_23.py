@@ -133,7 +133,7 @@ for ith_epoch in range(0, max_epoch):
         weights_boundary = (batch['weights_boundary'].to(device) + weights_consistency).to(device)
 
         print(f"weights_background shape: {batch['weights_background'].shape}")
-        print(f"weights_boundary shape: {batch['weights_boundary'].shape}")
+        print(f"weights_boundary shape: {weights_boundary.shape}")
         weights_background = batch['weights_background'].to(device)
         weights_bb = torch.cat((weights_background, weights_boundary), dim=1).to(device)
 
