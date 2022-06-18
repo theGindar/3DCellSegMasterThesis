@@ -149,7 +149,7 @@ for e in range(500):
         # Note that you should only compute the losses of the nodes in the training set.
         loss = CELoss(logits[train_mask], labels[train_mask]).to(device)
 
- 
+
 
         epoch_loss.append(loss.item())
 

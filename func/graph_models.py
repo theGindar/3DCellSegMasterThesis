@@ -8,9 +8,9 @@ from dgl.nn.pytorch.conv import gatconv
 class GCN(nn.Module):
     def __init__(self, in_feats, num_classes):
         super(GCN, self).__init__()
-        self.conv1 = GraphConv(in_feats, 4)
+        self.conv1 = GraphConv(in_feats, 16)
         self.dropout = nn.Dropout(p=0.5)
-        self.conv2 = GraphConv(4, num_classes)
+        self.conv2 = GraphConv(16, num_classes)
         # self.activation = nn.Softmax()
 
     def forward(self, g, in_feat):

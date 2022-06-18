@@ -306,11 +306,19 @@ class SuperVoxToNxGraph():
                                           with_ground_truth=True)
         return graph
 
+from torchvision.transforms import Normalize
+
+def normalize_tensor(tensor):
+    min = torch.min(tensor)
+    max = torch.max(tensor)
+    tensor_normalized = (tensor - min) / (max - min)
+    return tensor_normalized
 
 class VoxelGraphDataset(DGLDataset):
     def __init__(self, nx_graph_list, with_ground_truth_labels=True, with_edge_weights=True):
         self.nx_graph_list = nx_graph_list
         self.with_ground_truth_labels = with_ground_truth_labels
+        self.with_edge_weights = with_edge_weights
         super().__init__(name='voxel_graph')
 
     def process(self):
@@ -318,9 +326,15 @@ class VoxelGraphDataset(DGLDataset):
         for nx_graph in self.nx_graph_list:
             n_nodes = nx.number_of_nodes(nx_graph)
             if self.with_ground_truth_labels:
-                graph = dgl.from_networkx(nx_graph, node_attrs=["feat", "label"], edge_attrs=["weight"])
+                if self.with_edge_weights:
+                    graph = dgl.from_networkx(nx_graph, node_attrs=["feat", "label"], edge_attrs=["weight"])
+                else:
+                    graph = dgl.from_networkx(nx_graph, node_attrs=["feat", "label"])
             else:
-                graph = dgl.from_networkx(nx_graph, node_attrs=["feat"], edge_attrs=["weight"])
+                if self.with_edge_weights:
+                    graph = dgl.from_networkx(nx_graph, node_attrs=["feat"], edge_attrs=["weight"])
+                else:
+                    graph = dgl.from_networkx(nx_graph, node_attrs=["feat"])
 
             graph = dgl.add_self_loop(graph)
 
@@ -328,17 +342,42 @@ class VoxelGraphDataset(DGLDataset):
             # unsqueeze features since they are only scalars
             # not needed anymore, since features are now a vector
             # graph.ndata['feat'] = torch.unsqueeze(graph.ndata['feat'], dim=1)
-            graph.edata['weight'] = torch.unsqueeze(graph.edata['weight'], dim=1)
+            if self.with_edge_weights:
+                graph.edata['weight'] = torch.unsqueeze(graph.edata['weight'], dim=1)
+                # graph.edata['weight'] = F.normalize(graph.edata['weight'], p=2.0, dim=0)
+                graph.edata['weight'] = normalize_tensor(graph.edata['weight'])
+                # print(torch.unique(graph.edata['weight']))
+                # graph.edata['weight'] = Normalize(graph.edata['weight'])
+
+            # print(graph.edata['weight'])
 
             # normalize the features
             # graph.ndata['feat'][0:2] = F.normalize(graph.ndata['feat'][0:2], p=2.0)
             # graph.ndata['feat'][2] = F.normalize(graph.ndata['feat'][2], p=2.0)
-            graph.ndata['feat'] = F.normalize(graph.ndata['feat'], p=2.0)
+
+            # print(f"feat shape: {graph.ndata['feat'][:, 2].shape}")
+            # print(f"feat shape: {graph.ndata['feat'][:, 0:2].shape}")
+
+            # graph.ndata['feat'][: ,0:2] = F.normalize(graph.ndata['feat'][:, 0:2], p=2.0, dim=0)
+            # graph.ndata['feat'][:, 2] = F.normalize(graph.ndata['feat'][:, 2], p=2.0, dim=0)
+
+            graph.ndata['feat'][:, 0:2] = normalize_tensor(graph.ndata['feat'][:, 0:2])
+            graph.ndata['feat'][:, 2] = normalize_tensor(graph.ndata['feat'][:, 2])
+
+            """
+            print("feat...")
+            print(f"max 1: {torch.max(graph.ndata['feat'][: ,0])}")
+            print(f"max 2: {torch.max(graph.ndata['feat'][:, 1])}")
+            print(f"max 3: {torch.max(graph.ndata['feat'][:, 2])}")
+            print(f"min 1: {torch.min(graph.ndata['feat'][:, 0])}")
+            print(f"min 2: {torch.min(graph.ndata['feat'][:, 1])}")
+            print(f"min 3: {torch.min(graph.ndata['feat'][:, 2])}")
+            print(graph.ndata['feat'][: ,0:2])
+            """
+            # graph.ndata['feat'] = Normalize(graph.ndata['feat'])
             # print(graph.number_of_nodes())
             # print(graph.ndata['feat'].shape)
             # print(graph.edata['weight'].shape)
-
-            graph.edata['weight'] = F.normalize(graph.edata['weight'], p=2.0)
 
             if self.with_ground_truth_labels:
                 graph.ndata['label'] = graph.ndata['label'].type(torch.LongTensor)

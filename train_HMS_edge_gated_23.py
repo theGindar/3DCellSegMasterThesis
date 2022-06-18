@@ -24,10 +24,10 @@ import pandas as pd
 
 # hyperparameters
 # ----------
-save_path = 'output/model_HMS_edge_gated_12.pkl'
+save_path = 'output/model_HMS_edge_gated_23.pkl'
 need_resume = False
-load_path = 'output/model_HMS_edge_gated_12.pkl'
-loss_save_path = 'output/loss_HMS_edge_gated_12.csv'
+load_path = 'output/model_HMS_edge_gated_23.pkl'
+loss_save_path = 'output/loss_HMS_edge_gated_23.csv'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
@@ -113,16 +113,28 @@ for ith_epoch in range(0, max_epoch):
                                         seg_edge_foreground_groundtruth), dim=1).to(device)
         
         weights_f=batch['weights_foreground'].to(device)
-        weights_bb=torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
     
         seg_output, e_output = model(img_input)
 
         seg_output_f=seg_output[:,2,:,:,:]
         seg_output_bb=torch.cat((seg_output[:,0,:,:,:], seg_output[:,1,:,:,:]), dim=1)
 
-        # TODO BUG
-        e_output_f = seg_output[:, 2, :, :, :]
+        e_output_f = e_output[:, 2, :, :, :]
         e_output_bb = torch.cat((e_output[:, 0, :, :, :], e_output[:, 1, :, :, :]), dim=1)
+
+        """
+        CALCULATE CONSISTENCY WEIGHTS
+        """
+        weights_consistency = 0.4 * ((seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float)).to(device)
+
+        weights_boundary = batch['weights_boundary'] + weights_consistency
+
+        weights_bb = torch.cat((batch['weights_background'], weights_boundary), dim=1).to(device)
+
+        """
+        END CALCULATE CONSISTENCY WEIGHTS
+        """
+
 
         loss_1=dice_loss_org_weights(seg_output_bb, seg_groundtruth_bb, weights_bb)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
