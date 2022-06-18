@@ -81,7 +81,8 @@ loss_df = pd.DataFrame({"epoch":[],
                         "loss_1": [],
                         "loss_2": [],
                         "accuracy_1": [],
-                        "accuracy_2": []})
+                        "accuracy_2": [],
+                        "consistency_weights": []})
 
 #dice_weights = torch.tensor([.2, .4, .4], dtype=torch.float).to(device)
 #dice_loss = DiceLoss(weight=dice_weights, normalization='softmax')
@@ -127,7 +128,9 @@ for ith_epoch in range(0, max_epoch):
         """
         weights_consistency = 0.4 * ((seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)).to(device)
 
-        weights_boundary = batch['weights_boundary'].to(device) + weights_consistency
+        total_weights_consistency = torch.sum(weights_consistency)
+
+        weights_boundary = (batch['weights_boundary'].to(device) + weights_consistency).to(device)
 
         weights_bb = torch.cat((batch['weights_background'], weights_boundary), dim=1).to(device)
 
@@ -164,7 +167,8 @@ for ith_epoch in range(0, max_epoch):
             "loss {loss:.5f}\t"
             "loss_1 {loss_1:.5f}\t"
             "loss_2 {loss_2:.5f}\t"
-            "acc {acc:.5f}\t".format(
+            "acc {acc:.5f}\t"
+            "consistency {consistency:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
                 ith_batch,
@@ -172,6 +176,7 @@ for ith_epoch in range(0, max_epoch):
                 loss = loss.item(),
                 loss_1=loss_1.item(),
                 loss_2=loss_2.item(),
+                consistency=total_weights_consistency.item(),
                 acc = accuracy.item()))
         """
         loss_df = {"epoch": [],
@@ -189,7 +194,8 @@ for ith_epoch in range(0, max_epoch):
                                   "loss_1": loss_1.item(),
                                   "loss_2": loss_2.item(),
                                   "accuracy_1": accuracy.item(),
-                                  "accuracy_2": accuracy_2.item()}, ignore_index=True)
+                                  "accuracy_2": accuracy_2.item(),
+                                  "consistency_weights": total_weights_consistency.item()}, ignore_index=True)
     
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
