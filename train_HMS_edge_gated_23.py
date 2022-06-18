@@ -125,7 +125,7 @@ for ith_epoch in range(0, max_epoch):
         """
         CALCULATE CONSISTENCY WEIGHTS
         """
-        weights_consistency = 0.4 * ((seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float)).to(device)
+        weights_consistency = 0.4 * ((seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)).to(device)
 
         weights_boundary = batch['weights_boundary'] + weights_consistency
 
