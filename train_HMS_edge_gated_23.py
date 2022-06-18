@@ -134,10 +134,12 @@ for ith_epoch in range(0, max_epoch):
 
         print(f"weights_background shape: {batch['weights_background'].shape}")
         print(f"weights_boundary shape: {batch['weights_boundary'].shape}")
-        weights_bb = torch.cat((batch['weights_background'].to(device), weights_boundary), dim=1).to(device)
+        weights_background = batch['weights_background'].to(device)
+        weights_bb = torch.cat((weights_background, weights_boundary), dim=1).to(device)
 
         weights_bb_old = torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
         print(f"weights_bb shape: {weights_bb.shape}")
+        print(f"weights_bb_old shape: {weights_bb_old.shape}")
 
         """
         END CALCULATE CONSISTENCY WEIGHTS
