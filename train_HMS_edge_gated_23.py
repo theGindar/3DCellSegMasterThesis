@@ -126,25 +126,27 @@ for ith_epoch in range(0, max_epoch):
         """
         CALCULATE CONSISTENCY WEIGHTS
         """
-        print(f"seg_output_f shape: {seg_output_f.shape}")
-        print(f"e_output_f shape: {e_output_f.shape}")
-        print(f"1: {(seg_output_f * (1 - e_output_f)).to(device).shape}")
-        print(f"2: {(seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)).to(device).shape}")
-        print(f"3: {(seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device).shape}")
-        weights_consistency = 0.4 * ((seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)).to(device)
+        # print(f"seg_output_f shape: {seg_output_f.shape}")
+        # print(f"e_output_f shape: {e_output_f.shape}")
+        # print(f"1: {(seg_output_f * (1 - e_output_f)).to(device).shape}")
+        # print(f"2: {(seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)).to(device).shape}")
+        # print(f"3: {(seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device).shape}")
+        seg_output_f_unsqueezed = torch.unsqueeze(seg_output_f, 1)
+        e_output_f_unsqueezed = torch.unsqueeze(e_output_f, 1)
+        weights_consistency = 0.4 * ((seg_output_f_unsqueezed * (1 - e_output_f_unsqueezed) * torch.pow((seg_output_f_unsqueezed + e_output_f_unsqueezed), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)).to(device)
 
         total_weights_consistency = torch.sum(weights_consistency)
 
         weights_boundary = (batch['weights_boundary'].to(device) + weights_consistency).to(device)
-        print(f"weights_consistency shape: {weights_consistency.shape}")
+        # print(f"weights_consistency shape: {weights_consistency.shape}")
         print(f"weights_background shape: {batch['weights_background'].shape}")
-        print(f"weights_boundary shape: {weights_boundary.shape}")
+        # print(f"weights_boundary shape: {weights_boundary.shape}")
         weights_background = batch['weights_background'].to(device)
         weights_bb = torch.cat((weights_background, weights_boundary), dim=1).to(device)
 
         weights_bb_old = torch.cat((batch['weights_background'], batch['weights_boundary']), dim=1).to(device)
-        print(f"weights_bb shape: {weights_bb.shape}")
-        print(f"weights_bb_old shape: {weights_bb_old.shape}")
+        # print(f"weights_bb shape: {weights_bb.shape}")
+        # print(f"weights_bb_old shape: {weights_bb_old.shape}")
 
         """
         END CALCULATE CONSISTENCY WEIGHTS
