@@ -24,10 +24,10 @@ import pandas as pd
 
 # hyperparameters
 # ----------
-save_path = 'output/model_HMS_edge_gated_25_1.pkl'
+save_path = 'output/model_HMS_edge_gated_24_1.pkl'
 need_resume = False
-load_path = 'output/model_HMS_edge_gated_25_1.pkl'
-loss_save_path = 'output/loss_HMS_edge_gated_25_1.csv'
+load_path = 'output/model_HMS_edge_gated_24_1.pkl'
+loss_save_path = 'output/loss_HMS_edge_gated_24_1.csv'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
@@ -133,7 +133,7 @@ for ith_epoch in range(0, max_epoch):
         # print(f"3: {(seg_output_f * (1 - e_output_f) * torch.pow((seg_output_f + e_output_f), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device).shape}")
         seg_output_f_unsqueezed = torch.unsqueeze(seg_output_f, 1)
         e_output_f_unsqueezed = torch.unsqueeze(e_output_f, 1)
-        weights_consistency = 0.2 * ((seg_output_f_unsqueezed * (1 - e_output_f_unsqueezed) * torch.pow((seg_output_f_unsqueezed + e_output_f_unsqueezed), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)).to(device)
+        weights_consistency = 0.7 * ((seg_output_f_unsqueezed * (1 - e_output_f_unsqueezed) * torch.pow((seg_output_f_unsqueezed + e_output_f_unsqueezed), 2)) * torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)).to(device)
 
         total_weights_consistency = torch.sum(weights_consistency)
 
