@@ -454,8 +454,17 @@ class Cluster_Super_Vox_Graph():
         self.model.eval()
 
         print("predict...")
+
+        # for model with two outputs!
+        # with torch.no_grad():
+        #     predictions = self.model(voxel_graph, voxel_graph.ndata['feat']).argmax(1).numpy()
+
+        # for model with one output!
+        print("using prediction for single-output model")
         with torch.no_grad():
-            predictions = self.model(voxel_graph, voxel_graph.ndata['feat']).argmax(1).numpy()
+            model_output = torch.sigmoid(self.model(voxel_graph, voxel_graph.ndata['feat']))
+            predictions = (model_output > 0.5).type(torch.FloatTensor)
+
 
         if fake_predictions:
             print("FAKE PREDICTIONS")
