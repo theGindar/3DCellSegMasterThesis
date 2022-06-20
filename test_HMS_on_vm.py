@@ -23,7 +23,7 @@ model=CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=3, output_func = 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
-load_path='output/model_HMS_edge_gated_25.pkl'
+load_path='output/model_HMS_edge_gated_24_1.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
