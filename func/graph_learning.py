@@ -465,6 +465,7 @@ class Cluster_Super_Vox_Graph():
             model_output = torch.sigmoid(self.model(voxel_graph, voxel_graph.ndata['feat']))
             predictions = (model_output > 0.5).type(torch.FloatTensor)
 
+        print(f"number of negatives: {len(predictions[predictions==0])}")
 
         if fake_predictions:
             print("FAKE PREDICTIONS")
