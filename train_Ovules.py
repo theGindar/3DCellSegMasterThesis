@@ -12,9 +12,9 @@ import time
 
 # hyperparameters
 # ----------
-save_path = 'output/model_Ovules.pkl'
+save_path = 'output/model_Ovules_retrained.pkl'
 need_resume = True
-load_path = 'output/model_Ovules.pkl'
+load_path = 'output/model_Ovules_retrained.pkl'
 learning_rate = 1e-4
 max_epoch = 1000
 model_save_freq = 20
