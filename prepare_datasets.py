@@ -27,6 +27,7 @@ os.system(run_py_script)
 ##### HMS #####
 """
 
+"""
 ##### HMS with edges #####
 source_path_raw_img = "data/CellSeg_dataset/HMS/raw"
 source_path_seg_img = "data/CellSeg_dataset/HMS/segmentation_delete_fake_cells"
@@ -49,7 +50,7 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_HMS.py "+\
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### HMS #####
-
+"""
 
 """
 ##### ATAS #####
@@ -118,7 +119,7 @@ os.system(run_py_script)
 ##### LRP #####
 """
 
-"""
+
 ##### Ovules #####
 source_file_path = "data/CellSeg_dataset/Ovules"
 output_file_path = "data/CellSeg_dataset/Ovules_processed_thin_boundary"
@@ -138,4 +139,3 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_Ovules.py "+\
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### Ovules #####
-"""
