@@ -45,7 +45,7 @@ load_path = 'output/model_Ovules_retrained.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 
-# model.eval()
+model.eval()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
