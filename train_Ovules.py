@@ -1,6 +1,6 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset_old
-from func.network import VoxResNet, CellSegNet_basic_lite
+from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
 from func.ultis import save_obj, load_obj
 
@@ -12,9 +12,9 @@ import time
 
 # hyperparameters
 # ----------
-save_path = 'output/model_Ovules_retrained.pkl'
+save_path = 'output/model_Ovules_retrained_groupnorm.pkl'
 need_resume = True
-load_path = 'output/model_Ovules_retrained.pkl'
+load_path = 'output/model_Ovules_retrained_groupnorm.pkl'
 learning_rate = 1e-4
 max_epoch = 1000
 model_save_freq = 20
@@ -35,7 +35,7 @@ torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
-model=CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
