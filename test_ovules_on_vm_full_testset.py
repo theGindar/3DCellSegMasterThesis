@@ -21,7 +21,7 @@ from func.run_pipeline_super_vox import segment_super_vox_3_channel, semantic_se
     delete_too_small_cluster, reassign
 from func.run_pipeline import segment, assign_boudary_voxels_to_cells, dbscan_of_seg, semantic_segment_crop_and_cat
 from func.cal_accuracy import IOU_and_Dice_Accuracy, VOI
-from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm
+from func.network import VoxResNet, CellSegNet_basic_lite
 from func.unet_3d_basic import UNet3D_basic
 from func.ultis import save_obj, load_obj
 
@@ -40,8 +40,10 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 # model=VoxResNet(input_channel=1, n_classes=3, output_func = "softmax")
 # load_path=''
-model = CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=3, output_func="softmax")
-load_path = 'output/model_Ovules_retrained_groupnorm.pkl'
+model = CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func="softmax")
+model_name = "model_Ovules_retrained"
+results_output_path = "output/results_test_model_Ovules_retrained.csv"
+load_path = 'output/model_Ovules_retrained.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 
@@ -52,6 +54,7 @@ model.to(device)
 
 
 Ovules_data_dict = load_obj("dataset_info/Ovules_dataset_info")
+Ovules_data_dict_test = Ovules_data_dict["test"]
 
 
 ### seg one img
@@ -276,3 +279,127 @@ print('avg iou: ' + str(np.mean(accuracy_record[:, 1])))
 print('avg dice: ' + str(np.mean(accuracy_record[:, 2])))
 
 # %%
+def pipeline(raw_img, hand_seg, model, device,
+             crop_cube_size, stride,
+             how_close_are_the_super_vox_to_boundary=2,
+             min_touching_area=30,
+             min_touching_percentage=0.51,
+             min_cell_size_threshold=1,
+             transposes=[[0, 1, 2]], reverse_transposes=[[0, 1, 2]]):
+    seg_final = segment_super_vox_3_channel(raw_img, model, device,
+                                             crop_cube_size=crop_cube_size, stride=stride,
+                                             how_close_are_the_super_vox_to_boundary=how_close_are_the_super_vox_to_boundary,
+                                             min_touching_area=min_touching_area,
+                                             min_touching_percentage=min_touching_percentage,
+                                             min_cell_size_threshold=min_cell_size_threshold,
+                                             transposes=transposes,
+                                             reverse_transposes=reverse_transposes)
+
+    ari = adjusted_rand_score(hand_seg.flatten(), seg_final.flatten())
+    voi = VOI(seg_final.astype(np.int), hand_seg.astype(np.int))
+
+    scale_factor = 0.3
+    org_shape = seg_final.shape
+    output_size = (int(org_shape[0] * scale_factor), int(org_shape[1] * scale_factor), int(org_shape[2] * scale_factor))
+    print(str(org_shape) + " --> " + str(output_size))
+
+    accuracy = IOU_and_Dice_Accuracy(img_3d_interpolate(hand_seg, output_size=output_size),
+                                     img_3d_interpolate(seg_final, output_size=output_size))
+    accuracy_record = accuracy.cal_accuracy_II()
+    hand_seg_after_accuracy = accuracy.gt
+    seg_final_after_accuracy = accuracy.pred
+
+    return accuracy_record, hand_seg_after_accuracy, seg_final_after_accuracy, ari, voi, seg_final
+
+
+
+# mass process
+seg_final_dict = {}
+accuracy_record_dict = {}
+ari_dict = {}
+voi_dict = {}
+for test_file in Ovules_data_dict_test.keys():
+    print(test_file)
+    raw_img = np.load(Ovules_data_dict_test[test_file]["raw"])
+    hand_seg = np.load(Ovules_data_dict_test[test_file]["ins"])
+    accuracy_record, hand_seg_after_accuracy, seg_final_after_accuracy, ari, voi, seg_final = \
+        pipeline(raw_img, hand_seg, model, device,
+                 crop_cube_size=128,
+                 stride=64)
+
+    seg_final_dict[test_file] = seg_final
+    accuracy_record_dict[test_file] = accuracy_record
+    ari_dict[test_file] = ari
+    voi_dict[test_file] = voi
+
+    iou = np.array(accuracy_record[:, 1] > 0.7, dtype=np.float)
+    print(".")
+    print('cell count accuracy iou >0.7: ' + str(sum(iou) / len(iou)))
+
+    dice = np.array(accuracy_record[:, 2] > 0.7, dtype=np.float)
+    print(".")
+    print('cell count accuracy dice >0.7: ' + str(sum(dice) / len(dice)))
+
+    iou = np.array(accuracy_record[:, 1] > 0.5, dtype=np.float)
+    print(".")
+    print('cell count accuracy iou >0.5: ' + str(sum(iou) / len(iou)))
+
+    dice = np.array(accuracy_record[:, 2] > 0.5, dtype=np.float)
+    print(".")
+    print('cell count accuracy dice >0.5: ' + str(sum(dice) / len(dice)))
+
+    print('avg iou: ' + str(np.mean(accuracy_record[:, 1])))
+    print('avg dice: ' + str(np.mean(accuracy_record[:, 2])))
+    print("ari: " + str(ari))
+    print("voi: " + str(voi))
+    print("----------")
+
+
+results_df = pd.DataFrame({"acc_iou_0_7":[],
+                           "acc_iou_0_5":[],
+                           "acc_dice_0_7":[],
+                           "acc_dice_0_5":[],
+                           "avg_iou":[],
+                           "avg_dice":[],
+                           "voi_1":[],
+                           "voi_2":[]})
+for item in seg_final_dict.keys():
+    print(item)
+    accuracy_record = accuracy_record_dict[item]
+    ari = ari_dict[item]
+    voi = voi_dict[item]
+    iou = np.array(accuracy_record[:, 1] > 0.7, dtype=np.float)
+    print('cell count accuracy iou >0.7: ' + str(sum(iou) / len(iou)))
+    iou_0_7 = sum(iou) / len(iou)
+
+    dice = np.array(accuracy_record[:, 2] > 0.7, dtype=np.float)
+    print('cell count accuracy dice >0.7: ' + str(sum(dice) / len(dice)))
+    dice_0_7 = sum(dice) / len(dice)
+
+    iou = np.array(accuracy_record[:, 1] > 0.5, dtype=np.float)
+    print('cell count accuracy iou >0.5: ' + str(sum(iou) / len(iou)))
+    iou_0_5 = sum(iou) / len(iou)
+
+    dice = np.array(accuracy_record[:, 2] > 0.5, dtype=np.float)
+    print('cell count accuracy dice >0.5: ' + str(sum(dice) / len(dice)))
+    dice_0_5 = sum(dice) / len(dice)
+
+    print('avg iou: ' + str(np.mean(accuracy_record[:, 1])))
+    avg_iou = np.mean(accuracy_record[:, 1])
+
+    print('avg dice: ' + str(np.mean(accuracy_record[:, 2])))
+    avg_dice = np.mean(accuracy_record[:, 2])
+    print("ari: " + str(ari))
+    print("voi: " + str(voi))
+    print("----------")
+    results_df.append({"acc_iou_0_7":iou_0_7,
+                       "acc_iou_0_5":iou_0_5,
+                       "acc_dice_0_7":dice_0_7,
+                       "acc_dice_0_5":dice_0_5,
+                       "avg_iou":avg_iou,
+                       "avg_dice":avg_dice,
+                       "voi_1":voi[0],
+                       "voi_2":voi[1]}, ignore_index=True)
+
+results_df.to_csv(results_output_path)
+print(f"for model {load_path}")
