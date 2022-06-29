@@ -56,8 +56,8 @@ Ovules_data_dict = load_obj("dataset_info/Ovules_dataset_info")
 
 ### seg one img
 # we do not input the whole raw image to the model one time but input raw image crops
-crop_cube_size = 128
-stride = 64
+crop_cube_size = 64
+stride = 32
 
 # hyperparameter for TASCAN, min touching area of two super pixels if they belong to the same cell
 min_touching_area = 30
