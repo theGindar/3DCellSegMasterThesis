@@ -320,8 +320,10 @@ ari_dict = {}
 voi_dict = {}
 for test_file in Ovules_data_dict_test.keys():
     print(test_file)
-    raw_img = np.load(Ovules_data_dict_test[test_file]["raw"])
-    hand_seg = np.load(Ovules_data_dict_test[test_file]["ins"])
+    hf = np.load(Ovules_data_dict_test[test_file])
+    raw_img = np.array(hf["raw"], dtype=np.float)
+    hand_seg = np.array(hf["ins"], dtype=np.float)
+
     accuracy_record, hand_seg_after_accuracy, seg_final_after_accuracy, ari, voi, seg_final = \
         pipeline(raw_img, hand_seg, model, device,
                  crop_cube_size=128,
