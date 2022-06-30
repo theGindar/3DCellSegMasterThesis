@@ -103,13 +103,13 @@ for ith_epoch in range(0, max_epoch):
 
         # debug stuff
         if accuracy == 0.:
-            with open('debug_stuff/seg_output.npy', 'rb')as f:
+            with open('debug_stuff/seg_output.npy', 'wb')as f:
                 np.save(f, seg_output.cpu().detach().numpy())
-            with open('debug_stuff/seg_groundtruth_f.npy', 'rb')as f:
+            with open('debug_stuff/seg_groundtruth_f.npy', 'wb')as f:
                 np.save(f, seg_groundtruth_f.cpu().detach().numpy())
-            with open('debug_stuff/seg_groundtruth_ba.npy', 'rb')as f:
+            with open('debug_stuff/seg_groundtruth_ba.npy', 'wb')as f:
                 np.save(f, seg_groundtruth_ba.cpu().detach().numpy())
-            with open('debug_stuff/seg_groundtruth_bo.npy', 'rb')as f:
+            with open('debug_stuff/seg_groundtruth_bo.npy', 'wb')as f:
                 np.save(f, seg_groundtruth_bo.cpu().detach().numpy())
             print("saved bad results")
         
