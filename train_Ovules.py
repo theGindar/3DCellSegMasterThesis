@@ -37,7 +37,7 @@ np.random.seed(0)
 
 
 print(f"number of gpus: {torch.cuda.device_count()}")
-torch.cuda.set_device(0)
+torch.cuda.set_device(1)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
