@@ -5,6 +5,7 @@ from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, di
 from func.ultis import save_obj, load_obj
 
 import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 import os
@@ -12,9 +13,10 @@ import time
 
 # hyperparameters
 # ----------
-save_path = 'output/model_Ovules_retrained_different_loss.pkl'
+save_path = 'output/model_Ovules_retrained_control_background.pkl'
 need_resume = True
-load_path = 'output/model_Ovules_retrained_different_loss.pkl'
+load_path = 'output/model_Ovules_retrained_control_background.pkl'
+loss_save_path = 'output/loss_Ovules_retrained_control_background.pkl'
 learning_rate = 1e-4
 max_epoch = 1000
 model_save_freq = 20
@@ -60,6 +62,12 @@ print('num of train files: '+str(len(Ovules_data_dict['train'].keys())))
 print('max epoch: '+str(max_epoch))
 
 start_time = time.time()
+
+loss_df = pd.DataFrame({"epoch":[],
+                        "batch": [],
+                        "time": [],
+                        "loss": [],
+                        "accuracy": []})
 
 for ith_epoch in range(0, max_epoch):
     for ith_batch, batch in enumerate(dataset_loader):
@@ -107,9 +115,16 @@ for ith_epoch in range(0, max_epoch):
                 time = time_consumption,
                 loss = loss.item(),
                 acc = accuracy.item()))
+
+        loss_df = loss_df.append({"epoch": ith_epoch + 1,
+                                  "batch": ith_batch,
+                                  "time": time_consumption,
+                                  "loss": loss.item(),
+                                  "accuracy": accuracy.item()}, ignore_index=True)
     
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')
         model.to(torch.device('cpu'))
         torch.save({'model_state_dict': model.state_dict()}, save_path)
         model.to(device)
+        loss_df.to_csv(loss_save_path)

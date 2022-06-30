@@ -334,11 +334,22 @@ class Cell_Seg_3D_Dataset_old(Dataset):
         assert seg_background.shape == seg_boundary.shape
         assert seg_boundary.shape == seg_foreground.shape
 
-        start_points = random3dcrop.random_crop_start_point(raw_3d_img.shape)
-        raw_3d_img = random3dcrop(raw_3d_img, start_points=start_points)
-        seg_background = random3dcrop(seg_background, start_points=start_points)
-        seg_boundary = random3dcrop(seg_boundary, start_points=start_points)
-        seg_foreground = random3dcrop(seg_foreground, start_points=start_points)
+
+        # make sure the sample is not just background, since this would destabilize training
+        bg_zero_percentage = 1
+        while bg_zero_percentage > 0.95:
+            start_points = random3dcrop.random_crop_start_point(raw_3d_img.shape)
+            raw_3d_img = random3dcrop(raw_3d_img, start_points=start_points)
+            seg_background = random3dcrop(seg_background, start_points=start_points)
+            seg_boundary = random3dcrop(seg_boundary, start_points=start_points)
+            seg_foreground = random3dcrop(seg_foreground, start_points=start_points)
+
+            num_bg_zeros = np.count_nonzero(seg_background==0)
+            # num_bg_non_zeros = np.count_nonzero(seg_background != 0)
+
+            bg_zero_percentage = num_bg_zeros / seg_background.size
+            print(f"background percentage: {bg_zero_percentage}")
+
 
         raw_3d_img = np.expand_dims(raw_3d_img, axis=0)
         seg_background = np.expand_dims(seg_background, axis=0)
