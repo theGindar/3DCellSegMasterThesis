@@ -91,13 +91,13 @@ for ith_epoch in range(0, max_epoch):
         seg_output_ba=seg_output[:,0,:,:,:]
         seg_output_bo=seg_output[:,1,:,:,:]
         
-        # loss=10*dice_loss_org_weights(seg_output_bo, seg_groundtruth_bo, weights_bo)+\
-        #     dice_loss_org_weights(seg_output_ba, seg_groundtruth_ba, weights_ba)+\
-        #         dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
+        loss=10*dice_loss_org_weights(seg_output_bo, seg_groundtruth_bo, weights_bo)+\
+            dice_loss_org_weights(seg_output_ba, seg_groundtruth_ba, weights_ba)+\
+                dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
-        loss = dice_loss_org_weights(seg_output_bo, seg_groundtruth_bo, weights_bo) + \
-                 dice_loss_org_weights(seg_output_ba, seg_groundtruth_ba, weights_ba)+\
-                 dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
+        # loss = dice_loss_org_weights(seg_output_bo, seg_groundtruth_bo, weights_bo) + \
+        #          dice_loss_org_weights(seg_output_ba, seg_groundtruth_ba, weights_ba)+\
+        #          dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         accuracy=dice_accuracy(seg_output_bo, seg_groundtruth_bo)
         
