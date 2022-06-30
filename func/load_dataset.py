@@ -354,9 +354,10 @@ class Cell_Seg_3D_Dataset_old(Dataset):
                 print(f"background percentage: {bg_zero_percentage}")
 
             reshuffle_counter += 1
-            if reshuffle_counter >= 30:
+            if reshuffle_counter >= 100:
                 print("bad sample:")
                 print(name)
+                reshuffle_counter = 0
         print("WENT ON....")
 
 
