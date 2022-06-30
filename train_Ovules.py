@@ -100,6 +100,18 @@ for ith_epoch in range(0, max_epoch):
         #          dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
 
         accuracy=dice_accuracy(seg_output_bo, seg_groundtruth_bo)
+
+        # debug stuff
+        if accuracy == 0.:
+            with open('debug_stuff/seg_output.npy')as f:
+                np.save(f, seg_output.cpu().detach().numpy())
+            with open('debug_stuff/seg_groundtruth_f.npy')as f:
+                np.save(f, seg_groundtruth_f.cpu().detach().numpy())
+            with open('debug_stuff/seg_groundtruth_ba.npy')as f:
+                np.save(f, seg_groundtruth_ba.cpu().detach().numpy())
+            with open('debug_stuff/seg_groundtruth_bo.npy')as f:
+                np.save(f, seg_groundtruth_bo.cpu().detach().numpy())
+            print("saved bad results")
         
         optimizer.zero_grad()
         loss.backward()
