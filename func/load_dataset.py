@@ -348,7 +348,7 @@ class Cell_Seg_3D_Dataset_old(Dataset):
             # num_bg_non_zeros = np.count_nonzero(seg_background != 0)
 
             bg_zero_percentage = num_bg_zeros / seg_background.size
-            if bg_zero_percentage < 0.95
+            if bg_zero_percentage < 0.95:
                 print(f"background percentage: {bg_zero_percentage}")
         print("WENT ON....")
 
