@@ -348,6 +348,7 @@ class Cell_Seg_3D_Dataset_old(Dataset):
             # num_bg_non_zeros = np.count_nonzero(seg_background_crop != 0)
 
             bg_zero_percentage = num_bg_zeros / seg_background_crop.size
+            print(f"background size {seg_background_crop.size}")
             # print(f"background percentage: {bg_zero_percentage}")
         # print(f"good sample: {name}")
         print(f"zero percentage: {bg_zero_percentage}")
