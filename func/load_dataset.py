@@ -354,11 +354,12 @@ class Cell_Seg_3D_Dataset_old(Dataset):
                 print(f"background percentage: {bg_zero_percentage}")
 
             reshuffle_counter += 1
-            if reshuffle_counter >= 100:
+            if reshuffle_counter >= 1000:
                 print("bad sample:")
                 print(name)
                 reshuffle_counter = 0
         print("WENT ON....")
+        print(f"good sample: {name}")
 
 
         raw_3d_img = np.expand_dims(raw_3d_img, axis=0)
