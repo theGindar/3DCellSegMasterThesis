@@ -338,7 +338,7 @@ class Cell_Seg_3D_Dataset_old(Dataset):
         # make sure the sample is not just background, since this would destabilize training
         bg_zero_percentage = 1
         reshuffle_counter = 0
-        while bg_zero_percentage > 0.95:
+        while bg_zero_percentage > 0.99:
             start_points = random3dcrop.random_crop_start_point(raw_3d_img.shape)
             raw_3d_img_crop = random3dcrop(raw_3d_img, start_points=start_points)
             seg_background_crop = random3dcrop(seg_background, start_points=start_points)
@@ -349,7 +349,7 @@ class Cell_Seg_3D_Dataset_old(Dataset):
             # num_bg_non_zeros = np.count_nonzero(seg_background_crop != 0)
 
             bg_zero_percentage = num_bg_zeros / seg_background_crop.size
-            if bg_zero_percentage < 0.95:
+            if bg_zero_percentage < 0.99:
 
                 print(f"background percentage: {bg_zero_percentage}")
 
@@ -361,7 +361,7 @@ class Cell_Seg_3D_Dataset_old(Dataset):
                 print()
                 reshuffle_counter = 0
         print("WENT ON....")
-        print(f"good sample: {name}")
+        # print(f"good sample: {name}")
 
 
         raw_3d_img_crop = np.expand_dims(raw_3d_img, axis=0)
