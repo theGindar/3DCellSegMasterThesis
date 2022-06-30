@@ -338,18 +338,18 @@ class Cell_Seg_3D_Dataset_old(Dataset):
         # make sure the sample is not just background, since this would destabilize training
         bg_zero_percentage = 1
         reshuffle_counter = 0
-        while bg_zero_percentage > 0.99:
+        while bg_zero_percentage > 0.95:
             start_points = random3dcrop.random_crop_start_point(raw_3d_img.shape)
-            raw_3d_img = random3dcrop(raw_3d_img, start_points=start_points)
-            seg_background = random3dcrop(seg_background, start_points=start_points)
-            seg_boundary = random3dcrop(seg_boundary, start_points=start_points)
-            seg_foreground = random3dcrop(seg_foreground, start_points=start_points)
+            raw_3d_img_crop = random3dcrop(raw_3d_img, start_points=start_points)
+            seg_background_crop = random3dcrop(seg_background, start_points=start_points)
+            seg_boundary_crop = random3dcrop(seg_boundary, start_points=start_points)
+            seg_foreground_crop = random3dcrop(seg_foreground, start_points=start_points)
 
-            num_bg_zeros = np.count_nonzero(seg_background==0)
-            # num_bg_non_zeros = np.count_nonzero(seg_background != 0)
+            num_bg_zeros = np.count_nonzero(seg_background_crop==0)
+            # num_bg_non_zeros = np.count_nonzero(seg_background_crop != 0)
 
-            bg_zero_percentage = num_bg_zeros / seg_background.size
-            if bg_zero_percentage < 0.99:
+            bg_zero_percentage = num_bg_zeros / seg_background_crop.size
+            if bg_zero_percentage < 0.95:
 
                 print(f"background percentage: {bg_zero_percentage}")
 
@@ -357,18 +357,20 @@ class Cell_Seg_3D_Dataset_old(Dataset):
             if reshuffle_counter >= 1000:
                 print("bad sample:")
                 print(name)
+                print("overall:")
+                print()
                 reshuffle_counter = 0
         print("WENT ON....")
         print(f"good sample: {name}")
 
 
-        raw_3d_img = np.expand_dims(raw_3d_img, axis=0)
-        seg_background = np.expand_dims(seg_background, axis=0)
-        seg_boundary = np.expand_dims(seg_boundary, axis=0)
-        seg_foreground = np.expand_dims(seg_foreground, axis=0)
+        raw_3d_img_crop = np.expand_dims(raw_3d_img, axis=0)
+        seg_background_crop = np.expand_dims(seg_background_crop, axis=0)
+        seg_boundary_crop = np.expand_dims(seg_boundary_crop, axis=0)
+        seg_foreground_crop = np.expand_dims(seg_foreground_crop, axis=0)
 
-        output = {'raw': raw_3d_img, 'background': seg_background, 'boundary': seg_boundary,
-                  'foreground': seg_foreground}
+        output = {'raw': raw_3d_img_crop, 'background': seg_background_crop, 'boundary': seg_boundary_crop,
+                  'foreground': seg_foreground_crop}
 
         output.update(self.get_weights(output, boundary_importance))
 
