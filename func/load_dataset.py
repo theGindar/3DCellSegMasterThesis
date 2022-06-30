@@ -349,9 +349,7 @@ class Cell_Seg_3D_Dataset_old(Dataset):
             # num_bg_non_zeros = np.count_nonzero(seg_background_crop != 0)
 
             bg_zero_percentage = num_bg_zeros / seg_background_crop.size
-            if bg_zero_percentage < 0.99:
-
-                print(f"background percentage: {bg_zero_percentage}")
+            print(f"background percentage: {bg_zero_percentage}")
 
             reshuffle_counter += 1
             if reshuffle_counter >= 1000:
