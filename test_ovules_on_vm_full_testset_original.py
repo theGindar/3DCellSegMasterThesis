@@ -394,14 +394,14 @@ for item in seg_final_dict.keys():
     print("ari: " + str(ari))
     print("voi: " + str(voi))
     print("----------")
-    results_df.append({"acc_iou_0_7":iou_0_7,
-                       "acc_iou_0_5":iou_0_5,
-                       "acc_dice_0_7":dice_0_7,
-                       "acc_dice_0_5":dice_0_5,
-                       "avg_iou":avg_iou,
-                       "avg_dice":avg_dice,
-                       "voi_1":voi[0],
-                       "voi_2":voi[1]}, ignore_index=True)
+    results_df = results_df.append({"acc_iou_0_7":iou_0_7,
+                                    "acc_iou_0_5":iou_0_5,
+                                    "acc_dice_0_7":dice_0_7,
+                                    "acc_dice_0_5":dice_0_5,
+                                    "avg_iou":avg_iou,
+                                    "avg_dice":avg_dice,
+                                    "voi_1":voi[0],
+                                    "voi_2":voi[1]}, ignore_index=True)
 
 results_df.to_csv(results_output_path)
 print(f"for model {load_path}")
