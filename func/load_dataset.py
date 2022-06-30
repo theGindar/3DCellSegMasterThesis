@@ -362,7 +362,7 @@ class Cell_Seg_3D_Dataset_old(Dataset):
         # print(f"good sample: {name}")
 
 
-        raw_3d_img_crop = np.expand_dims(raw_3d_img, axis=0)
+        raw_3d_img_crop = np.expand_dims(raw_3d_img_crop, axis=0)
         seg_background_crop = np.expand_dims(seg_background_crop, axis=0)
         seg_boundary_crop = np.expand_dims(seg_boundary_crop, axis=0)
         seg_foreground_crop = np.expand_dims(seg_foreground_crop, axis=0)
