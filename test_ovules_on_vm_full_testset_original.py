@@ -42,7 +42,7 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 model = CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func="softmax")
 model_name = "model_Ovules"
-results_output_path = "output/results_test_model_Ovules.csv"
+results_output_path = "output/results_test_model_Ovules_2.csv"
 load_path = 'output/model_Ovules.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
@@ -298,7 +298,7 @@ def pipeline(raw_img, hand_seg, model, device,
     ari = adjusted_rand_score(hand_seg.flatten(), seg_final.flatten())
     voi = VOI(seg_final.astype(np.int), hand_seg.astype(np.int))
 
-    scale_factor = 0.3
+    scale_factor = 1.
     org_shape = seg_final.shape
     output_size = (int(org_shape[0] * scale_factor), int(org_shape[1] * scale_factor), int(org_shape[2] * scale_factor))
     print(str(org_shape) + " --> " + str(output_size))
