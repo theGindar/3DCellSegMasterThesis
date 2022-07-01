@@ -252,7 +252,7 @@ def img_3d_interpolate(img_3d, output_size, device=torch.device('cpu'), mode='ne
     return img_3d
 
 
-scale_factor = 0.5
+scale_factor = 0.2
 org_shape = seg_final.shape
 output_size = (int(org_shape[0] * scale_factor), int(org_shape[1] * scale_factor), int(org_shape[2] * scale_factor))
 print(str(org_shape) + " --> " + str(output_size))
@@ -286,7 +286,7 @@ def pipeline(raw_img, hand_seg, model, device,
              how_close_are_the_super_vox_to_boundary=2,
              min_touching_area=30,
              min_touching_percentage=0.51,
-             min_cell_size_threshold=1,
+             min_cell_size_threshold=10,
              transposes=[[0, 1, 2]], reverse_transposes=[[0, 1, 2]]):
     seg_final = segment_super_vox_3_channel(raw_img, model, device,
                                              crop_cube_size=crop_cube_size, stride=stride,
