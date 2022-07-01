@@ -279,6 +279,8 @@ print('avg iou: ' + str(np.mean(accuracy_record[:, 1])))
 print('avg dice: ' + str(np.mean(accuracy_record[:, 2])))
 
 # %%
+
+#TODO min cell size threshold ändern!!!!
 def pipeline(raw_img, hand_seg, model, device,
              crop_cube_size, stride,
              how_close_are_the_super_vox_to_boundary=2,

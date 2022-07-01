@@ -17,10 +17,10 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # hyperparameters
 # ----------
-save_path = 'output/model_Ovules_retrained_control_background.pkl'
+save_path = 'output/model_Ovules_retrained_control_background_2.pkl'
 need_resume = True
-load_path = 'output/model_Ovules_retrained_control_background.pkl'
-loss_save_path = 'output/loss_Ovules_retrained_control_background.pkl'
+load_path = 'output/model_Ovules_retrained_control_background_2.pkl'
+loss_save_path = 'output/loss_Ovules_retrained_control_background_2.pkl'
 learning_rate = 1e-4
 max_epoch = 1000
 model_save_freq = 20
@@ -37,7 +37,7 @@ np.random.seed(0)
 
 
 print(f"number of gpus: {torch.cuda.device_count()}")
-torch.cuda.set_device(1)
+torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
