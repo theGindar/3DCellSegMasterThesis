@@ -49,6 +49,8 @@ model.load_state_dict(checkpoint['model_state_dict'])
 
 model.eval()
 
+print(load_path)
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
