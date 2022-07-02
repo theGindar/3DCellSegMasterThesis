@@ -285,7 +285,7 @@ def pipeline(raw_img, hand_seg, model, device,
              how_close_are_the_super_vox_to_boundary=2,
              min_touching_area=30,
              min_touching_percentage=0.51,
-             min_cell_size_threshold=1,
+             min_cell_size_threshold=10,
              transposes=[[0, 1, 2]], reverse_transposes=[[0, 1, 2]]):
     seg_final = segment_super_vox_3_channel(raw_img, model, device,
                                              crop_cube_size=crop_cube_size, stride=stride,
