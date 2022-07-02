@@ -252,7 +252,7 @@ def img_3d_interpolate(img_3d, output_size, device=torch.device('cpu'), mode='ne
     return img_3d
 
 
-scale_factor = 0.2
+scale_factor = 0.3
 org_shape = seg_final.shape
 output_size = (int(org_shape[0] * scale_factor), int(org_shape[1] * scale_factor), int(org_shape[2] * scale_factor))
 print(str(org_shape) + " --> " + str(output_size))
@@ -280,13 +280,12 @@ print('avg dice: ' + str(np.mean(accuracy_record[:, 2])))
 
 # %%
 
-#TODO min cell size threshold ändern!!!!
 def pipeline(raw_img, hand_seg, model, device,
              crop_cube_size, stride,
              how_close_are_the_super_vox_to_boundary=2,
              min_touching_area=30,
              min_touching_percentage=0.51,
-             min_cell_size_threshold=10,
+             min_cell_size_threshold=1,
              transposes=[[0, 1, 2]], reverse_transposes=[[0, 1, 2]]):
     seg_final = segment_super_vox_3_channel(raw_img, model, device,
                                              crop_cube_size=crop_cube_size, stride=stride,
