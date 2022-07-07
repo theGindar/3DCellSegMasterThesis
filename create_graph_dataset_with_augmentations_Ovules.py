@@ -76,6 +76,7 @@ min_touching_area = 30
 # %%
 graphs_list = []
 for img_name in Ovules_data_dict_train.keys():
+    print(img_name)
     if img_name == ".DS_Store":
         continue
     for img_trans in range(num_augmentations):
