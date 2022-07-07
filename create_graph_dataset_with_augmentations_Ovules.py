@@ -50,7 +50,7 @@ def transform_the_tensor(image_tensors, prob=0.5):
 
     return image_tensors
 
-Ovules_data_dict = load_obj("dataset_info/HMS_dataset_info")
+Ovules_data_dict = load_obj("dataset_info/Ovules_dataset_info")
 Ovules_data_dict_train = Ovules_data_dict["train"]
 
 model = CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func="softmax")
