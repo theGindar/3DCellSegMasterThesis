@@ -560,7 +560,6 @@ class Cell_Seg_3D_Dataset_limit_background(Dataset):
         seg_foreground = images['foreground']
         seg_edge = images['edge']
         seg_edge_foreground = images['edge_foreground']
-        seg_centroid_foreground = images['centroid_foreground']
         seg_edge_background = images['edge_background']
 
         seg_background_zeros = np.array(seg_background == 0, dtype=int) * 0.5
@@ -568,7 +567,6 @@ class Cell_Seg_3D_Dataset_limit_background(Dataset):
         seg_foreground_zeros = np.array(seg_foreground == 0, dtype=int) * 0.5
         seg_edge_zeros = np.array(seg_edge == 0, dtype=int) * 0.5
         seg_edge_foreground_zeros = np.array(seg_edge_foreground == 0, dtype=int) * 0.5
-        seg_centroid_foreground_zeros = np.array(seg_centroid_foreground == 0, dtype=int) * 0.5
         seg_edge_background_zeros = np.array(seg_edge_background == 0, dtype=int) * 0.5
 
         # edge foreground weights
@@ -581,7 +579,6 @@ class Cell_Seg_3D_Dataset_limit_background(Dataset):
                 'weights_foreground': seg_foreground + seg_foreground_zeros,
                 'weights_edge': seg_foreground + seg_edge_zeros,
                 'weights_edge_foreground': edge_foreground_weights,
-                'weights_centroid_foreground': seg_foreground + seg_centroid_foreground_zeros,
                 'weights_edge_background': seg_foreground + seg_edge_background_zeros}
 
     def to_tensor(self, images):
