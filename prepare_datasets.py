@@ -121,13 +121,13 @@ os.system(run_py_script)
 
 
 ##### Ovules #####
-# source_file_path = "data/CellSeg_dataset/Ovules"
-# output_file_path = "data/CellSeg_dataset/Ovules_processed_thin_boundary"
-source_file_path = "../../../mnt/Ovules"
-output_file_path = "../../../mnt/Ovules_processed_thin_boundary"
+source_file_path = "data/CellSeg_dataset/Ovules"
+output_file_path = "data/CellSeg_dataset/Ovules_processed_thin_boundary_edge"
+# source_file_path = "../../../mnt/Ovules"
+# output_file_path = "../../../mnt/Ovules_processed_thin_boundary"
 
 # step 1
-run_py_script = "python prepare_dataset/prepare_Ovules_dataset.py "+\
+run_py_script = "python prepare_dataset/prepare_Ovules_dataset_with_edges.py "+\
 "--source_file_path "+source_file_path+" "+\
 "--output_file_path "+output_file_path+" "+\
 "--img_size_scale_factor 0.5 "+\
