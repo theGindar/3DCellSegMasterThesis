@@ -411,6 +411,206 @@ class Cell_Seg_3D_Dataset_old(Dataset):
 
         return image_tensors
 
+
+class Cell_Seg_3D_Dataset_limit_background(Dataset):
+    def __init__(self, data_dict):
+        # each item of data_dict is {name:{"raw":raw img path, "background": background img path,
+        # "boundary": boundary img path, "foreground": foreground img path}}
+        self.data_dict = data_dict
+        self.name_list = np.array(list(data_dict))
+        self.para = {}
+
+    def __len__(self):
+        return len(self.name_list)
+
+    def __getitem__(self, idx):
+        return self.get(idx, file_format=self.para["file_format"], \
+                        crop_size=self.para["crop_size"], \
+                        boundary_importance=self.para["boundary_importance"], \
+                        need_tensor_output=self.para["need_tensor_output"], \
+                        need_transform=self.para["need_transform"])
+
+    def set_para(self, file_format='.npy', crop_size=(64, 64, 64), \
+                 boundary_importance=1, need_tensor_output=True, need_transform=True):
+        self.para["file_format"] = file_format
+        self.para["crop_size"] = crop_size
+        self.para["boundary_importance"] = boundary_importance
+        self.para["need_tensor_output"] = need_tensor_output
+        self.para["need_transform"] = need_transform
+
+    def set_random_crop_size(self, crop_size_range=[32, 64]):
+        return np.random.randint(crop_size_range[0], crop_size_range[1], size=(3))
+
+    def get(self, idx, file_format='.npy', crop_size=(64, 64, 64), \
+            boundary_importance=1, need_tensor_output=True, need_transform=True):
+        crop_size = tuple(crop_size)
+        # print("random crop size: "+str(crop_size))
+        random3dcrop = Random3DCrop_np(crop_size)
+
+        normalization = Normalization_np()
+
+        name = self.name_list[idx]
+        if file_format == ".npy":
+            raw_3d_img = np.load(self.data_dict[name]["raw"])
+            seg_boundary = np.load(self.data_dict[name]["boundary"])
+            seg_foreground = np.load(self.data_dict[name]["foreground"])
+            seg_edge = np.load(self.data_dict[name]["edge"])
+            seg_edge_foreground = np.load(self.data_dict[name]["edge_foreground"])
+
+            seg_edge_background = np.load(self.data_dict[name]["edge_background"])
+            # seg_background = np.load(self.data_dict[name]["background"])
+        elif file_format == ".tif":
+            raw_3d_img = io.imread(self.data_dict[name]["raw"])
+            seg_boundary = io.imread(self.data_dict[name]["boundary"])
+            seg_foreground = io.imread(self.data_dict[name]["foreground"])
+            seg_edge = io.imread(self.data_dict[name]["edge"])
+            seg_edge_foreground = io.imread(self.data_dict[name]["edge_foreground"])
+
+            seg_edge_background = io.imread(self.data_dict[name]["edge_background"])
+            # seg_background = io.imread(self.data_dict[name]["background"])
+        elif file_format == ".h5":
+            hf = h5py.File(self.data_dict[name], 'r+')
+            raw_3d_img = np.array(hf["raw"])
+            seg_boundary = np.array(hf["boundary"])
+            seg_foreground = np.array(hf["foreground"])
+            seg_edge = np.array(hf["edge"])
+            seg_edge_foreground = np.array(hf["edge_foreground"])
+
+            seg_edge_background = np.array(hf["edge_background"])
+            hf.close()
+        elif file_format == ".npz":
+            npz_file = np.load(self.data_dict[name])
+            raw_3d_img = np.array(npz_file["raw"])
+            seg_boundary = np.array(npz_file["boundary"])
+            seg_foreground = np.array(npz_file["foreground"])
+            seg_edge = np.array(npz_file["edge"])
+            seg_edge_foreground = np.array(npz_file["edge_foreground"])
+
+            seg_edge_background = np.array(npz_file["edge_background"])
+
+        raw_3d_img = np.nan_to_num(raw_3d_img, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_boundary = np.nan_to_num(seg_boundary, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_foreground = np.nan_to_num(seg_foreground, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_edge = np.nan_to_num(seg_edge, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_edge_foreground = np.nan_to_num(seg_edge_foreground, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_edge_background = np.nan_to_num(seg_edge_background, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+        seg_background = np.array((seg_boundary + seg_foreground) == 0, dtype=np.int)
+
+        # raw_3d_img=normalization(raw_3d_img)
+
+        raw_3d_img = np.array(raw_3d_img, float)
+        seg_background = np.array(seg_background, float)
+        seg_boundary = np.array(seg_boundary, float)
+        seg_foreground = np.array(seg_foreground, float)
+        seg_edge = np.array(seg_edge, float)
+        seg_edge_foreground = np.array(seg_edge_foreground, float)
+        seg_edge_background = np.array(seg_edge_background, float)
+
+        assert raw_3d_img.shape == seg_background.shape
+        assert seg_background.shape == seg_boundary.shape
+        assert seg_boundary.shape == seg_foreground.shape
+        assert seg_edge.shape == seg_boundary.shape
+
+        # make sure the sample is not just background, since this would destabilize training
+        bg_zero_percentage = 0
+        while bg_zero_percentage < 0.25:
+            start_points = random3dcrop.random_crop_start_point(raw_3d_img.shape)
+            raw_3d_img_crop = random3dcrop(raw_3d_img, start_points=start_points)
+            seg_background_crop = random3dcrop(seg_background, start_points=start_points)
+            seg_boundary_crop = random3dcrop(seg_boundary, start_points=start_points)
+            seg_foreground_crop = random3dcrop(seg_foreground, start_points=start_points)
+            seg_edge_crop = random3dcrop(seg_edge, start_points=start_points)
+            seg_edge_foreground_crop = random3dcrop(seg_edge_foreground, start_points=start_points)
+            seg_edge_background_crop = random3dcrop(seg_edge_background, start_points=start_points)
+
+            num_bg_zeros = np.count_nonzero(seg_background_crop == 0)
+
+            bg_zero_percentage = num_bg_zeros / seg_background_crop.size
+
+        raw_3d_img_crop = np.expand_dims(raw_3d_img_crop, axis=0)
+        seg_background_crop = np.expand_dims(seg_background_crop, axis=0)
+        seg_boundary_crop = np.expand_dims(seg_boundary_crop, axis=0)
+        seg_edge_crop = np.expand_dims(seg_edge_crop, axis=0)
+        seg_edge_foreground_crop = np.expand_dims(seg_edge_foreground_crop, axis=0)
+        seg_edge_background_crop = np.expand_dims(seg_edge_background_crop, axis=0)
+        seg_foreground_crop = np.expand_dims(seg_foreground_crop, axis=0)
+
+        output = {'raw': raw_3d_img_crop,
+                  'background': seg_background_crop,
+                  'boundary': seg_boundary_crop,
+                  'foreground': seg_foreground_crop,
+                  'edge': seg_edge_crop,
+                  'edge_foreground': seg_edge_foreground_crop,
+                  'edge_background': seg_edge_background_crop}
+
+        output.update(self.get_weights(output, boundary_importance))
+
+        if need_tensor_output:
+            output = self.to_tensor(output)
+
+            if need_transform:
+                output = self.transform_the_tensor(output, prob=0.5)
+
+        return output
+
+    def get_weights(self, images, boundary_importance):  # images: a dict, each item should be in numpy.array format
+        seg_background = images['background']
+        seg_boundary = images[
+                           'boundary'] * boundary_importance  # boundary is boundary_importance times more important than others
+        seg_foreground = images['foreground']
+        seg_edge = images['edge']
+        seg_edge_foreground = images['edge_foreground']
+        seg_centroid_foreground = images['centroid_foreground']
+        seg_edge_background = images['edge_background']
+
+        seg_background_zeros = np.array(seg_background == 0, dtype=int) * 0.5
+        seg_boundary_zeros = np.array(seg_boundary == 0, dtype=int) * 0.5
+        seg_foreground_zeros = np.array(seg_foreground == 0, dtype=int) * 0.5
+        seg_edge_zeros = np.array(seg_edge == 0, dtype=int) * 0.5
+        seg_edge_foreground_zeros = np.array(seg_edge_foreground == 0, dtype=int) * 0.5
+        seg_centroid_foreground_zeros = np.array(seg_centroid_foreground == 0, dtype=int) * 0.5
+        seg_edge_background_zeros = np.array(seg_edge_background == 0, dtype=int) * 0.5
+
+        # edge foreground weights
+        edge_foreground_weights = np.ones_like(seg_foreground, dtype=float)
+        edge_foreground_weights[np.where(np.logical_or(seg_edge_foreground > 0, seg_boundary > 0))] = 0.5
+        # edge_foreground_weights = edge_foreground_weights + seg_edge_foreground * 0.5 + seg_boundary * 0.5
+
+        return {'weights_background': seg_background + seg_background_zeros,
+                'weights_boundary': seg_boundary + seg_boundary_zeros,
+                'weights_foreground': seg_foreground + seg_foreground_zeros,
+                'weights_edge': seg_foreground + seg_edge_zeros,
+                'weights_edge_foreground': edge_foreground_weights,
+                'weights_centroid_foreground': seg_foreground + seg_centroid_foreground_zeros,
+                'weights_edge_background': seg_foreground + seg_edge_background_zeros}
+
+    def to_tensor(self, images):
+        images_tensor = {}
+        for item in images.keys():
+            images_tensor[item] = from_numpy(images[item]).float()
+        return images_tensor
+
+    def transform_the_tensor(self, image_tensors, prob=0.5):
+        dict_imgs_tio = {}
+
+        for item in image_tensors.keys():
+            dict_imgs_tio[item] = tio.ScalarImage(tensor=image_tensors[item])
+        subject_all_imgs = tio.Subject(dict_imgs_tio)
+        transform_shape = tio.Compose([
+            tio.RandomFlip(axes=int(np.random.randint(3, size=1)[0]), p=prob)])  # ,tio.RandomAffine(p=prob)])
+        subject_all_imgs = transform_shape(subject_all_imgs)
+        transform_val = tio.Compose([
+            tio.RandomBlur(p=prob),
+            tio.RandomNoise(p=prob), tio.RandomMotion(p=prob), tio.RandomBiasField(p=prob), tio.RandomSpike(p=prob),
+            tio.RandomGhosting(p=prob)])
+        subject_all_imgs['raw'] = transform_val(subject_all_imgs['raw'])
+
+        for item in subject_all_imgs.keys():
+            image_tensors[item] = subject_all_imgs[item].data
+
+        return image_tensors
+
+
 from medpy.io import load
 def show_unpreprocessed_images(raw_img_file_path, seg_img_file_path):
     raw_img_names=os.listdir(raw_img_file_path)
