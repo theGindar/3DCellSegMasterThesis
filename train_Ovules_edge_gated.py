@@ -1,6 +1,6 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset_limit_background
-from func.network import VoxResNet, CellSegNet_basic_lite
+from func.network import VoxResNet, CellSegNet_basic_edge_gated_X
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
     dice_loss_org_individually, balanced_cross_entropy
 from func.ultis import save_obj, load_obj
@@ -42,7 +42,7 @@ torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
-model=CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
