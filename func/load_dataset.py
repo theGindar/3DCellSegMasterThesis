@@ -483,10 +483,10 @@ class Cell_Seg_3D_Dataset_limit_background(Dataset):
             raw_3d_img = np.array(npz_file["raw"])
             seg_boundary = np.array(npz_file["boundary"])
             seg_foreground = np.array(npz_file["foreground"])
-            seg_edge = np.array(npz_file["edge"])
-            seg_edge_foreground = np.array(npz_file["edge_foreground"])
+            seg_edge = np.array(npz_file["boundary_edge"])
+            seg_edge_foreground = np.array(npz_file["foreground_edge"])
 
-            seg_edge_background = np.array(npz_file["edge_background"])
+            seg_edge_background = np.array(npz_file["background_edge"])
 
         raw_3d_img = np.nan_to_num(raw_3d_img, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         seg_boundary = np.nan_to_num(seg_boundary, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
