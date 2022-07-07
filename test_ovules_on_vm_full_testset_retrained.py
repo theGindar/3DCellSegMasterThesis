@@ -220,9 +220,9 @@ hand_seg_RGB = colorful_seg(hand_seg)
 
 N = 80
 
-fig = plt.figure(figsize=(5, 5))
-plt.axis('off')
-plt.imshow(seg_final_RGB[N, :, :])
+# fig = plt.figure(figsize=(5, 5))
+# plt.axis('off')
+# plt.imshow(seg_final_RGB[N, :, :])
 # plt.savefig('Ovules_seg_RGB_'+str(N)+'.png',bbox_inches='tight',dpi=fig.dpi,pad_inches=0.0)
 
 # %% md
