@@ -22,8 +22,10 @@ random.seed(script_num)
 np.random.seed(script_num)
 
 image_names_to_segment = [
-    "N_536_ds2x.npz",
-    "N_454_ds2x.npz"
+    "N_422_ds2x.npz",
+    "N_416_ds2x.npz",
+    "N_428_ds2x.npz",
+    "N_512_ds2x.npz"
 ]
 save_path_graph_set = f'graphs_dataset_train_with_augmentations_ovules_retrained_skript_{script_num}.pkl'
 txt_write_file_path = f'flag_folder/AAA_{script_num}_FINISHED.txt'
