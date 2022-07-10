@@ -137,10 +137,10 @@ for ith_epoch in range(0, max_epoch):
 
         loss_2 = dice_loss_org_individually(e_output_f, groundtruth_target_f) + \
                  .5 * balanced_cross_entropy(e_output_f, groundtruth_target_f) + \
-                 10*dice_loss_org_individually(e_output_bo, groundtruth_target_bo) + \
-                 .5 * 10*balanced_cross_entropy(e_output_bo, groundtruth_target_bo) + \
-                 dice_loss_org_individually(e_output_ba, groundtruth_target_ba) + \
-                 .5 * balanced_cross_entropy(e_output_ba, groundtruth_target_ba)
+                 5*dice_loss_org_individually(e_output_bo, groundtruth_target_bo) + \
+                 .5 * 5*balanced_cross_entropy(e_output_bo, groundtruth_target_bo) + \
+                 5*dice_loss_org_individually(e_output_ba, groundtruth_target_ba) + \
+                 .5 * 5*balanced_cross_entropy(e_output_ba, groundtruth_target_ba)
 
 
         loss = loss_1 + loss_2
