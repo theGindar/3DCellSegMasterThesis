@@ -116,7 +116,7 @@ for ith_epoch in range(0, max_epoch):
 
         seg_output_f_unsqueezed = torch.unsqueeze(seg_output_f, 1)
         e_output_f_unsqueezed = torch.unsqueeze(e_output_f, 1)
-        weights_consistency = 0.2 * ((seg_output_f_unsqueezed * (1 - e_output_f_unsqueezed) * torch.pow(
+        weights_consistency = 0.1 * ((seg_output_f_unsqueezed * (1 - e_output_f_unsqueezed) * torch.pow(
             (seg_output_f_unsqueezed + e_output_f_unsqueezed), 2)) * torch.tensor(batch['boundary'] > 0,
                                                                                   dtype=torch.float).to(device)).to(
             device)
