@@ -21,7 +21,7 @@ from func.run_pipeline_super_vox import segment_super_vox_3_channel_edge_gated_m
     delete_too_small_cluster, reassign
 from func.run_pipeline import segment, assign_boudary_voxels_to_cells, dbscan_of_seg, semantic_segment_crop_and_cat
 from func.cal_accuracy import IOU_and_Dice_Accuracy, VOI
-from func.network import VoxResNet, CellSegNet_basic_edge_gated_X_batchnorm
+from func.network import VoxResNet, CellSegNet_basic_edge_gated_X
 from func.unet_3d_basic import UNet3D_basic
 from func.ultis import save_obj, load_obj
 
@@ -40,7 +40,7 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 # model=VoxResNet(input_channel=1, n_classes=3, output_func = "softmax")
 # load_path=''
-model = CellSegNet_basic_edge_gated_X_batchnorm(input_channel=1, n_classes=3, output_func="softmax")
+model = CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=3, output_func="softmax")
 model_name = "model_Ovules_edge_gated.pkl"
 results_output_path = "output/results_test_model_Ovules_edge_gated.csv"
 load_path = 'output/model_Ovules_edge_gated.pkl'
