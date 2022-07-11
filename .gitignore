@@ -19,3 +19,6 @@ dataset_info/HMS_dataset_info.pkl
 graphs_dataset_train_with_augmentations.pkl
 graphs_dataset_train_with_augmentations_edge_gated.pkl
 dataset_info/Ovules_dataset_info.pkl
+figs/foreground_edge_example_consistency_weights.pdf
+figs/foreground_example_consistency_weights.pdf
+groundtruth_example_consistency_weights.pdf
