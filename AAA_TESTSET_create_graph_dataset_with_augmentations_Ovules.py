@@ -16,10 +16,10 @@ from func.graph_learning import SuperVoxToNxGraph
 
 script_num = "testset"
 
-torch.manual_seed(script_num)
+torch.manual_seed(0)
 import random
-random.seed(script_num)
-np.random.seed(script_num)
+random.seed(0)
+np.random.seed(0)
 
 
 save_path_graph_set = f'graphs_dataset_train_with_augmentations_ovules_retrained_skript_{script_num}.pkl'
