@@ -32,7 +32,7 @@ txt_write_file_path = f'flag_folder/AAA_{script_num}_FINISHED_edge_gated.txt'
 
 
 print(f"number of gpus: {torch.cuda.device_count()}")
-torch.cuda.set_device(0)
+torch.cuda.set_device(1)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # Data Augmentation
