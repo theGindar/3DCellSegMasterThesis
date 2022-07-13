@@ -67,6 +67,7 @@ for e in range(300):
     alpha = 0.23
     for graph_number in range(len(dataset)):
         torch.cuda.empty_cache()
+        print(graph_number)
         # Forward
         model.train()
         sample_graph = dataset[graph_number].to(device)
