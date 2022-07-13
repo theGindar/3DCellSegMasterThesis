@@ -114,8 +114,8 @@ for e in range(300):
         pred_val = pred[val_mask].to('cpu')
         labels_train = labels[train_mask].to('cpu')
         labels_val = labels[val_mask].to('cpu')
-        print(f"pred_train shape: {pred_train.shape}")
-        print(f"labels_train shape: {labels_train.shape}")
+        # print(f"pred_train shape: {pred_train.shape}")
+        # print(f"labels_train shape: {labels_train.shape}")
         # train_acc = (pred_train == labels_train).float().mean()
         train_acc = 1.
         val_acc = (pred_val == labels_val).float().mean()
