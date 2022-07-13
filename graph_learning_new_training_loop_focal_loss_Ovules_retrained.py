@@ -108,11 +108,16 @@ for e in range(300):
         pred.to('cpu')
         labels.to('cpu')
 
-        train_acc = (pred[train_mask] == labels[train_mask]).float().mean()
-        val_acc = (pred[val_mask] == labels[val_mask]).float().mean()
+        pred_train = pred[train_mask].to('cpu')
+        pred_val = pred[val_mask].to('cpu')
+        labels_train = labels[train_mask].to('cpu')
+        labels_val = labels[val_mask].to('cpu')
 
-        train_f1_score = f1(pred[train_mask], labels[train_mask])
-        val_f1_score = f1(pred[val_mask], labels[val_mask])
+        train_acc = (pred_train == labels_train).float().mean()
+        val_acc = (pred_val == labels_val).float().mean()
+
+        train_f1_score = f1(pred_train, labels_train)
+        val_f1_score = f1(pred_val, labels_val)
 
         del pred
         del labels
