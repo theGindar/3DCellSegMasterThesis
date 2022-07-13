@@ -50,7 +50,7 @@ best_val_acc = 0
 from torchmetrics import F1Score
 from torchvision.ops import sigmoid_focal_loss
 
-f1 = F1Score(num_classes=1, average='weighted')
+f1 = F1Score(num_classes=1, average='weighted').to(device)
 
 epoch_loss = []
 epoch_val_loss = []
