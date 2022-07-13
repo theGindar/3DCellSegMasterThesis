@@ -129,7 +129,7 @@ for e in range(300):
         print("try to free memory")
         print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
         # del sample_graph
-        sample_graph.clear()
+        # sample_graph.clear()
         # sample_graph.detach().cpu()
         torch.cuda.empty_cache()
         print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
