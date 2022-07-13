@@ -125,6 +125,10 @@ for e in range(300):
             val_loss = sigmoid_focal_loss(torch.squeeze(logits[val_mask].type(torch.FloatTensor)), labels[val_mask].type(torch.FloatTensor), alpha=alpha, reduction="mean")
             epoch_val_loss.append(val_loss.item())
         model.train()
+        print("try to free memory")
+        print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
+        del sample_graph
+        torch.cuda.empty_cache()
         print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
 
 
