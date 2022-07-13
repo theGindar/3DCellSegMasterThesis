@@ -72,6 +72,8 @@ for e in range(300):
     alpha = 0.23
     for graph_number in range(len(dataset)):
         torch.cuda.empty_cache()
+        print("memory at start:")
+        print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
         print(graph_number)
         # Forward
         model.train()
@@ -128,14 +130,14 @@ for e in range(300):
         model.train()
         print("try to free memory")
         torch.cuda.reset_max_memory_allocated()
-        print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
+        print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
         # del sample_graph
         # sample_graph.clear()
         # sample_graph.detach().cpu()
         del sample_graph
         torch.cuda.empty_cache()
         torch.cuda.reset_max_memory_allocated()
-        print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
+        print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
 
 
     if e % 5 == 0:
