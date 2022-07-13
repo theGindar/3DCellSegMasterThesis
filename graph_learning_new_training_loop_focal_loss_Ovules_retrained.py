@@ -117,7 +117,7 @@ for e in range(300):
         # print(f"pred_train shape: {pred_train.shape}")
         # print(f"labels_train shape: {labels_train.shape}")
         # train_acc = (pred_train == labels_train).float().mean()
-        train_acc = [1.]
+        train_acc = torch.tensor([1.])
         val_acc = (pred_val == labels_val).float().mean()
 
         train_f1_score = f1(pred_train, labels_train)
