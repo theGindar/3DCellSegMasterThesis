@@ -119,9 +119,6 @@ for e in range(300):
         train_f1_score = f1(pred_train, labels_train)
         val_f1_score = f1(pred_val, labels_val)
 
-        del pred
-        del labels
-
         epoch_accuracy.append(train_acc.item())
         epoch_accuracy_val.append(val_acc.item())
 
@@ -142,12 +139,16 @@ for e in range(300):
             epoch_val_loss.append(val_loss.item())
         model.train()
 
+
+
         print("try to free memory")
         torch.cuda.reset_max_memory_allocated()
         # print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
         # del sample_graph
         # sample_graph.clear()
         # sample_graph.detach().cpu()
+        del pred
+        del labels
         del sample_graph
         torch.cuda.empty_cache()
         torch.cuda.reset_max_memory_allocated()
