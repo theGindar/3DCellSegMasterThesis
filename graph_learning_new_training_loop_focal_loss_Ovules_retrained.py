@@ -116,7 +116,8 @@ for e in range(300):
         labels_val = labels[val_mask].to('cpu')
         print(f"pred_train shape: {pred_train.shape}")
         print(f"labels_train shape: {labels_train.shape}")
-        train_acc = (pred_train == labels_train).float().mean()
+        # train_acc = (pred_train == labels_train).float().mean()
+        train_acc = 1.
         val_acc = (pred_val == labels_val).float().mean()
 
         train_f1_score = f1(pred_train, labels_train)
@@ -157,8 +158,8 @@ for e in range(300):
         del labels_train
         del labels_val
         del sample_graph
-        if graph_number % 40 == 0:
-            gc.collect()
+        # if graph_number % 40 == 0:
+        #     gc.collect()
 
         torch.cuda.empty_cache()
         torch.cuda.reset_max_memory_allocated()
