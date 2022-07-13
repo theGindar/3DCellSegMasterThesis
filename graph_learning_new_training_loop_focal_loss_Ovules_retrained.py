@@ -105,12 +105,17 @@ for e in range(300):
 
         epoch_loss.append(loss.item())
 
-        train_acc = (pred[train_mask].to('cpu') == labels[train_mask].to('cpu')).float().mean()
-        val_acc = (pred[val_mask].to('cpu') == labels[val_mask].to('cpu')).float().mean()
+        pred.to('cpu')
+        labels.to('cpu')
 
-        train_f1_score = f1(pred[train_mask].to('cpu'), labels[train_mask].to('cpu'))
-        val_f1_score = f1(pred[val_mask].to('cpu'), labels[val_mask].to('cpu'))
+        train_acc = (pred[train_mask] == labels[train_mask]).float().mean()
+        val_acc = (pred[val_mask] == labels[val_mask]).float().mean()
 
+        train_f1_score = f1(pred[train_mask], labels[train_mask])
+        val_f1_score = f1(pred[val_mask], labels[val_mask])
+
+        del pred
+        del labels
 
         epoch_accuracy.append(train_acc.item())
         epoch_accuracy_val.append(val_acc.item())
