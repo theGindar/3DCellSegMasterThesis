@@ -31,6 +31,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 random.shuffle(graphs)
 
+# remove too big graph
+del graphs[39]
+
 dataset = VoxelGraphDataset(graphs, with_edge_weights=True)
 
 g = dataset[0]
@@ -66,6 +69,7 @@ best_val_loss = 1000
 
 print("ready for training...")
 print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
+
 
 
 for e in range(300):
