@@ -66,6 +66,7 @@ best_val_loss = 1000
 for e in range(300):
     alpha = 0.23
     for graph_number in range(len(dataset)):
+        torch.cuda.empty_cache()
         # Forward
         model.train()
         sample_graph = dataset[graph_number].to(device)
@@ -120,7 +121,7 @@ for e in range(300):
             epoch_val_loss.append(val_loss.item())
         model.train()
         print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
-        sample_graph.clear()
+
 
     if e % 5 == 0:
         print('In epoch {}, loss: {:.5f}, val loss: {:.5f}, accuracy: {:.3f}, val accuracy: {:.3f}, f1score: {:.3f}, val f1score: {:.3f}'.format(
