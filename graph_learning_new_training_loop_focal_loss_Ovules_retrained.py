@@ -4,6 +4,8 @@ import torch
 
 import torch.nn as nn
 
+import gc
+
 from statistics import mean
 
 from func.graph_learning import VoxelGraphDataset
@@ -142,7 +144,7 @@ for e in range(300):
 
 
 
-        print("try to free memory")
+        # print("try to free memory")
         torch.cuda.reset_max_memory_allocated()
         # print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
         # del sample_graph
@@ -155,9 +157,12 @@ for e in range(300):
         del labels_train
         del labels_val
         del sample_graph
+
+        gc.collect()
+
         torch.cuda.empty_cache()
         torch.cuda.reset_max_memory_allocated()
-        print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
+        # print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
 
 
     if e % 5 == 0:
