@@ -83,8 +83,8 @@ for e in range(300):
         sample_graph = dataset[graph_number].to(device)
         features = sample_graph.ndata['feat'].to(device)
         labels = sample_graph.ndata['label'].to(device)
-        train_mask = sample_graph.ndata['train_mask'].to(device)
-        val_mask = sample_graph.ndata['val_mask'].to(device)
+        train_mask = sample_graph.ndata['train_mask'] # .to(device)
+        val_mask = sample_graph.ndata['val_mask']# .to(device)
 
         # create class weights
         number_positives = torch.count_nonzero(labels)
