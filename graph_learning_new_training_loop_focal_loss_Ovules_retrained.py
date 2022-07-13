@@ -127,13 +127,14 @@ for e in range(300):
             epoch_val_loss.append(val_loss.item())
         model.train()
         print("try to free memory")
+        torch.cuda.reset_max_memory_allocated()
         print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
         # del sample_graph
         # sample_graph.clear()
         # sample_graph.detach().cpu()
-        with torch.no_grad():
-            del sample_graph
+        del sample_graph
         torch.cuda.empty_cache()
+        torch.cuda.reset_max_memory_allocated()
         print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
 
 
