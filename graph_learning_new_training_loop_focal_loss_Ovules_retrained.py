@@ -12,8 +12,8 @@ from func.graph_learning import VoxelGraphDataset
 from func.ultis import load_obj
 
 # graphs = load_obj("graphs_dataset_train")
-# graphs = load_obj("../../../mnt/graphs_dataset_train_ovules_retrained_total")
-graphs = load_obj("../../../mnt/graphs_dataset_train_with_augmentations_ovules_retrained_skript_testset")
+graphs = load_obj("../../../mnt/graphs_dataset_train_ovules_retrained_total")
+
 # test_graphs = load_obj("ovules_training_graphs/graphs_dataset_train_ovules_retrained_skript_testset")
 model_save_path = "output/graph_model_focal_ovules_retrained.pt"
 
