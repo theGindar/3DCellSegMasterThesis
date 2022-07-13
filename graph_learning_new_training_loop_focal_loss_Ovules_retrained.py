@@ -131,7 +131,7 @@ for e in range(300):
         # del sample_graph
         # sample_graph.clear()
         # sample_graph.detach().cpu()
-        sample_graph = None
+        sample_graph.to('cpu')
         torch.cuda.empty_cache()
         print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
 
