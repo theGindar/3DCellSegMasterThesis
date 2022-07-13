@@ -32,7 +32,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 random.shuffle(graphs)
 
 # remove too big graph
-del graphs[39]
+# del graphs[39]
 
 dataset = VoxelGraphDataset(graphs, with_edge_weights=True)
 
@@ -54,7 +54,7 @@ best_val_acc = 0
 from torchmetrics import F1Score
 from torchvision.ops import sigmoid_focal_loss
 
-f1 = F1Score(num_classes=1, average='weighted').to(device)
+f1 = F1Score(num_classes=1, average='weighted')# .to(device)
 
 epoch_loss = []
 epoch_val_loss = []
@@ -106,11 +106,11 @@ for e in range(300):
 
         epoch_loss.append(loss.item())
 
-        train_acc = (pred[train_mask] == labels[train_mask]).float().mean()
-        val_acc = (pred[val_mask] == labels[val_mask]).float().mean()
+        train_acc = (pred[train_mask].to('cpu') == labels[train_mask].to('cpu')).float().mean()
+        val_acc = (pred[val_mask].to('cpu') == labels[val_mask].to('cpu')).float().mean()
 
-        train_f1_score = f1(pred[train_mask], labels[train_mask])
-        val_f1_score = f1(pred[val_mask], labels[val_mask])
+        train_f1_score = f1(pred[train_mask].to('cpu'), labels[train_mask].to('cpu'))
+        val_f1_score = f1(pred[val_mask].to('cpu'), labels[val_mask].to('cpu'))
 
 
         epoch_accuracy.append(train_acc.item())
