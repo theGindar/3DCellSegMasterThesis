@@ -149,6 +149,10 @@ for e in range(300):
         # sample_graph.detach().cpu()
         del pred
         del labels
+        del pred_train
+        del pred_val
+        del labels_train
+        del labels_val
         del sample_graph
         torch.cuda.empty_cache()
         torch.cuda.reset_max_memory_allocated()
