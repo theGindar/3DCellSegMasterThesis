@@ -63,6 +63,10 @@ epoch_accuracy_val = []
 # best_val_acc = 0
 best_val_loss = 1000
 
+print("ready for training...")
+print('{:.1f} MiB'.format(torch.cuda.max_memory_allocated() / 1000000))
+
+
 for e in range(300):
     alpha = 0.23
     for graph_number in range(len(dataset)):
