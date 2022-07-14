@@ -75,7 +75,7 @@ print("ready for training...")
 
 
 for e in range(500):
-    alpha = 0.23
+    alpha = 0.5
     for graph_number in range(len(dataset)):
         torch.cuda.empty_cache()
         # print("memory at start:")
@@ -143,14 +143,8 @@ for e in range(500):
             epoch_val_loss.append(val_loss.item())
         model.train()
 
-
-
-        # print("try to free memory")
         torch.cuda.reset_max_memory_allocated()
-        # print('{:.1f} MiB'.format(torch.cuda.memory_allocated() / 1000000))
-        # del sample_graph
-        # sample_graph.clear()
-        # sample_graph.detach().cpu()
+        """
         del pred
         del labels
         del pred_train
@@ -158,8 +152,7 @@ for e in range(500):
         del labels_train
         del labels_val
         del sample_graph
-        # if graph_number % 40 == 0:
-        #     gc.collect()
+        """
 
         torch.cuda.empty_cache()
         torch.cuda.reset_max_memory_allocated()
