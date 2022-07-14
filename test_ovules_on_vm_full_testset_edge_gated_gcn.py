@@ -55,7 +55,7 @@ model.eval()
 
 # load graph model
 graph_model = GCN(3, num_classes=1)
-checkpoint_graph = 'output/graph_model_focal_ovules_edge_gated.pt'
+checkpoint_graph = 'output/graph_model_focal_ovules_retrained_edge_gated.pt'
 graph_model.load_state_dict(torch.load(checkpoint_graph))
 graph_model.eval()
 
