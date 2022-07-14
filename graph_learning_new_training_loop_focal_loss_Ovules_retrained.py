@@ -14,7 +14,7 @@ from func.graph_learning import VoxelGraphDataset
 from func.ultis import load_obj
 
 # graphs = load_obj("graphs_dataset_train")
-graphs = load_obj("../../../mnt/graphs_dataset_train_ovules_retrained_total")
+graphs = load_obj("../../../mnt/graphs_dataset_train_ovules_retrained_total_small")
 # graphs = load_obj("../../../mnt/graphs_dataset_train_with_augmentations_ovules_retrained_skript_testset")
 
 # test_graphs = load_obj("ovules_training_graphs/graphs_dataset_train_ovules_retrained_skript_testset")
@@ -74,7 +74,7 @@ print("ready for training...")
 
 
 
-for e in range(300):
+for e in range(500):
     alpha = 0.23
     for graph_number in range(len(dataset)):
         torch.cuda.empty_cache()
@@ -116,8 +116,8 @@ for e in range(300):
         labels_val = labels[val_mask].to('cpu')
         # print(f"pred_train shape: {pred_train.shape}")
         # print(f"labels_train shape: {labels_train.shape}")
-        # train_acc = (pred_train == labels_train).float().mean()
-        train_acc = torch.tensor([1.])
+        train_acc = (pred_train == labels_train).float().mean()
+        # train_acc = torch.tensor([1.])
         val_acc = (pred_val == labels_val).float().mean()
 
         train_f1_score = f1(pred_train, labels_train)
