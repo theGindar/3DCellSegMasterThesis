@@ -1,7 +1,8 @@
 # train
 from func.load_dataset import Cell_Seg_3D_Dataset
-from func.network import VoxResNet, CellSegNet_basic_lite
-from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
+from func.network import VoxResNet, CellSegNet_basic_edge_gated_X
+from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights, \
+    dice_loss_org_individually, balanced_cross_entropy
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -13,10 +14,10 @@ import pandas as pd
 
 # hyperparameters
 # ----------
-save_path = 'output/model_LRP_retrained.pkl'
+save_path = 'output/model_LRP_edge_gated.pkl'
 need_resume = True
-load_path = 'output/model_LRP_retrained.pkl'
-loss_save_path = 'output/loss_LRP_retrained.pkl'
+load_path = 'output/model_LRP_edge_gated.pkl'
+loss_save_path = 'output/loss_LRP_edge_gated.pkl'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
@@ -32,11 +33,11 @@ random.seed(0)
 np.random.seed(0)
 
 print(f"number of gpus: {torch.cuda.device_count()}")
-torch.cuda.set_device(0)
+torch.cuda.set_device(1)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
-model=CellSegNet_basic_lite(input_channel=1, n_classes=2, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=2, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -65,7 +66,9 @@ start_time = time.time()
 loss_df = pd.DataFrame({"epoch":[],
                         "batch": [],
                         "time": [],
-                        "loss": [],
+                        "total_loss": [],
+                        "loss_1": [],
+                        "loss_2": [],
                         "accuracy": []})
 
 for ith_epoch in range(0, max_epoch):
@@ -75,42 +78,82 @@ for ith_epoch in range(0, max_epoch):
 
         seg_groundtruth_f=torch.tensor((batch['foreground'] + batch['background'])>0, dtype=torch.float).to(device)
         seg_groundtruth_b=torch.tensor(batch['boundary']>0, dtype=torch.float).to(device)
-        
+
+        seg_edge_foreground_groundtruth = torch.tensor((batch['edge_foreground'] + batch['edge_background']) > 0, dtype=torch.float).to(device)
+        seg_edge_border_groundtruth = torch.tensor(batch['edge'] > 0, dtype=torch.float).to(device)
+
+        groundtruth_target = torch.cat((seg_edge_foreground_groundtruth,
+                                        seg_edge_border_groundtruth), dim=1).to(device)
+
         weights_f=(batch['weights_foreground']+batch['weights_background']).to(device)
-        weights_b=batch['weights_boundary'].to(device).to(device)
+        # weights_b=batch['weights_boundary'].to(device).to(device)
     
-        seg_output=model(img_input)
+        seg_output, e_output = model(img_input)
+
         seg_output_f=seg_output[:,0,:,:,:]
         seg_output_b=seg_output[:,1,:,:,:]
-        
-        loss=dice_loss_org_weights(seg_output_b, seg_groundtruth_b, weights_b)+\
+
+        e_output_f = e_output[:, 0, :, :, :]
+        e_output_b = e_output[:, 1, :, :, :]
+
+        """
+        CALCULATE CONSISTENCY WEIGHTS
+        """
+        seg_output_f_unsqueezed = torch.unsqueeze(seg_output_f, 1)
+        e_output_f_unsqueezed = torch.unsqueeze(e_output_f, 1)
+        weights_consistency = 0.7 * ((seg_output_f_unsqueezed * (1 - e_output_f_unsqueezed) * torch.pow(
+            (seg_output_f_unsqueezed + e_output_f_unsqueezed), 2)) * torch.tensor(batch['boundary'] > 0,
+                                                                                  dtype=torch.float).to(device)).to(
+            device)
+
+        weights_b = (batch['weights_boundary'].to(device) - weights_consistency).to(device)
+
+        """
+        END CALCULATE CONSISTENCY WEIGHTS
+        """
+
+        loss_1=dice_loss_org_weights(seg_output_b, seg_groundtruth_b, weights_b)+\
             dice_loss_II_weights(seg_output_f, seg_groundtruth_f, weights_f)
-        accuracy=dice_accuracy(seg_output_b, seg_groundtruth_b)
+
+        loss_2 = dice_loss_org_individually(e_output, groundtruth_target) + \
+                 .5 * balanced_cross_entropy(e_output, groundtruth_target)
+
+        loss = loss_1 + loss_2
+
+        accuracy = dice_accuracy(seg_output_b, seg_groundtruth_b)
+        accuracy_2 = dice_accuracy(e_output, groundtruth_target)
         
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
         time_consumption = time.time() - start_time
-        
+
         print(
             "epoch [{0}/{1}]\t"
             "batch [{2}]\t"
             "time(s) {time:.2f}\t"
             "loss {loss:.5f}\t"
+            "loss_1 {loss_1:.5f}\t"
+            "loss_2 {loss_2:.5f}\t"
             "acc {acc:.5f}\t".format(
                 ith_epoch + 1,
                 max_epoch,
                 ith_batch,
-                time = time_consumption,
-                loss = loss.item(),
-                acc = accuracy.item()))
+                time=time_consumption,
+                loss=loss.item(),
+                loss_1=loss_1.item(),
+                loss_2=loss_2.item(),
+                acc=accuracy.item()))
 
         loss_df = loss_df.append({"epoch": ith_epoch + 1,
                                   "batch": ith_batch,
                                   "time": time_consumption,
-                                  "loss": loss.item(),
+                                  "total_loss": loss.item(),
+                                  "loss_1": loss_1.item(),
+                                  "loss_2": loss_2.item(),
                                   "accuracy": accuracy.item()}, ignore_index=True)
+
     
     if (ith_epoch+1)%model_save_freq==0:
         print('epoch: '+str(ith_epoch+1)+' save model')

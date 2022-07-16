@@ -89,14 +89,14 @@ os.system(run_py_script)
 ##### ATAS #####
 """
 
-"""
+
 ##### LRP #####
-source_file_path = "/data/CellSeg_dataset/LateralRootPrimordia"
-output_file_path = "/data/CellSeg_dataset/LateralRootPrimordia_processed_wide_boundary"
-output_file_path_II = "/data/CellSeg_dataset/LateralRootPrimordia_pre_croped"
+source_file_path = "data/CellSeg_dataset/LateralRootPrimordia"
+output_file_path = "data/CellSeg_dataset/LateralRootPrimordia_processed_wide_boundary"
+output_file_path_II = "data/CellSeg_dataset/LateralRootPrimordia_pre_croped"
 
 # step 1
-run_py_script = "python prepare_dataset/prepare_LateralRootPrimordia_dataset.py "+\
+run_py_script = "python prepare_dataset/prepare_LateralRootPrimordia_dataset_with_edges.py "+\
 "--source_file_path "+source_file_path+" "+\
 "--output_file_path "+output_file_path+" "+\
 "--img_size_scale_factor 0.5 "+\
@@ -117,9 +117,9 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_LateralRootPrimo
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### LRP #####
+
+
 """
-
-
 ##### Ovules #####
 source_file_path = "data/CellSeg_dataset/Ovules"
 output_file_path = "data/CellSeg_dataset/Ovules_processed_thin_boundary_edge"
@@ -141,3 +141,4 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_Ovules.py "+\
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### Ovules #####
+"""

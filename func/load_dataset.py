@@ -124,7 +124,7 @@ class Cell_Seg_3D_Dataset(Dataset):
             raw_3d_img = np.array(hf["raw"])
             seg_boundary = np.array(hf["boundary"])
             seg_foreground = np.array(hf["foreground"])
-            seg_edge = np.array(hf["edge"])
+            seg_edge = np.array(hf["edge_boundary"])
             seg_edge_foreground = np.array(hf["edge_foreground"])
             seg_centroid_foreground = np.array(hf["centroid_foreground"])
             seg_edge_background = np.array(hf["edge_background"])
