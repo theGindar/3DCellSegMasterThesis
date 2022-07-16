@@ -12,6 +12,10 @@ import os
 import time
 import pandas as pd
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 # hyperparameters
 # ----------
 save_path = 'output/model_LRP_edge_gated.pkl'
