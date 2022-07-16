@@ -126,7 +126,7 @@ class Cell_Seg_3D_Dataset(Dataset):
             seg_foreground = np.array(hf["foreground"])
             seg_edge = np.array(hf["edge_boundary"])
             seg_edge_foreground = np.array(hf["edge_foreground"])
-            seg_centroid_foreground = np.array(hf["centroid_foreground"])
+            seg_centroid_foreground = np.zeros_like(seg_edge)
             seg_edge_background = np.array(hf["edge_background"])
             hf.close()
         elif file_format == ".npz":
