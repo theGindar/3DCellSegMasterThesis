@@ -1,5 +1,5 @@
 # train
-from func.load_dataset import Cell_Seg_3D_Dataset_limit_background
+from func.load_dataset import Cell_Seg_3D_Dataset
 from func.network import VoxResNet, CellSegNet_basic_lite
 from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
 from func.ultis import save_obj, load_obj
@@ -54,7 +54,7 @@ optimizer=torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # dataset and dataloader
 LRP_data_dict = load_obj("dataset_info/LRP_dataset_info")
-dataset = Cell_Seg_3D_Dataset_limit_background(LRP_data_dict['train'])
+dataset = Cell_Seg_3D_Dataset(LRP_data_dict['train'])
 dataset.set_para(file_format=train_file_format, \
     crop_size = train_img_crop_size, \
         boundary_importance = boundary_importance, \

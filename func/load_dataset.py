@@ -513,7 +513,7 @@ class Cell_Seg_3D_Dataset_limit_background(Dataset):
 
         # make sure the sample is not just background, since this would destabilize training
         bg_zero_percentage = 0
-        while bg_zero_percentage < 0.25:
+        while bg_zero_percentage < 0.35:
             start_points = random3dcrop.random_crop_start_point(raw_3d_img.shape)
             raw_3d_img_crop = random3dcrop(raw_3d_img, start_points=start_points)
             seg_background_crop = random3dcrop(seg_background, start_points=start_points)
