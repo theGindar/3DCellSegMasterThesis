@@ -896,7 +896,7 @@ class Cluster_Super_Vox():
                 continue
             valid_neighbor_vals = self.regionQuery(current_val)
             if len(valid_neighbor_vals)>0:
-                print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(valid_neighbor_vals), end="\r")
+                # print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(valid_neighbor_vals), end="\r")
                 self.val_labels[current_val] = current_val
                 self.growCluster(valid_neighbor_vals, current_val)
             else:
@@ -974,7 +974,7 @@ class Cluster_Super_Vox():
                 self.val_labels[valid_neighbor_val]=current_val
                 self.input_3d_img[self.input_3d_img==valid_neighbor_val]=current_val
             new_valid_neighbor_vals = self.regionQuery(current_val)
-            print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(new_valid_neighbor_vals), end="\r")
+            # print('Assign label '+str(current_val)+' to current val\'s neighbors: '+str(new_valid_neighbor_vals), end="\r")
             self.growCluster(new_valid_neighbor_vals, current_val)
         else:
             return
