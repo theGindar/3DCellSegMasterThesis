@@ -17,10 +17,10 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # hyperparameters
 # ----------
-save_path = 'output/model_LRP_retrained.pkl'
+save_path = 'output/model_LRP_retrained_limit_background.pkl'
 need_resume = True
-load_path = 'output/model_LRP_retrained.pkl'
-loss_save_path = 'output/loss_LRP_retrained.pkl'
+load_path = 'output/model_LRP_retrained_limit_background.pkl'
+loss_save_path = 'output/loss_LRP_retrained_limit_background.pkl'
 learning_rate = 1e-4
 max_epoch = 500
 model_save_freq = 20
