@@ -121,7 +121,7 @@ def pipeline(raw_img, hand_seg, model, device,
              min_touching_area=30,
              min_touching_percentage=0.51,
              min_cell_size_threshold=10,
-             transposes=[[0, 1, 2]], reverse_transposes=[[0, 1, 2]]):
+             transposes=[[0,1,2],[2,0,1],[0,2,1]], reverse_transposes=[[0,1,2],[1,2,0],[0,2,1]]):
     seg_final = segment_super_vox_2_channel_edge_gated_model(raw_img, model, device,
                                              crop_cube_size=crop_cube_size, stride=stride,
                                              how_close_are_the_super_vox_to_boundary=how_close_are_the_super_vox_to_boundary,
