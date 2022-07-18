@@ -64,6 +64,72 @@ def segment_super_vox_2_channel(raw_img, model, device,
     
     return seg_final
 
+
+def segment_super_vox_2_channel_edge_gated_model(raw_img, model, device,
+                                crop_cube_size=128, stride=64,
+                                how_close_are_the_super_vox_to_boundary=2,
+                                min_touching_area=30, min_touching_percentage=0.51,
+                                min_cell_size_threshold=100,
+                                transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
+                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+    # feed the raw img to the model
+    print('Feed raw img to model. Use different transposes')
+    raw_img_size = raw_img.shape
+
+    seg_boundary_comp = np.zeros(raw_img_size)
+
+    for idx, transpose in enumerate(transposes):
+        print(str(idx + 1) + ": Transpose the image to be: " + str(transpose))
+        with torch.no_grad():
+            seg_img = \
+                semantic_segment_crop_and_cat_2_channel_output_edge_gated_model(raw_img.transpose(transpose), model, device,
+                                                               crop_cube_size=crop_cube_size, stride=stride)
+        seg_img_boundary = seg_img['boundary']
+        seg_img_foreground = seg_img['foreground']
+        torch.cuda.empty_cache()
+
+        # argmax
+        print('argmax', end='\r')
+        # probability map to 0 1 segment
+        seg_foreground = np.array(seg_img_foreground - seg_img_boundary > 0, dtype=np.int)
+        seg_boundary = 1 - seg_foreground
+
+        seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
+        seg_boundary = seg_boundary.transpose(reverse_transposes[idx])
+
+        seg_boundary_comp += seg_boundary
+
+    print("Get model semantic seg by combination")
+    seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
+    seg_foreground_comp = 1 - seg_boundary_comp
+
+    # Generate super vox by watershed
+    seg_foreground_erosion = 1 - img_3d_erosion_or_expansion(1 - seg_foreground_comp,
+                                                             kernel_size=how_close_are_the_super_vox_to_boundary + 1,
+                                                             device=device)
+    seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
+                                                                       connectivity=min_touching_area)
+
+    # Super voxel clustering
+    cluster_super_vox = Cluster_Super_Vox(min_touching_area=min_touching_area,
+                                          min_touching_percentage=min_touching_percentage)
+    cluster_super_vox.fit(seg_foreground_super_voxel_by_ws)
+    seg_foreground_single_cell_with_boundary = cluster_super_vox.output_3d_img
+
+    # Delete too small cells
+    seg_foreground_single_cell_with_boundary = delete_too_small_cluster(seg_foreground_single_cell_with_boundary,
+                                                                        threshold=min_cell_size_threshold)
+
+    # Assign boudary voxels to their nearest cells
+    seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
+                                                              seg_boundary_comp, compactness=1)
+
+    # Reassign unique numbers
+    # seg_final=reassign(seg_final)
+
+    return seg_final
+
+
 def segment_super_vox_3_channel_edge_gated_model(raw_img, model, device,
             crop_cube_size=128, stride=64,
             how_close_are_the_super_vox_to_boundary=2,
@@ -307,6 +373,106 @@ def semantic_segment_crop_and_cat_2_channel_output(raw_img, model, device, crop_
                 count=count+1
                 
     return {'boundary': seg_boundary, 'foreground': seg_foreground}#{'background': seg_background, 'boundary': seg_boundary, 'foreground': seg_foreground}
+
+
+def semantic_segment_crop_and_cat_2_channel_output_edge_gated_model(raw_img, model, device, crop_cube_size=64, stride=64):
+    # raw_img: 3d matrix, numpy.array
+    assert isinstance(crop_cube_size, (int, list))
+    if isinstance(crop_cube_size, int):
+        crop_cube_size = np.array([crop_cube_size, crop_cube_size, crop_cube_size])
+    else:
+        assert len(crop_cube_size) == 3
+
+    assert isinstance(stride, (int, list))
+    if isinstance(stride, int):
+        stride = np.array([stride, stride, stride])
+    else:
+        assert len(stride) == 3
+
+    for i in [0, 1, 2]:
+        while crop_cube_size[i] > raw_img.shape[i]:
+            crop_cube_size[i] = int(crop_cube_size[i] / 2)
+            stride[i] = crop_cube_size[i]
+
+    img_shape = raw_img.shape
+
+    # seg_background=np.zeros(img_shape)
+    seg_boundary = np.zeros(img_shape)
+    seg_foreground = np.zeros(img_shape)
+    seg_log = np.zeros(img_shape)  # 0 means this pixel has not been segmented, 1 means this pixel has been
+
+    total = len(np.arange(0, img_shape[0], stride[0])) * len(np.arange(0, img_shape[1], stride[1])) * len(
+        np.arange(0, img_shape[2], stride[2]))
+    count = 0
+
+    for i in np.arange(0, img_shape[0], stride[0]):
+        for j in np.arange(0, img_shape[1], stride[1]):
+            for k in np.arange(0, img_shape[2], stride[2]):
+                print('Progress of segment_3d_img: ' + str(np.int(count / total * 100)) + '%', end='\r')
+                if i + crop_cube_size[0] <= img_shape[0]:
+                    x_start = i
+                    x_end = i + crop_cube_size[0]
+                else:
+                    x_start = img_shape[0] - crop_cube_size[0]
+                    x_end = img_shape[0]
+
+                if j + crop_cube_size[1] <= img_shape[1]:
+                    y_start = j
+                    y_end = j + crop_cube_size[1]
+                else:
+                    y_start = img_shape[1] - crop_cube_size[1]
+                    y_end = img_shape[1]
+
+                if k + crop_cube_size[2] <= img_shape[2]:
+                    z_start = k
+                    z_end = k + crop_cube_size[2]
+                else:
+                    z_start = img_shape[2] - crop_cube_size[2]
+                    z_end = img_shape[2]
+
+                raw_img_crop = raw_img[x_start:x_end, y_start:y_end, z_start:z_end]
+                raw_img_crop = raw_img_crop.reshape(1, 1, crop_cube_size[0], crop_cube_size[1], crop_cube_size[2])
+                raw_img_crop = from_numpy(raw_img_crop).float().to(device)
+
+                seg_log_crop = seg_log[x_start:x_end, y_start:y_end, z_start:z_end]
+                # seg_background_crop=seg_background[x_start:x_end, y_start:y_end, z_start:z_end]
+                seg_boundary_crop = seg_boundary[x_start:x_end, y_start:y_end, z_start:z_end]
+                seg_foreground_crop = seg_foreground[x_start:x_end, y_start:y_end, z_start:z_end]
+
+                with torch.no_grad():
+                    seg_crop_output, _ = model(raw_img_crop)
+                seg_crop_output_np = seg_crop_output.cpu().detach().numpy()
+
+                # seg_crop_output_np_bg=seg_crop_output_np[0,0,:,:,:]
+                seg_crop_output_np_bd = seg_crop_output_np[0, 1, :, :, :]
+                seg_crop_output_np_fg = seg_crop_output_np[0, 0, :, :, :]
+
+                # seg_background_temp=np.zeros(seg_background_crop.shape)
+                seg_boundary_temp = np.zeros(seg_boundary_crop.shape)
+                seg_foreground_temp = np.zeros(seg_foreground_crop.shape)
+
+                # seg_background_temp[seg_log_crop==1]=(seg_crop_output_np_bg[seg_log_crop==1]+seg_background_crop[seg_log_crop==1])
+                # seg_background_temp[seg_log_crop==0]=seg_crop_output_np_bg[seg_log_crop==0]
+
+                seg_boundary_temp[seg_log_crop == 1] = (seg_crop_output_np_bd[seg_log_crop == 1] + seg_boundary_crop[
+                    seg_log_crop == 1]) / 2
+                seg_boundary_temp[seg_log_crop == 0] = seg_crop_output_np_bd[seg_log_crop == 0]
+
+                seg_foreground_temp[seg_log_crop == 1] = (seg_crop_output_np_fg[seg_log_crop == 1] +
+                                                          seg_foreground_crop[seg_log_crop == 1]) / 2
+                seg_foreground_temp[seg_log_crop == 0] = seg_crop_output_np_fg[seg_log_crop == 0]
+
+                # seg_background[x_start:x_end, y_start:y_end, z_start:z_end]=seg_background_temp
+                seg_boundary[x_start:x_end, y_start:y_end, z_start:z_end] = seg_boundary_temp
+                seg_foreground[x_start:x_end, y_start:y_end, z_start:z_end] = seg_foreground_temp
+
+                seg_log[x_start:x_end, y_start:y_end, z_start:z_end] = 1
+
+                count = count + 1
+
+    return {'boundary': seg_boundary,
+            'foreground': seg_foreground}  # {'background': seg_background, 'boundary': seg_boundary, 'foreground': seg_foreground}
+
 
 import matplotlib.pyplot as plt
 import time
