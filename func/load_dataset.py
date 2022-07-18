@@ -120,7 +120,7 @@ class Cell_Seg_3D_Dataset(Dataset):
             seg_edge_background= io.imread(self.data_dict[name]["edge_background"])
             #seg_background = io.imread(self.data_dict[name]["background"])
         elif file_format == ".h5":
-            hf = h5py.File(self.data_dict[name], 'r+')
+            hf = h5py.File(self.data_dict[name], 'r')
             raw_3d_img = np.array(hf["raw"])
             seg_boundary = np.array(hf["boundary"])
             seg_foreground = np.array(hf["foreground"])
