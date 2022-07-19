@@ -41,7 +41,7 @@ torch.cuda.set_device(1)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
-model=UNet3D_basic(in_channel=1, out_channels=2, output_func = "softmax")
+model=UNet3D_basic(in_channels=1, out_channels=2, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
