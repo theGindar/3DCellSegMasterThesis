@@ -52,15 +52,15 @@ os.system(run_py_script)
 ##### HMS #####
 """
 
-"""
+
 ##### ATAS #####
 # please change if needed
-source_path = "/data/CellSeg_dataset/ATAS"
-processed_path = "/data/CellSeg_dataset/ATAS_processed"
-pre_cropped_path = "/data/CellSeg_dataset/ATAS_processed_pre_croped"
+source_path = "data/CellSeg_dataset/ATAS"
+processed_path = "data/CellSeg_dataset/ATAS_processed"
+pre_cropped_path = "data/CellSeg_dataset/ATAS_processed_pre_croped"
 
 # step 1
-run_py_script = "python prepare_dataset/prepare_ATAS_dataset.py "+\
+run_py_script = "python prepare_dataset/prepare_ATAS_dataset_with_edges.py "+\
 "--source_file_path "+source_path+" "+\
 "--output_file_path "+processed_path+" "+\
 "--width_of_membrane 1.5"
@@ -74,6 +74,7 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_ATAS.py "+\
 print("run "+run_py_script)
 os.system(run_py_script)
 
+"""
 # step 3
 # use the dataset_info generated from get_the_dataset_info_of_ATAS.py
 run_py_script = "python prepare_dataset/pre_crop_ATAS.py "+\
@@ -89,7 +90,7 @@ os.system(run_py_script)
 ##### ATAS #####
 """
 
-
+"""
 ##### LRP #####
 source_file_path = "data/CellSeg_dataset/LateralRootPrimordia"
 output_file_path = "data/CellSeg_dataset/LateralRootPrimordia_processed_wide_boundary"
@@ -117,7 +118,7 @@ run_py_script = "python prepare_dataset/get_the_dataset_info_of_LateralRootPrimo
 print("run "+run_py_script)
 os.system(run_py_script)
 ##### LRP #####
-
+"""
 
 """
 ##### Ovules #####
