@@ -2,7 +2,7 @@
 from func.load_dataset import Cell_Seg_3D_Dataset
 from func.unet_3d_basic import UNet3D_basic
 from func.network import VoxResNet, CellSegNet_basic_lite
-from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org_weights
+from func.loss_func import dice_accuracy, dice_loss_II, dice_loss_II_weights, dice_loss_org
 from func.ultis import save_obj, load_obj
 
 import numpy as np
@@ -90,7 +90,7 @@ for ith_epoch in range(0, max_epoch):
         seg_output_f=seg_output[:,0,:,:,:]
         seg_output_b=seg_output[:,1,:,:,:]
         
-        loss=dice_loss_org_weights(seg_output_b, seg_groundtruth)
+        loss=dice_loss_org(seg_output_b, seg_groundtruth)
 
         accuracy = dice_accuracy(seg_output_b, seg_groundtruth_b)
 
