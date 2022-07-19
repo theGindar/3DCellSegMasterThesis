@@ -90,7 +90,7 @@ for ith_epoch in range(0, max_epoch):
         seg_output_f=seg_output[:,0,:,:,:]
         seg_output_b=seg_output[:,1,:,:,:]
         
-        loss=dice_loss_org(seg_output_b, seg_groundtruth)
+        loss=dice_loss_org(seg_output, seg_groundtruth)
 
         accuracy = dice_accuracy(seg_output_b, seg_groundtruth_b)
 
