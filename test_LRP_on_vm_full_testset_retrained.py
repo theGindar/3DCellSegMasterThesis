@@ -42,9 +42,9 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # model=VoxResNet(input_channel=1, n_classes=3, output_func = "softmax")
 # load_path=''
 model = CellSegNet_basic_lite(input_channel=1, n_classes=2, output_func="softmax")
-model_name = "model_LRP_retrained"
-results_output_path = "output/results_test_model_LRP_retrained.csv"
-load_path = 'output/model_LRP_retrained.pkl'
+model_name = "model_LRP_retrained_limit_background"
+results_output_path = "output/results_test_model_LRP_retrained_limit_background.csv"
+load_path = 'output/model_LRP_retrained_limit_background.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 
