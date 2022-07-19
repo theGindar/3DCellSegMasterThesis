@@ -43,8 +43,8 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 model = CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=2, output_func="softmax")
 model_name = "model_LRP_retrained"
-results_output_path = "output/results_test_model_LRP_retrained.csv"
-load_path = 'output/model_LRP_retrained_limit_background_groupnorm.pkl'
+results_output_path = "output/results_test_model_LRP_retrained_limit_background_groupnorm.csv"
+load_path = 'output/model_LRP_retrained.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 
