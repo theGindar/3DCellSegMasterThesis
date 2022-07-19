@@ -22,7 +22,7 @@ from func.run_pipeline_super_vox import segment_super_vox_3_channel, semantic_se
     delete_too_small_cluster, reassign
 from func.run_pipeline import segment, assign_boudary_voxels_to_cells, dbscan_of_seg, semantic_segment_crop_and_cat
 from func.cal_accuracy import IOU_and_Dice_Accuracy, VOI
-from func.network import VoxResNet, CellSegNet_basic_lite
+from func.network import VoxResNet, CellSegNet_basic_lite_w_groupnorm
 from func.unet_3d_basic import UNet3D_basic
 from func.ultis import save_obj, load_obj
 
@@ -41,10 +41,10 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 # model=VoxResNet(input_channel=1, n_classes=3, output_func = "softmax")
 # load_path=''
-model = CellSegNet_basic_lite(input_channel=1, n_classes=2, output_func="softmax")
-model_name = "model_LRP_retrained_limit_background_2"
-results_output_path = "output/results_test_model_LRP_retrained_limit_background_2.csv"
-load_path = 'output/model_LRP_retrained_limit_background_2.pkl'
+model = CellSegNet_basic_lite_w_groupnorm(input_channel=1, n_classes=2, output_func="softmax")
+model_name = "model_LRP_retrained"
+results_output_path = "output/results_test_model_LRP_retrained.csv"
+load_path = 'output/model_LRP_retrained_limit_background_groupnorm.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 
