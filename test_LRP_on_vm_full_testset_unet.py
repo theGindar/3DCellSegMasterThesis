@@ -42,9 +42,9 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # model=VoxResNet(input_channel=1, n_classes=3, output_func = "softmax")
 # load_path=''
 model = UNet3D_basic(in_channels=1, out_channels=2, output_func="softmax")
-model_name = "model_LRP_unet"
-results_output_path = "output/results_test_model_LRP_unet.csv"
-load_path = 'output/model_LRP_unet.pkl'
+model_name = "model_LRP_unet_limit_background"
+results_output_path = "output/results_test_model_LRP_unet_limit_background.csv"
+load_path = 'output/model_LRP_unet_limit_background.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
 
