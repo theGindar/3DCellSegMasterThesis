@@ -65,7 +65,7 @@ def transform_the_tensor(image_tensors, prob=0.5):
 LRP_data_dict = load_obj("dataset_info/LRP_dataset_info")
 LRP_data_dict_train = LRP_data_dict["train"]
 
-model = CellSegNet_basic_lite(input_channel=1, n_classes=3, output_func="softmax")
+model = CellSegNet_basic_lite(input_channel=1, n_classes=2, output_func="softmax")
 load_path = 'output/model_LRP_retrained_limit_background_2.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
