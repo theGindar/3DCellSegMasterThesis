@@ -4,7 +4,7 @@ import time
 
 import torch
 
-from func.run_pipeline_super_vox import segment_super_vox_2_channel, semantic_segment_crop_and_cat_2_channel_output, \
+from func.run_pipeline_super_vox import segment_super_vox_2_channel, semantic_segment_crop_and_cat_2_channel_output_edge_gated_model, \
     img_3d_erosion_or_expansion, \
     generate_super_vox_by_watershed
 from func.network import VoxResNet, CellSegNet_basic_edge_gated_X
@@ -126,7 +126,7 @@ for img_name in image_names_to_segment:
             print(str(idx + 1) + ": Transpose the image to be: " + str(transpose))
             with torch.no_grad():
                 seg_img = \
-                    semantic_segment_crop_and_cat_2_channel_output(raw_img.transpose(transpose), model, device,
+                    semantic_segment_crop_and_cat_2_channel_output_edge_gated_model(raw_img.transpose(transpose), model, device,
                                                                    crop_cube_size=crop_cube_size, stride=stride)
 
             seg_img_boundary = seg_img['boundary']
