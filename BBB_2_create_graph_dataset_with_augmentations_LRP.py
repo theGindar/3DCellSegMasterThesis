@@ -28,7 +28,7 @@ image_names_to_segment = [
     "Movie2_T00012_crop_gt.h5",
     "Movie1_t00003_crop_gt.h5"
 ]
-save_path_graph_set = f'graphs_dataset_train_with_augmentations_LRP_retrained_skript_{script_num}.pkl'
+save_path_graph_set = f'../../../mnt2/graphs_dataset_train_with_augmentations_LRP_retrained_skript_{script_num}.pkl'
 txt_write_file_path = f'flag_folder/BBB_{script_num}_FINISHED.txt'
 
 
