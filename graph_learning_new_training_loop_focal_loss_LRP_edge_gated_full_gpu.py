@@ -41,7 +41,7 @@ for g in graph_paths:
 
 graphs = flatten(graphs)
 
-model_save_path = "output/graph_model_focal_LRP_retrained.pt"
+model_save_path = "output/graph_model_focal_LRP_edge_gated.pt"
 
 import random
 random.seed(0)
