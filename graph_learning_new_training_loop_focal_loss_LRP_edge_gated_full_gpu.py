@@ -23,12 +23,12 @@ def decompress_pickle(file):
 
 data_path = "../../../mnt2/"
 graph_paths = [
-    "graphs_dataset_train_LRP_retrained_SMALL_1.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_2.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_3.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_4.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_5.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_6.pbz2"
+    "graphs_dataset_train_LRP_retrained_SMALL_1_edge_gated.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_2_edge_gated.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_3_edge_gated.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_4_edge_gated.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_5_edge_gated.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_6_edge_gated.pbz2"
 ]
 
 graphs = []
