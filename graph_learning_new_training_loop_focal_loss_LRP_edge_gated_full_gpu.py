@@ -21,6 +21,9 @@ def decompress_pickle(file):
     data = pkl.load(data)
     return data
 
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
 data_path = "../../../mnt2/"
 graph_paths = [
     "graphs_dataset_train_LRP_retrained_SMALL_1_edge_gated.pbz2",
@@ -35,6 +38,8 @@ graphs = []
 for g in graph_paths:
     subset_graphs = decompress_pickle(data_path + g)
     graphs.append(subset_graphs)
+
+graphs = flatten(graphs)
 
 model_save_path = "output/graph_model_focal_LRP_retrained.pt"
 
