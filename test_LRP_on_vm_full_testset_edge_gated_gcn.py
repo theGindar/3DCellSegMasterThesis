@@ -1,3 +1,4 @@
+import h5py
 import numpy as np
 import os
 import pickle
@@ -280,7 +281,7 @@ ari_dict = {}
 voi_dict = {}
 for test_file in LRP_data_dict_test.keys():
     print(test_file)
-    hf = np.load(LRP_data_dict_test[test_file])
+    hf = h5py.File(LRP_data_dict_test[test_file])
     raw_img = np.array(hf["raw"], dtype=np.float)
     hand_seg = np.array(hf["ins"], dtype=np.float)
 
