@@ -649,7 +649,7 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
             seg_img = \
                 semantic_segment_crop_and_cat_2_channel_output(raw_img.transpose(transpose), model, device,
                                                                crop_cube_size=crop_cube_size, stride=stride)
-        seg_img_background = seg_img['background']
+        # seg_img_background = seg_img['background']
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
         torch.cuda.empty_cache()
@@ -657,27 +657,27 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
         # argmax
         print('argmax', end='\r')
         seg = []
-        seg.append(seg_img_background)
+        # seg.append(seg_img_background)
         seg.append(seg_img_boundary)
         seg.append(seg_img_foreground)
         seg = np.array(seg)
         seg_argmax = np.argmax(seg, axis=0)
         # probability map to 0 1 segment
-        seg_background = np.zeros(seg_img_background.shape)
-        seg_background[np.where(seg_argmax == 0)] = 1
+        # seg_background = np.zeros(seg_img_background.shape)
+        # seg_background[np.where(seg_argmax == 0)] = 1
         seg_foreground = np.zeros(seg_img_foreground.shape)
         seg_foreground[np.where(seg_argmax == 2)] = 1
         seg_boundary = np.zeros(seg_img_boundary.shape)
         seg_boundary[np.where(seg_argmax == 1)] = 1
 
-        seg_background = seg_background.transpose(reverse_transposes[idx])
+        # seg_background = seg_background.transpose(reverse_transposes[idx])
         seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
         seg_boundary = seg_boundary.transpose(reverse_transposes[idx])
 
-        seg_background_comp += seg_background
+        # seg_background_comp += seg_background
         seg_boundary_comp += seg_boundary
     print("Get model semantic seg by combination")
-    seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
+    # seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
     seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
     seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
 
@@ -699,7 +699,7 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
 
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
-                                                              seg_boundary_comp, seg_background_comp, compactness=1)
+                                                              seg_boundary_comp, compactness=1)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
@@ -805,7 +805,7 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
             seg_img = \
                 semantic_segment_crop_and_cat_2_channel_output_edge_gated_model(raw_img.transpose(transpose), model, device,
                                                                                 crop_cube_size=crop_cube_size, stride=stride)
-        seg_img_background = seg_img['background']
+        # seg_img_background = seg_img['background']
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
         torch.cuda.empty_cache()
@@ -813,27 +813,27 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
         # argmax
         print('argmax', end='\r')
         seg = []
-        seg.append(seg_img_background)
+        # seg.append(seg_img_background)
         seg.append(seg_img_boundary)
         seg.append(seg_img_foreground)
         seg = np.array(seg)
         seg_argmax = np.argmax(seg, axis=0)
         # probability map to 0 1 segment
-        seg_background = np.zeros(seg_img_background.shape)
-        seg_background[np.where(seg_argmax == 0)] = 1
+        # seg_background = np.zeros(seg_img_background.shape)
+        # seg_background[np.where(seg_argmax == 0)] = 1
         seg_foreground = np.zeros(seg_img_foreground.shape)
         seg_foreground[np.where(seg_argmax == 2)] = 1
         seg_boundary = np.zeros(seg_img_boundary.shape)
         seg_boundary[np.where(seg_argmax == 1)] = 1
 
-        seg_background = seg_background.transpose(reverse_transposes[idx])
+        # seg_background = seg_background.transpose(reverse_transposes[idx])
         seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
         seg_boundary = seg_boundary.transpose(reverse_transposes[idx])
 
-        seg_background_comp += seg_background
+        # seg_background_comp += seg_background
         seg_boundary_comp += seg_boundary
     print("Get model semantic seg by combination")
-    seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
+    # seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
     seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
     seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
 
@@ -855,7 +855,7 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
 
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
-                                                              seg_boundary_comp, seg_background_comp, compactness=1)
+                                                              seg_boundary_comp, compactness=1)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
