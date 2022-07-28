@@ -665,10 +665,8 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
         # probability map to 0 1 segment
         # seg_background = np.zeros(seg_img_background.shape)
         # seg_background[np.where(seg_argmax == 0)] = 1
-        seg_foreground = np.zeros(seg_img_foreground.shape)
-        seg_foreground[np.where(seg_argmax == 2)] = 1
-        seg_boundary = np.zeros(seg_img_boundary.shape)
-        seg_boundary[np.where(seg_argmax == 1)] = 1
+        seg_foreground = np.array(seg_img_foreground - seg_img_boundary > 0, dtype=np.int)
+        seg_boundary = 1 - seg_foreground
 
         # seg_background = seg_background.transpose(reverse_transposes[idx])
         seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
@@ -678,8 +676,8 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
         seg_boundary_comp += seg_boundary
     print("Get model semantic seg by combination")
     # seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
-    seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
-    seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
+    seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=float)
+    seg_foreground_comp = 1 - seg_boundary_comp
 
     # Generate super vox by watershed
     seg_foreground_erosion = 1 - img_3d_erosion_or_expansion(1 - seg_foreground_comp,
