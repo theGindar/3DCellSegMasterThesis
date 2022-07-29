@@ -1,7 +1,10 @@
+import bz2
+
 import h5py
 import numpy as np
 import time
 
+import pickle5
 import torch
 
 from func.run_pipeline_super_vox import segment_super_vox_2_channel, semantic_segment_crop_and_cat_2_channel_output, \
@@ -22,9 +25,13 @@ import random
 random.seed(script_num)
 np.random.seed(script_num)
 
+def compressed_pickle(title, data):
+    with bz2.BZ2File(title + '.pbz2', 'w') as f:
+        pickle5.dump(data, f, protocol=5)
+
 image_names_to_segment = [
 ]
-save_path_graph_set = f'../../../mnt2/graphs_dataset_train_with_augmentations_LRP_retrained_skript_{script_num}.pkl'
+save_path_graph_set = f'../../../mnt2/graphs_dataset_train_with_augmentations_LRP_retrained_skript_{script_num}'
 txt_write_file_path = f'flag_folder/BBB_{script_num}_FINISHED.txt'
 
 
@@ -164,8 +171,7 @@ for img_name in LRP_data_dict_test.keys():
     graphs_list.append(graph)
 
     end = time.time()
-    with open(save_path_graph_set, 'wb') as f:
-        pickle.dump(graphs_list, f, protocol=pickle.HIGHEST_PROTOCOL)
+    compressed_pickle(save_path_graph_set, graphs_list)
     print("Time elapsed: ", end - start)
 
 
