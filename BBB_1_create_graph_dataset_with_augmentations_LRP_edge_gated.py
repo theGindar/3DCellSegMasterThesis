@@ -164,7 +164,7 @@ for img_name in image_names_to_segment:
                                                                            connectivity=min_touching_area)
 
         super_vox_to_graph = SuperVoxToNxGraph()
-        graph = super_vox_to_graph.get_nx_graph_from_ws_with_gt(seg_foreground_super_voxel_by_ws, hand_seg)
+        graph = super_vox_to_graph.get_nx_graph_from_ws_with_gt(seg_foreground_super_voxel_by_ws, hand_seg, False)
         graphs_list.append(graph)
 
         end = time.time()

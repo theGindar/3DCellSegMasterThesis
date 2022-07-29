@@ -154,7 +154,8 @@ class SuperVoxToNxGraph():
 
         return valid_neighbor_vals
 
-    def add_ground_truth_node_labels(self, input_3d_img, groundtruth_img, neighbors_and_touching_area):
+    def add_ground_truth_node_labels(self, input_3d_img, groundtruth_img, neighbors_and_touching_area,
+                                     data_has_background=True):
         # add ground truth column to neighbors_and_touching_area matrix
         neighbors_and_touching_area = np.c_[(neighbors_and_touching_area,
                                                 np.zeros(len(neighbors_and_touching_area)))]
@@ -174,9 +175,11 @@ class SuperVoxToNxGraph():
         # if both supervoxels have the same groundtruth cell label, 0 otherwise
         for idx, col in enumerate(neighbors_and_touching_area):
             if groundtruth_labels[col[0]] == groundtruth_labels[col[1]]:
-                if groundtruth_labels[col[0]] != 0.:
+                if data_has_background:
+                    if groundtruth_labels[col[0]] != 0.:
+                        neighbors_and_touching_area[idx, 3] = 1
+                else:
                     neighbors_and_touching_area[idx, 3] = 1
-
         return neighbors_and_touching_area
 
     def get_edges_with_voxel_size(self, neighbors, input_3d_img):
@@ -278,7 +281,7 @@ class SuperVoxToNxGraph():
 
         return G
 
-    def get_nx_graph_from_ws_with_gt(self, seg_foreground_super_voxel_by_ws, hand_seg):
+    def get_nx_graph_from_ws_with_gt(self, seg_foreground_super_voxel_by_ws, hand_seg, data_has_background=True):
         """
 
         Parameters
@@ -295,7 +298,8 @@ class SuperVoxToNxGraph():
         print("adding ground truth")
         neighbors_with_gt = self.add_ground_truth_node_labels(seg_foreground_super_voxel_by_ws,
                                                                             hand_seg,
-                                                                            neighbors)
+                                                                            neighbors,
+                                                                            data_has_background)
         print("adding neighbor ids")
         neighbors = np.c_[np.arange(len(neighbors)), neighbors]
         neighbors_with_gt = np.c_[np.arange(len(neighbors_with_gt)), neighbors_with_gt]
