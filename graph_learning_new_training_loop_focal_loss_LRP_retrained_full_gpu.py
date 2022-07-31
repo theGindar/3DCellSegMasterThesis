@@ -41,7 +41,7 @@ for g in graph_paths:
 
 graphs = flatten(graphs)
 
-model_save_path = "output/graph_model_focal_LRP_retrained_2.pt"
+model_save_path = "output/graph_model_focal_LRP_retrained_3.pt"
 
 import random
 random.seed(0)
@@ -98,7 +98,7 @@ print("ready for training...")
 
 
 for e in range(500):
-    alpha = 0.5
+    alpha = 0.25
     for graph_number in range(len(dataset)):
         # torch.cuda.empty_cache()
         # print("memory at start:")
