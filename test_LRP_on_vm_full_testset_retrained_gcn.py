@@ -56,7 +56,7 @@ model.eval()
 
 # load graph model
 graph_model = GCN(3, num_classes=1)
-checkpoint_graph = 'output/graph_model_focal_LRP_retrained.pt'
+checkpoint_graph = 'output/graph_model_focal_LRP_retrained_2.pt'
 graph_model.load_state_dict(torch.load(checkpoint_graph))
 graph_model.eval()
 
