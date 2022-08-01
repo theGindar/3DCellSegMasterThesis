@@ -541,10 +541,10 @@ class Cluster_Super_Vox_Graph():
             if self.val_labels[current_val] != self.UN_PROCESSED:
                 continue
             valid_neighbor_vals = get_valid_neighbors(current_val)
-            print(f"number of valid neighbors: {len(valid_neighbor_vals)}")
+            # print(f"number of valid neighbors: {len(valid_neighbor_vals)}")
             if len(valid_neighbor_vals) > 0:
                 for val_neighbor in valid_neighbor_vals:
-                    print("merged super voxels!")
+                    # print("merged super voxels!")
                     self.input_3d_img[self.input_3d_img == val_neighbor] = current_val
 
             self.val_labels[current_val] = self.PROCESSED
