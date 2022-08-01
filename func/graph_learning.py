@@ -485,6 +485,7 @@ class Cluster_Super_Vox_Graph():
                       ...
         """
 
+
         # remove the voxel pairs that are predicted as not sharing the same cell
         prediction_mask = (neighbors_w_prediction[:,0] == 1)
         neighbors_w_prediction = neighbors_w_prediction[prediction_mask, :]
@@ -692,6 +693,9 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
     # Delete too small cells
     seg_foreground_single_cell_with_boundary = delete_too_small_cluster(seg_foreground_single_cell_with_boundary,
                                                                         threshold=min_cell_size_threshold)
+
+    with open('seg_final_LRP_graph_wo_boundary.npy', 'wb') as f:
+        np.save(f, seg_foreground_single_cell_with_boundary)
 
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
