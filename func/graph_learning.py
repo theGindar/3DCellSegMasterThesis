@@ -531,7 +531,7 @@ class Cluster_Super_Vox_Graph():
             # this should be the case, otherwise the graph would probably contain duplicates!
             valid_neighbor_set = set(valid_neighbor_list)
 
-            assert len(valid_neighbor_set) == len(valid_neighbor_list)
+            # assert len(valid_neighbor_set) == len(valid_neighbor_list)
 
             return valid_neighbor_list
 
