@@ -493,9 +493,9 @@ class Cluster_Super_Vox_Graph():
         # TODO predictions of valid neighbors should be np arrays
 
         unique_vals, unique_val_counts = np.unique(self.input_3d_img, return_counts=True)
-        if not image_has_only_foreground:
-            unique_val_counts = unique_val_counts[unique_vals > 0]
-            unique_vals = unique_vals[unique_vals > 0]
+        # if not image_has_only_foreground:
+        unique_val_counts = unique_val_counts[unique_vals > 0]
+        unique_vals = unique_vals[unique_vals > 0]
         sort_locs = np.argsort(unique_val_counts)[::-1]
         self.unique_vals = unique_vals[sort_locs]
 
@@ -541,9 +541,10 @@ class Cluster_Super_Vox_Graph():
             if self.val_labels[current_val] != self.UN_PROCESSED:
                 continue
             valid_neighbor_vals = get_valid_neighbors(current_val)
-
+            print(f"number of valid neighbors: {len(valid_neighbor_vals)}")
             if len(valid_neighbor_vals) > 0:
                 for val_neighbor in valid_neighbor_vals:
+                    print("merged super voxels!")
                     self.input_3d_img[self.input_3d_img == val_neighbor] = current_val
 
             self.val_labels[current_val] = self.PROCESSED
@@ -645,7 +646,7 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
     print('Feed raw img to model. Use different transposes')
     raw_img_size = raw_img.shape
 
-    seg_background_comp = np.zeros(raw_img_size)
+    # seg_background_comp = np.zeros(raw_img_size)
     seg_boundary_comp = np.zeros(raw_img_size)
 
     for idx, transpose in enumerate(transposes):
@@ -654,33 +655,22 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
             seg_img = \
                 semantic_segment_crop_and_cat_2_channel_output(raw_img.transpose(transpose), model, device,
                                                                crop_cube_size=crop_cube_size, stride=stride)
-        # seg_img_background = seg_img['background']
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
         torch.cuda.empty_cache()
 
         # argmax
         print('argmax', end='\r')
-        seg = []
-        # seg.append(seg_img_background)
-        seg.append(seg_img_boundary)
-        seg.append(seg_img_foreground)
-        seg = np.array(seg)
-        seg_argmax = np.argmax(seg, axis=0)
-        # probability map to 0 1 segment
-        # seg_background = np.zeros(seg_img_background.shape)
-        # seg_background[np.where(seg_argmax == 0)] = 1
+
+
         seg_foreground = np.array(seg_img_foreground - seg_img_boundary > 0, dtype=np.int)
         seg_boundary = 1 - seg_foreground
 
-        # seg_background = seg_background.transpose(reverse_transposes[idx])
         seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
         seg_boundary = seg_boundary.transpose(reverse_transposes[idx])
 
-        # seg_background_comp += seg_background
         seg_boundary_comp += seg_boundary
     print("Get model semantic seg by combination")
-    # seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
     seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=float)
     seg_foreground_comp = 1 - seg_boundary_comp
 

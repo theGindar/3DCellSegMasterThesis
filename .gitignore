@@ -25,3 +25,5 @@ groundtruth_example_consistency_weights.pdf
 /ovules_training_graphs
 /figs
 /lrp_training_graphs
+seg_foreground_supervoxel_LRP_graph.npy
+seg_final_LRP_graph.npy
