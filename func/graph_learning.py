@@ -485,8 +485,9 @@ class Cluster_Super_Vox_Graph():
                       ...
         """
 
-        with open('neighbors_w_prediction_LRP.npy', 'wb') as f:
-            np.save(f, neighbors_w_prediction)
+
+        # with open('neighbors_w_prediction_LRP.npy', 'wb') as f:
+        #     np.save(f, neighbors_w_prediction)
 
 
         # remove the voxel pairs that are predicted as not sharing the same cell
@@ -539,7 +540,7 @@ class Cluster_Super_Vox_Graph():
         # for idx, unique_val in enumerate(self.unique_vals):
         #     # print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)))
         #     self.val_outlayer_area[unique_val] = self.A_LARGE_NUM
-
+        """ v1
         for idx, current_val in enumerate(self.unique_vals):
             # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
             if self.val_labels[current_val] != self.UN_PROCESSED:
@@ -552,6 +553,27 @@ class Cluster_Super_Vox_Graph():
                     self.input_3d_img[self.input_3d_img == val_neighbor] = current_val
 
             self.val_labels[current_val] = self.PROCESSED
+        """
+        # v2
+        for idx, current_val in enumerate(self.unique_vals):
+            # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
+            if self.val_labels[current_val] != self.UN_PROCESSED:
+                continue
+            valid_neighbor_vals = get_valid_neighbors(current_val)
+            # print(f"number of valid neighbors: {len(valid_neighbor_vals)}")
+            if len(valid_neighbor_vals) > 0:
+                for val_neighbor in valid_neighbor_vals:
+                    # print("merged super voxels!")
+                    self.input_3d_img[self.input_3d_img == val_neighbor] = current_val
+
+                    check_mask_1 = (neighbors_w_prediction[:, 2] == val_neighbor)
+                    neighbors_w_prediction[check_mask_1, 2] = current_val
+
+                    check_mask_2 = (neighbors_w_prediction[:, 3] == val_neighbor)
+                    neighbors_w_prediction[check_mask_2, 3] = current_val
+
+            self.val_labels[current_val] = self.PROCESSED
+
 
         print("everything predicted!")
 
@@ -685,27 +707,28 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
                                                                        connectivity=min_touching_area)
 
-    with open('seg_foreground_supervoxel_LRP_graph.npy', 'wb') as f:
-        np.save(f, seg_foreground_super_voxel_by_ws)
+
+    # with open('seg_foreground_supervoxel_LRP_graph.npy', 'wb') as f:
+    #     np.save(f, seg_foreground_super_voxel_by_ws)
 
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox_Graph(graph_model)
-    cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=True, image_has_only_foreground=True)
+    cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=False)
     seg_foreground_single_cell_with_boundary = cluster_super_vox.output_3d_img
 
     # Delete too small cells
     seg_foreground_single_cell_with_boundary = delete_too_small_cluster(seg_foreground_single_cell_with_boundary,
                                                                         threshold=min_cell_size_threshold)
 
-    with open('seg_final_LRP_graph_wo_boundary.npy', 'wb') as f:
-        np.save(f, seg_foreground_single_cell_with_boundary)
+    # with open('seg_final_LRP_graph_wo_boundary.npy', 'wb') as f:
+    #     np.save(f, seg_foreground_single_cell_with_boundary)
 
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
                                                               seg_boundary_comp, compactness=1)
 
-    with open('seg_final_LRP_graph.npy', 'wb') as f:
-        np.save(f, seg_final)
+    # with open('seg_final_LRP_graph.npy', 'wb') as f:
+    #     np.save(f, seg_final)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
