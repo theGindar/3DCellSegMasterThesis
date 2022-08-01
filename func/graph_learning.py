@@ -485,6 +485,9 @@ class Cluster_Super_Vox_Graph():
                       ...
         """
 
+        with open('neighbors_w_prediction_LRP.npy', 'wb') as f:
+            np.save(f, neighbors_w_prediction)
+
 
         # remove the voxel pairs that are predicted as not sharing the same cell
         prediction_mask = (neighbors_w_prediction[:,0] == 1)
