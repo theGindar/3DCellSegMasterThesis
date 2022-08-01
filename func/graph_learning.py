@@ -421,7 +421,7 @@ class Cluster_Super_Vox_Graph():
         self.LONELY_POINT = -1
         self.A_LARGE_NUM = 100000000
 
-    def fit(self, input_3d_img, fake_predictions=False):
+    def fit(self, input_3d_img, fake_predictions=False, image_has_only_foreground=False):
         self.input_3d_img = input_3d_img
         print("getting neighbor pairs")
         neighbors = self.super_vox_to_nx_graph.get_neighbors_and_touching_area(input_3d_img)
@@ -493,8 +493,9 @@ class Cluster_Super_Vox_Graph():
         # TODO predictions of valid neighbors should be np arrays
 
         unique_vals, unique_val_counts = np.unique(self.input_3d_img, return_counts=True)
-        unique_val_counts = unique_val_counts[unique_vals > 0]
-        unique_vals = unique_vals[unique_vals > 0]
+        if not image_has_only_foreground:
+            unique_val_counts = unique_val_counts[unique_vals > 0]
+            unique_vals = unique_vals[unique_vals > 0]
         sort_locs = np.argsort(unique_val_counts)[::-1]
         self.unique_vals = unique_vals[sort_locs]
 
@@ -695,7 +696,7 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
 
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox_Graph(graph_model)
-    cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=True)
+    cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=False, image_has_only_foreground=True)
     seg_foreground_single_cell_with_boundary = cluster_super_vox.output_3d_img
 
     # Delete too small cells
