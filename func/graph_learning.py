@@ -690,6 +690,9 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
                                                                        connectivity=min_touching_area)
 
+    with open('seg_foreground_supervoxel_LRP_graph.npy', 'wb') as f:
+        np.save(f, seg_foreground_super_voxel_by_ws)
+
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox_Graph(graph_model)
     cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=True)
@@ -702,6 +705,9 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
                                                               seg_boundary_comp, compactness=1)
+
+    with open('seg_final_LRP_graph.npy', 'wb') as f:
+        np.save(f, seg_final)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
