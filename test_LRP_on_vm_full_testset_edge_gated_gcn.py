@@ -317,6 +317,9 @@ for test_file in LRP_data_dict_test.keys():
     print("voi: " + str(voi))
     print("----------")
 
+    # test only one
+    break
+
 
 results_df = pd.DataFrame({"acc_iou_0_7":[],
                            "acc_iou_0_5":[],
