@@ -98,7 +98,7 @@ print("ready for training...")
 
 
 for e in range(500):
-    alpha = 0.05
+    alpha = 0.1
     for graph_number in range(len(dataset)):
         # torch.cuda.empty_cache()
         # print("memory at start:")
