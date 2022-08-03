@@ -26,12 +26,12 @@ def flatten(l):
 
 data_path = "../../../mnt2/"
 graph_paths = [
-    "graphs_dataset_train_LRP_retrained_SMALL_1.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_2.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_3.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_4.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_5.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_6.pbz2"
+    "graphs_dataset_train_LRP_retrained_SMALL_1_2.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_2_2.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_3_2.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_4_2.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_5_2.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_6_2.pbz2"
 ]
 
 graphs = []
@@ -41,7 +41,7 @@ for g in graph_paths:
 
 graphs = flatten(graphs)
 
-model_save_path = "output/graph_model_focal_LRP_retrained_4.pt"
+model_save_path = "output/graph_model_focal_LRP_retrained_5.pt"
 
 import random
 random.seed(0)
