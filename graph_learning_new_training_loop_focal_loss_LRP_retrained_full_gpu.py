@@ -98,7 +98,7 @@ print("ready for training...")
 
 
 for e in range(500):
-    alpha = 0.05
+    alpha = 0.02
     for graph_number in range(len(dataset)):
         # torch.cuda.empty_cache()
         # print("memory at start:")
@@ -142,8 +142,8 @@ for e in range(500):
         # train_acc = torch.tensor([1.])
         val_acc = (pred_val == labels_val).float().mean()
 
-        train_f1_score = f1(pred_train, labels_train)
-        val_f1_score = f1(pred_val, labels_val)
+        train_f1_score = f1(torch.ones_like(pred_train) - pred_train, torch.ones_like(labels_train) - labels_train)
+        val_f1_score = f1(torch.ones_like(pred_val) - pred_val, torch.ones_like(labels_val) - labels_val)
 
         epoch_accuracy.append(train_acc.item())
         epoch_accuracy_val.append(val_acc.item())
