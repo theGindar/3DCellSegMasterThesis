@@ -318,7 +318,7 @@ for test_file in LRP_data_dict_test.keys():
     print("----------")
 
     # test only one
-    break
+    # break
 
 
 results_df = pd.DataFrame({"acc_iou_0_7":[],
