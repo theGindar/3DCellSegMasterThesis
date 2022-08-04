@@ -47,7 +47,7 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 model = CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=2, output_func="softmax")
 model_name = "model_LRP_edge_gated_limit_background_2"
-results_output_path = "output/results_test_model_LRP_edge_gated_limit_background_2_gcn.csv"
+results_output_path = "output/results_test_model_LRP_edge_gated_limit_background_2_gcn_fake_predictions.csv"
 load_path = 'output/model_LRP_edge_gated_limit_background_2.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
