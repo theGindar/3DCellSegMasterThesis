@@ -8,6 +8,8 @@ from skimage.segmentation import watershed
 from skimage.measure import label
 from skimage.feature import peak_local_max
 
+from func.gasp_segmentation import process_gasp
+
 def segment_super_vox_2_channel(raw_img, model, device,
             crop_cube_size=128, stride=64,
             how_close_are_the_super_vox_to_boundary=2,
@@ -276,6 +278,63 @@ def segment_super_vox_3_channel(raw_img, model, device,
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
+
+    return seg_final
+
+
+def segment_super_vox_3_channel_gasp(raw_img, model, device,
+                                crop_cube_size=128, stride=64,
+                                how_close_are_the_super_vox_to_boundary=2,
+                                min_touching_area=30, min_touching_percentage=0.51,
+                                min_cell_size_threshold=10,
+                                transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
+                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+    # feed the raw img to the model
+    print('Feed raw img to model. Use different transposes')
+    raw_img_size = raw_img.shape
+
+    seg_background_comp = np.zeros(raw_img_size)
+    seg_boundary_comp = np.zeros(raw_img_size)
+
+    for idx, transpose in enumerate(transposes):
+        print(str(idx + 1) + ": Transpose the image to be: " + str(transpose))
+        with torch.no_grad():
+            seg_img = \
+                semantic_segment_crop_and_cat_3_channel_output(raw_img.transpose(transpose), model, device,
+                                                               crop_cube_size=crop_cube_size, stride=stride)
+        seg_img_background = seg_img['background']
+        seg_img_boundary = seg_img['boundary']
+        seg_img_foreground = seg_img['foreground']
+        torch.cuda.empty_cache()
+
+        # argmax
+        print('argmax', end='\r')
+        seg = []
+        seg.append(seg_img_background)
+        seg.append(seg_img_boundary)
+        seg.append(seg_img_foreground)
+        seg = np.array(seg)
+        seg_argmax = np.argmax(seg, axis=0)
+        # probability map to 0 1 segment
+        seg_background = np.zeros(seg_img_background.shape)
+        seg_background[np.where(seg_argmax == 0)] = 1
+        seg_foreground = np.zeros(seg_img_foreground.shape)
+        seg_foreground[np.where(seg_argmax == 2)] = 1
+        seg_boundary = np.zeros(seg_img_boundary.shape)
+        seg_boundary[np.where(seg_argmax == 1)] = 1
+
+        seg_background = seg_background.transpose(reverse_transposes[idx])
+        seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
+        seg_boundary = seg_boundary.transpose(reverse_transposes[idx])
+
+        seg_background_comp += seg_background
+        seg_boundary_comp += seg_boundary
+    print("Get model semantic seg by combination")
+    seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
+    seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
+    seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
+
+    seg_final = process_gasp(seg_foreground_comp)
 
     return seg_final
 
