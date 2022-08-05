@@ -47,7 +47,7 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 model = CellSegNet_basic_lite(input_channel=1, n_classes=2, output_func="softmax")
 model_name = "model_LRP_retrained_limit_background_2"
-results_output_path = "output/results_test_model_LRP_retrained_control_background_2_gcn_2.csv"
+results_output_path = "output/results_test_model_LRP_retrained_control_background_2_gcn_3.csv"
 load_path = 'output/model_LRP_retrained_limit_background_2.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
@@ -56,7 +56,7 @@ model.eval()
 
 # load graph model
 graph_model = GCN(3, num_classes=1)
-checkpoint_graph = 'output/graph_model_focal_LRP_retrained_3.pt'
+checkpoint_graph = 'output/graph_model_focal_LRP_retrained_5.pt'
 graph_model.load_state_dict(torch.load(checkpoint_graph))
 graph_model.eval()
 
