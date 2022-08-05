@@ -713,7 +713,7 @@ def segment_super_vox_2_channel_graph_learning(raw_img, model, graph_model, devi
 
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox_Graph(graph_model)
-    cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=True)
+    cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=False)
     seg_foreground_single_cell_with_boundary = cluster_super_vox.output_3d_img
 
     # Delete too small cells
