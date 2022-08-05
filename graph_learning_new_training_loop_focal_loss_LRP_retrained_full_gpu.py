@@ -26,12 +26,12 @@ def flatten(l):
 
 data_path = "../../../mnt2/"
 graph_paths = [
-    "graphs_dataset_train_LRP_retrained_SMALL_1_2.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_2_2.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_3_2.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_4_2.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_5_2.pbz2",
-    "graphs_dataset_train_LRP_retrained_SMALL_6_2.pbz2"
+    "graphs_dataset_train_LRP_retrained_SMALL_1.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_2.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_3.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_4.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_5.pbz2",
+    "graphs_dataset_train_LRP_retrained_SMALL_6.pbz2"
 ]
 
 graphs = []
@@ -98,7 +98,7 @@ print("ready for training...")
 
 
 for e in range(500):
-    alpha = 0.1
+    alpha = 0.15
     for graph_number in range(len(dataset)):
         # torch.cuda.empty_cache()
         # print("memory at start:")
