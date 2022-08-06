@@ -41,7 +41,7 @@ torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 # init model
-model=CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=2, output_func = "softmax")
+model=CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=3, output_func = "softmax")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
