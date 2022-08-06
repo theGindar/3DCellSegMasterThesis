@@ -160,6 +160,10 @@ for e in range(500):
         model.eval()
         with torch.no_grad():
             logits = model(sample_graph, features)
+
+            model_output_2 = torch.sigmoid(logits)
+            pred_print = (model_output_2 > 0.5).type(torch.FloatTensor).to(device)
+            print(torch.unique(pred_print, return_counts=True))
             # val_loss = CELoss(logits[val_mask], labels[val_mask])
             val_loss = sigmoid_focal_loss(torch.squeeze(logits[val_mask].type(torch.FloatTensor)), labels[val_mask].type(torch.FloatTensor), alpha=alpha, reduction="mean")
             epoch_val_loss.append(val_loss.item())
