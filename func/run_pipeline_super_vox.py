@@ -281,7 +281,7 @@ def segment_super_vox_3_channel(raw_img, model, device,
 
     return seg_final
 
-
+"""
 def segment_super_vox_3_channel_gasp(raw_img, model, device,
                                 crop_cube_size=128, stride=64,
                                 how_close_are_the_super_vox_to_boundary=2,
@@ -337,7 +337,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     seg_final = process_gasp(seg_foreground_comp)
 
     return seg_final
-
+"""
 
 def semantic_segment_crop_and_cat_2_channel_output(raw_img, model, device, crop_cube_size=64, stride=64):
     # raw_img: 3d matrix, numpy.array
