@@ -8,7 +8,7 @@ from skimage.segmentation import watershed
 from skimage.measure import label
 from skimage.feature import peak_local_max
 
-from func.gasp_segmentation import process_gasp
+# from func.gasp_segmentation import process_gasp
 
 def segment_super_vox_2_channel(raw_img, model, device,
             crop_cube_size=128, stride=64,
