@@ -822,7 +822,7 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
     print('Feed raw img to model. Use different transposes')
     raw_img_size = raw_img.shape
 
-    seg_background_comp = np.zeros(raw_img_size)
+    # seg_background_comp = np.zeros(raw_img_size)
     seg_boundary_comp = np.zeros(raw_img_size)
 
     for idx, transpose in enumerate(transposes):
@@ -831,37 +831,23 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
             seg_img = \
                 semantic_segment_crop_and_cat_2_channel_output_edge_gated_model(raw_img.transpose(transpose), model, device,
                                                                                 crop_cube_size=crop_cube_size, stride=stride)
-        # seg_img_background = seg_img['background']
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
         torch.cuda.empty_cache()
 
         # argmax
         print('argmax', end='\r')
-        seg = []
-        # seg.append(seg_img_background)
-        seg.append(seg_img_boundary)
-        seg.append(seg_img_foreground)
-        seg = np.array(seg)
-        seg_argmax = np.argmax(seg, axis=0)
-        # probability map to 0 1 segment
-        # seg_background = np.zeros(seg_img_background.shape)
-        # seg_background[np.where(seg_argmax == 0)] = 1
-        seg_foreground = np.zeros(seg_img_foreground.shape)
-        seg_foreground[np.where(seg_argmax == 2)] = 1
-        seg_boundary = np.zeros(seg_img_boundary.shape)
-        seg_boundary[np.where(seg_argmax == 1)] = 1
 
-        # seg_background = seg_background.transpose(reverse_transposes[idx])
+        seg_foreground = np.array(seg_img_foreground - seg_img_boundary > 0, dtype=np.int)
+        seg_boundary = 1 - seg_foreground
+
         seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
         seg_boundary = seg_boundary.transpose(reverse_transposes[idx])
 
-        # seg_background_comp += seg_background
         seg_boundary_comp += seg_boundary
     print("Get model semantic seg by combination")
-    # seg_background_comp = np.array(seg_background_comp > 0, dtype=np.int)
-    seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
-    seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
+    seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=float)
+    seg_foreground_comp = 1 - seg_boundary_comp
 
     # Generate super vox by watershed
     seg_foreground_erosion = 1 - img_3d_erosion_or_expansion(1 - seg_foreground_comp,
@@ -869,6 +855,9 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
                                                              device=device)
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
                                                                        connectivity=min_touching_area)
+
+    # with open('seg_foreground_supervoxel_LRP_graph.npy', 'wb') as f:
+    #     np.save(f, seg_foreground_super_voxel_by_ws)
 
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox_Graph(graph_model)
@@ -879,9 +868,15 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
     seg_foreground_single_cell_with_boundary = delete_too_small_cluster(seg_foreground_single_cell_with_boundary,
                                                                         threshold=min_cell_size_threshold)
 
+    # with open('seg_final_LRP_graph_wo_boundary.npy', 'wb') as f:
+    #     np.save(f, seg_foreground_single_cell_with_boundary)
+
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
                                                               seg_boundary_comp, compactness=1)
+
+    # with open('seg_final_LRP_graph.npy', 'wb') as f:
+    #     np.save(f, seg_final)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
