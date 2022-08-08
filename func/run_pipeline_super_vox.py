@@ -341,7 +341,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
 
     seg_final = process_gasp(seg_img_foreground.astype(np.float32))
 
-    return seg_final
+    return seg_final.astype(np.int8)
 
 
 def semantic_segment_crop_and_cat_2_channel_output(raw_img, model, device, crop_cube_size=64, stride=64):
