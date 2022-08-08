@@ -336,6 +336,9 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
 
     print(f"debug stuff: type seg_foreground_comp: {type(seg_foreground_comp)}")
     print(seg_foreground_comp.shape)
+    with open('../../mnt2/seg_foreground_comp_test.npy', 'wb') as f:
+        np.save(f, seg_foreground_comp)
+
     seg_final = process_gasp(seg_foreground_comp)
 
     return seg_final
