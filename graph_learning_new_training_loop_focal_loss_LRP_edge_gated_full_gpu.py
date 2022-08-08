@@ -49,7 +49,7 @@ dgl.seed(0)
 torch.manual_seed(0)
 
 print(f"number of gpus: {torch.cuda.device_count()}")
-torch.cuda.set_device(1)
+torch.cuda.set_device(0)
 print(f"current gpu: {torch.cuda.current_device()}")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
