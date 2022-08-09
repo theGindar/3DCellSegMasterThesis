@@ -42,8 +42,8 @@ for g in graph_paths:
 graphs = flatten(graphs)
 for graph in graphs:
     n_nodes = graph.number_of_nodes()
-    if n_nodes > 50000
-    print(n_nodes)
+    if n_nodes > 50000:
+        print(n_nodes)
 
 model_save_path = "output/graph_model_focal_LRP_edge_gated_3output.pt"
 
