@@ -174,6 +174,7 @@ for e in range(500):
         model.train()
 
         torch.cuda.reset_max_memory_allocated()
+        torch.cuda.empty_cache()
         """
         del pred
         del labels
