@@ -334,7 +334,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
 
     seg_final = process_gasp(seg_boundary_comp.astype(np.float32))
-
+    print(f"seg_final shape: {seg_final.shape}")
     return seg_final.astype(np.int8)
 
 
