@@ -8,8 +8,6 @@ from skimage.segmentation import watershed
 from skimage.measure import label
 from skimage.feature import peak_local_max
 
-from func.gasp_segmentation import process_gasp
-
 def segment_super_vox_2_channel(raw_img, model, device,
             crop_cube_size=128, stride=64,
             how_close_are_the_super_vox_to_boundary=2,
@@ -289,6 +287,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
                                 min_cell_size_threshold=10,
                                 transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
                                 reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+    from func.gasp_segmentation import process_gasp
     # feed the raw img to the model
     print('Feed raw img to model. Use different transposes')
     raw_img_size = raw_img.shape
