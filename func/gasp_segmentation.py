@@ -19,7 +19,7 @@ def process_gasp(pmaps):
     run_ws = True
     ws_2d = False
     ws_threshold = 0.4
-    ws_minsize = 100
+    ws_minsize = 10
     ws_sigma = 0.3
     ws_w_sigma = 2 # 0
     post_minsize = 100
