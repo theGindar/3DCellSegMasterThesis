@@ -339,7 +339,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
     seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
 
-    seg_final = process_gasp(seg_boundary_comp.astype(np.float32))
+    seg_final = process_gasp(seg_boundary.astype(np.float32))
     print(f"seg_final shape: {seg_final.shape}")
     print("DEBUG")
     print('unique')
@@ -347,7 +347,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     seg_final = seg_final.astype(np.int8)
 
     # make sure all elements are positive
-    compressed_pickle("../../../mnt2/debug_HMS_boundary.pbz2", seg_foreground_comp)
+    compressed_pickle("../../../mnt2/debug_HMS_boundary", seg_foreground_comp)
 
     print(np.min(seg_final))
     seg_final = seg_final + 500
