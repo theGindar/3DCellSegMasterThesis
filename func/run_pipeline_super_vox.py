@@ -1,3 +1,5 @@
+import bz2
+
 import numpy as np
 import torch
 from torchsummary import summary
@@ -279,6 +281,10 @@ def segment_super_vox_3_channel(raw_img, model, device,
 
     return seg_final
 
+import pickle5 as pkl
+def compressed_pickle(title, data):
+    with bz2.BZ2File(title + '.pbz2', 'w') as f:
+        pkl.dump(data, f, protocol=5)
 
 def segment_super_vox_3_channel_gasp(raw_img, model, device,
                                 crop_cube_size=128, stride=64,
@@ -335,14 +341,18 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
 
     seg_final = process_gasp(seg_boundary_comp.astype(np.float32))
     print(f"seg_final shape: {seg_final.shape}")
-
-    seg_final = seg_final.astype(np.int8)
-    # make sure all elements are positive
     print("DEBUG")
+    print('unique')
+    print(len(np.unique(seg_final)))
+    seg_final = seg_final.astype(np.int8)
+
+    # make sure all elements are positive
+
     print(np.min(seg_final))
     seg_final = seg_final + 500
     print(np.min(seg_final))
-
+    print('unique2')
+    print(len(np.unique(seg_final)))
     return seg_final
 
 
