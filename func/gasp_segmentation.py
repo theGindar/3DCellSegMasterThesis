@@ -21,7 +21,7 @@ def process_gasp(pmaps):
     ws_threshold = 0.4
     ws_minsize = 100
     ws_sigma = 0.3
-    ws_w_sigma = 0
+    ws_w_sigma = 2 # 0
     post_minsize = 100
     n_threads = 6
     state = True
