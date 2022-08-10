@@ -339,6 +339,9 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     # make sure all elements are positive
     seg_final = seg_final + np.abs(np.min(seg_final)) + 1
 
+    print("DEBUG")
+    print(np.min(seg_final))
+
     return seg_final.astype(np.int8)
 
 
