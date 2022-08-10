@@ -336,14 +336,11 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     seg_final = process_gasp(seg_boundary_comp.astype(np.float32))
     print(f"seg_final shape: {seg_final.shape}")
 
+    seg_final = seg_final.astype(np.int8)
     # make sure all elements are positive
     seg_final = seg_final + np.abs(np.min(seg_final)) + 1
 
-    print("DEBUG")
-    print(np.max(seg_final))
-    print(np.min(seg_final.astype(np.int8)))
-
-    return seg_final.astype(np.int8)
+    return seg_final
 
 
 def semantic_segment_crop_and_cat_2_channel_output(raw_img, model, device, crop_cube_size=64, stride=64):
