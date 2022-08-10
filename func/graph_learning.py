@@ -961,7 +961,8 @@ def segment_super_vox_3_channel_graph_learning_edge_gated_model_3output_LRP(raw_
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
                                                               seg_boundary_comp, seg_background_comp, compactness=1)
 
-    seg_final[np.where(seg_background_comp > 0)] = 999999999
+    # seg_final[np.where(seg_background_comp > 0)] = 999999999
+    seg_final[seg_final == 0] = 999999999
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
