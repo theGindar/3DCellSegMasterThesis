@@ -347,7 +347,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     seg_final = seg_final.astype(np.int8)
 
     # make sure all elements are positive
-    compressed_pickle("../../../mnt2/debug_HMS_boundary.pbz2")
+    compressed_pickle("../../../mnt2/debug_HMS_boundary.pbz2", seg_foreground_comp)
 
     print(np.min(seg_final))
     seg_final = seg_final + 500
