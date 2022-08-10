@@ -79,6 +79,10 @@ def pipeline(raw_img, hand_seg, model, device,
                                                              transposes=transposes,
                                                              reverse_transposes=reverse_transposes)
 
+    print(seg_final.shape)
+    print(type(seg_final))
+    print(hand_seg.shape)
+    print(type(hand_seg))
     ari = adjusted_rand_score(hand_seg.flatten(), seg_final.flatten())
     voi = VOI(seg_final.astype(np.int), hand_seg.astype(np.int))
 
