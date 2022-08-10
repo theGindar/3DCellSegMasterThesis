@@ -80,6 +80,8 @@ def pipeline(raw_img, hand_seg, model, device,
                                                              reverse_transposes=reverse_transposes)
 
     print(seg_final.shape)
+    print(np.max(seg_final))
+    print(np.min(seg_final))
     print(type(seg_final))
     print(hand_seg.shape)
     print(type(hand_seg))
