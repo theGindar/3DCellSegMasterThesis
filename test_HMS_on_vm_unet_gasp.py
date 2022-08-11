@@ -69,7 +69,8 @@ def pipeline(raw_img, hand_seg, model, device,
              min_touching_area=30,
              min_touching_percentage=0.51,
              min_cell_size_threshold=1,
-             transposes=[[0, 1, 2]], reverse_transposes=[[0, 1, 2]]):
+             transposes=[[0, 1, 2]], reverse_transposes=[[0, 1, 2]],
+             test_file_name=None):
     seg_final = segment_super_vox_3_channel_gasp(raw_img, model, device,
                                                              crop_cube_size=crop_cube_size, stride=stride,
                                                              how_close_are_the_super_vox_to_boundary=how_close_are_the_super_vox_to_boundary,
@@ -77,7 +78,9 @@ def pipeline(raw_img, hand_seg, model, device,
                                                              min_touching_percentage=min_touching_percentage,
                                                              min_cell_size_threshold=min_cell_size_threshold,
                                                              transposes=transposes,
-                                                             reverse_transposes=reverse_transposes)
+                                                             reverse_transposes=reverse_transposes,
+                                                             test_file_name=test_file_name,
+                                                             intermediate_results_save_path=f"../../../mnt2/hms_results/gasp/")
 
     print(seg_final.shape)
     print(np.max(seg_final))
@@ -114,7 +117,8 @@ for test_file in HMS_data_dict_test.keys():
     accuracy_record, hand_seg_after_accuracy, seg_final_after_accuracy, ari, voi, seg_final = \
         pipeline(raw_img, hand_seg, model, device,
                  crop_cube_size=64,
-                 stride=32)
+                 stride=32,
+                 test_file_name=test_file)
 
     seg_final_dict[test_file] = seg_final
     accuracy_record_dict[test_file] = accuracy_record

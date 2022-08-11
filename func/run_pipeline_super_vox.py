@@ -10,6 +10,11 @@ from skimage.segmentation import watershed
 from skimage.measure import label
 from skimage.feature import peak_local_max
 
+import pickle5 as pkl
+def compressed_pickle(title, data):
+    with bz2.BZ2File(title + '.pbz2', 'w') as f:
+        pkl.dump(data, f, protocol=5)
+
 def segment_super_vox_2_channel(raw_img, model, device,
             crop_cube_size=128, stride=64,
             how_close_are_the_super_vox_to_boundary=2,
@@ -281,18 +286,15 @@ def segment_super_vox_3_channel(raw_img, model, device,
 
     return seg_final
 
-import pickle5 as pkl
-def compressed_pickle(title, data):
-    with bz2.BZ2File(title + '.pbz2', 'w') as f:
-        pkl.dump(data, f, protocol=5)
-
 def segment_super_vox_3_channel_gasp(raw_img, model, device,
                                 crop_cube_size=128, stride=64,
                                 how_close_are_the_super_vox_to_boundary=2,
                                 min_touching_area=30, min_touching_percentage=0.51,
                                 min_cell_size_threshold=10,
                                 transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
-                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]],
+                                test_file_name=None,
+                                intermediate_results_save_path=None):
     from func.gasp_segmentation import process_gasp
     # feed the raw img to the model
     print('Feed raw img to model. Use different transposes')
@@ -310,6 +312,12 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
         seg_img_background = seg_img['background']
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
+
+        if test_file_name is not None:
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_background", seg_img_background)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_boundary", seg_img_boundary)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_foreground", seg_img_foreground)
+
         torch.cuda.empty_cache()
 
         # argmax
@@ -340,14 +348,13 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     seg_foreground_comp = np.array(1 - seg_background_comp - seg_boundary_comp > 0, dtype=np.int)
 
     seg_final = process_gasp(seg_boundary_comp.astype(np.float32))
-    print(f"seg_final shape: {seg_final.shape}")
-    print("DEBUG")
-    print('unique')
-    print(len(np.unique(seg_final)))
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
+
     seg_final = seg_final.astype(np.int8)
 
     # make sure all elements are positive
-    compressed_pickle("../../../mnt2/debug_HMS_boundary", seg_boundary_comp)
+    # compressed_pickle("../../../mnt2/debug_HMS_boundary", seg_boundary_comp)
 
     print(np.min(seg_final))
     seg_final = seg_final + 500
