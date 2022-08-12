@@ -547,7 +547,7 @@ class Cluster_Super_Vox_Graph():
         # for idx, unique_val in enumerate(self.unique_vals):
         #     # print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)))
         #     self.val_outlayer_area[unique_val] = self.A_LARGE_NUM
-        # v1
+        """# v1
         for idx, current_val in enumerate(self.unique_vals):
             # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
             if self.val_labels[current_val] != self.UN_PROCESSED:
@@ -580,7 +580,7 @@ class Cluster_Super_Vox_Graph():
                     neighbors_w_prediction[check_mask_2, 3] = current_val
 
             self.val_labels[current_val] = self.PROCESSED
-        """
+
 
         print("everything predicted!")
 
