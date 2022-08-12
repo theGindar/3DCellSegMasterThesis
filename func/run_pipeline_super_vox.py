@@ -10,17 +10,19 @@ from skimage.segmentation import watershed
 from skimage.measure import label
 from skimage.feature import peak_local_max
 
-import pickle5 as pkl
+import pickle as pkl
 def compressed_pickle(title, data):
     with bz2.BZ2File(title + '.pbz2', 'w') as f:
-        pkl.dump(data, f, protocol=5)
+        pkl.dump(data, f)
 
 def segment_super_vox_2_channel(raw_img, model, device,
             crop_cube_size=128, stride=64,
             how_close_are_the_super_vox_to_boundary=2,
             min_touching_area=30, min_touching_percentage=0.51,
             min_cell_size_threshold=100,
-            transposes = [[0,1,2],[2,0,1],[0,2,1],[1,0,2]], reverse_transposes = [[0,1,2],[1,2,0],[0,2,1],[1,0,2]]):
+            transposes = [[0,1,2],[2,0,1],[0,2,1],[1,0,2]], reverse_transposes = [[0,1,2],[1,2,0],[0,2,1],[1,0,2]],
+            test_file_name=None,
+            intermediate_results_save_path=None):
     # feed the raw img to the model
     print('Feed raw img to model. Use different transposes')
     raw_img_size=raw_img.shape
@@ -34,6 +36,11 @@ def segment_super_vox_2_channel(raw_img, model, device,
             semantic_segment_crop_and_cat_2_channel_output(raw_img.transpose(transpose), model, device, crop_cube_size=crop_cube_size, stride=stride)
         seg_img_boundary=seg_img['boundary']
         seg_img_foreground=seg_img['foreground']
+
+        if test_file_name is not None:
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_boundary", seg_img_boundary)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_foreground", seg_img_foreground)
+
         torch.cuda.empty_cache()
     
         # argmax
@@ -54,6 +61,10 @@ def segment_super_vox_2_channel(raw_img, model, device,
     # Generate super vox by watershed
     seg_foreground_erosion=1-img_3d_erosion_or_expansion(1-seg_foreground_comp, kernel_size=how_close_are_the_super_vox_to_boundary+1, device=device)
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion, connectivity=min_touching_area)
+
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_foreground_super_voxel_by_ws",
+                          seg_foreground_super_voxel_by_ws)
     
     # Super voxel clustering
     cluster_super_vox=Cluster_Super_Vox(min_touching_area=min_touching_area, min_touching_percentage=min_touching_percentage)
@@ -65,10 +76,67 @@ def segment_super_vox_2_channel(raw_img, model, device,
     
     # Assign boudary voxels to their nearest cells
     seg_final=assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary, seg_boundary_comp, compactness=1)
-    
+
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
+
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
     
+    return seg_final
+
+
+def segment_super_vox_2_channel_gasp(raw_img, model, device,
+                                crop_cube_size=128, stride=64,
+                                how_close_are_the_super_vox_to_boundary=2,
+                                min_touching_area=30, min_touching_percentage=0.51,
+                                min_cell_size_threshold=100,
+                                transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
+                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]],
+                                test_file_name=None,
+                                intermediate_results_save_path=None):
+    from func.gasp_segmentation import process_gasp
+    # feed the raw img to the model
+    print('Feed raw img to model. Use different transposes')
+    raw_img_size = raw_img.shape
+
+    seg_boundary_comp = np.zeros(raw_img_size)
+
+    for idx, transpose in enumerate(transposes):
+        print(str(idx + 1) + ": Transpose the image to be: " + str(transpose))
+        with torch.no_grad():
+            seg_img = \
+                semantic_segment_crop_and_cat_2_channel_output(raw_img.transpose(transpose), model, device,
+                                                               crop_cube_size=crop_cube_size, stride=stride)
+        seg_img_boundary = seg_img['boundary']
+        seg_img_foreground = seg_img['foreground']
+
+        if test_file_name is not None:
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_boundary", seg_img_boundary)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_foreground", seg_img_foreground)
+
+        torch.cuda.empty_cache()
+
+        # argmax
+        print('argmax', end='\r')
+        # probability map to 0 1 segment
+        seg_foreground = np.array(seg_img_foreground - seg_img_boundary > 0, dtype=np.int)
+        seg_boundary = 1 - seg_foreground
+
+        seg_foreground = seg_foreground.transpose(reverse_transposes[idx])
+        seg_boundary = seg_boundary.transpose(reverse_transposes[idx])
+
+        seg_boundary_comp += seg_boundary
+
+    print("Get model semantic seg by combination")
+    seg_boundary_comp = np.array(seg_boundary_comp > 0, dtype=np.int)
+    seg_foreground_comp = 1 - seg_boundary_comp
+
+    seg_final = process_gasp(seg_boundary_comp.astype(np.float32))
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
+    seg_final = seg_final + 500
+
     return seg_final
 
 
@@ -78,7 +146,9 @@ def segment_super_vox_2_channel_edge_gated_model(raw_img, model, device,
                                 min_touching_area=30, min_touching_percentage=0.51,
                                 min_cell_size_threshold=100,
                                 transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
-                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]],
+                                test_file_name=None,
+                                intermediate_results_save_path=None):
     # feed the raw img to the model
     print('Feed raw img to model. Use different transposes')
     raw_img_size = raw_img.shape
@@ -93,6 +163,11 @@ def segment_super_vox_2_channel_edge_gated_model(raw_img, model, device,
                                                                crop_cube_size=crop_cube_size, stride=stride)
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
+
+        if test_file_name is not None:
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_boundary", seg_img_boundary)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_foreground", seg_img_foreground)
+
         torch.cuda.empty_cache()
 
         # argmax
@@ -117,6 +192,10 @@ def segment_super_vox_2_channel_edge_gated_model(raw_img, model, device,
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
                                                                        connectivity=min_touching_area)
 
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_foreground_super_voxel_by_ws",
+                          seg_foreground_super_voxel_by_ws)
+
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox(min_touching_area=min_touching_area,
                                           min_touching_percentage=min_touching_percentage)
@@ -130,6 +209,9 @@ def segment_super_vox_2_channel_edge_gated_model(raw_img, model, device,
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
                                                               seg_boundary_comp, compactness=1)
+
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
@@ -214,7 +296,9 @@ def segment_super_vox_3_channel(raw_img, model, device,
                                 min_touching_area=30, min_touching_percentage=0.51,
                                 min_cell_size_threshold=10,
                                 transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
-                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]],
+                                test_file_name=None,
+                                intermediate_results_save_path=None):
     # feed the raw img to the model
     print('Feed raw img to model. Use different transposes')
     raw_img_size = raw_img.shape
@@ -231,6 +315,12 @@ def segment_super_vox_3_channel(raw_img, model, device,
         seg_img_background = seg_img['background']
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
+
+        if test_file_name is not None:
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_background", seg_img_background)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_boundary", seg_img_boundary)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_foreground", seg_img_foreground)
+
         torch.cuda.empty_cache()
 
         # argmax
@@ -267,6 +357,10 @@ def segment_super_vox_3_channel(raw_img, model, device,
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
                                                                        connectivity=min_touching_area)
 
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_foreground_super_voxel_by_ws",
+                          seg_foreground_super_voxel_by_ws)
+
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox(min_touching_area=min_touching_area,
                                           min_touching_percentage=min_touching_percentage)
@@ -280,6 +374,9 @@ def segment_super_vox_3_channel(raw_img, model, device,
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
                                                               seg_boundary_comp, seg_background_comp, compactness=1)
+
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)

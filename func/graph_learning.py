@@ -1,3 +1,5 @@
+import bz2
+
 import dgl
 import networkx as nx
 import numpy as np
@@ -7,6 +9,11 @@ from dgl.data import DGLDataset
 import torch.nn.functional as F
 
 from func.run_pipeline_super_vox import get_outlayer_of_a_3d_shape, get_crop_by_pixel_val
+
+import pickle as pkl
+def compressed_pickle(title, data):
+    with bz2.BZ2File(title + '.pbz2', 'w') as f:
+        pkl.dump(data, f)
 
 
 class SuperVoxToNxGraph():
@@ -540,7 +547,7 @@ class Cluster_Super_Vox_Graph():
         # for idx, unique_val in enumerate(self.unique_vals):
         #     # print("get val_outlayer area of all vals: "+str(idx/len(self.unique_vals)))
         #     self.val_outlayer_area[unique_val] = self.A_LARGE_NUM
-        """ v1
+        # v1
         for idx, current_val in enumerate(self.unique_vals):
             # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
             if self.val_labels[current_val] != self.UN_PROCESSED:
@@ -553,8 +560,8 @@ class Cluster_Super_Vox_Graph():
                     self.input_3d_img[self.input_3d_img == val_neighbor] = current_val
 
             self.val_labels[current_val] = self.PROCESSED
-        """
-        # v2
+
+        """# v2
         for idx, current_val in enumerate(self.unique_vals):
             # print('processing: '+str(idx/len(self.unique_vals))+' pixel val: '+str(current_val))
             if self.val_labels[current_val] != self.UN_PROCESSED:
@@ -573,7 +580,7 @@ class Cluster_Super_Vox_Graph():
                     neighbors_w_prediction[check_mask_2, 3] = current_val
 
             self.val_labels[current_val] = self.PROCESSED
-
+        """
 
         print("everything predicted!")
 
@@ -817,7 +824,9 @@ def segment_super_vox_3_channel_graph_learning_edge_gated_model(raw_img, model, 
                                                                 min_touching_area=30, min_touching_percentage=0.51,
                                                                 min_cell_size_threshold=10,
                                                                 transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
-                                                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+                                                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]],
+                                                                test_file_name=None,
+                                                                intermediate_results_save_path=None):
     # feed the raw img to the model
     print('Feed raw img to model. Use different transposes')
     raw_img_size = raw_img.shape
@@ -834,6 +843,12 @@ def segment_super_vox_3_channel_graph_learning_edge_gated_model(raw_img, model, 
         seg_img_background = seg_img['background']
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
+
+        if test_file_name is not None:
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_background", seg_img_background)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_boundary", seg_img_boundary)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_foreground", seg_img_foreground)
+
         torch.cuda.empty_cache()
 
         # argmax
@@ -870,6 +885,10 @@ def segment_super_vox_3_channel_graph_learning_edge_gated_model(raw_img, model, 
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
                                                                        connectivity=min_touching_area)
 
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_foreground_super_voxel_by_ws",
+                          seg_foreground_super_voxel_by_ws)
+
     # Super voxel clustering
     cluster_super_vox = Cluster_Super_Vox_Graph(graph_model)
     cluster_super_vox.fit(seg_foreground_super_voxel_by_ws, fake_predictions=False)
@@ -882,6 +901,9 @@ def segment_super_vox_3_channel_graph_learning_edge_gated_model(raw_img, model, 
     # Assign boudary voxels to their nearest cells
     seg_final = assign_boudary_voxels_to_cells_with_watershed(seg_foreground_single_cell_with_boundary,
                                                               seg_boundary_comp, seg_background_comp, compactness=1)
+
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)
@@ -977,7 +999,9 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
                                                                 min_touching_area=30, min_touching_percentage=0.51,
                                                                 min_cell_size_threshold=10,
                                                                 transposes=[[0, 1, 2], [2, 0, 1], [0, 2, 1], [1, 0, 2]],
-                                                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]]):
+                                                                reverse_transposes=[[0, 1, 2], [1, 2, 0], [0, 2, 1], [1, 0, 2]],
+                                                                test_file_name=None,
+                                                                intermediate_results_save_path=None):
     # feed the raw img to the model
     print('Feed raw img to model. Use different transposes')
     raw_img_size = raw_img.shape
@@ -993,6 +1017,11 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
                                                                                 crop_cube_size=crop_cube_size, stride=stride)
         seg_img_boundary = seg_img['boundary']
         seg_img_foreground = seg_img['foreground']
+
+        if test_file_name is not None:
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_boundary", seg_img_boundary)
+            compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_img_foreground", seg_img_foreground)
+
         torch.cuda.empty_cache()
 
         # argmax
@@ -1016,6 +1045,11 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
     seg_foreground_super_voxel_by_ws = generate_super_vox_by_watershed(seg_foreground_erosion,
                                                                        connectivity=min_touching_area)
 
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_foreground_super_voxel_by_ws",
+                          seg_foreground_super_voxel_by_ws)
+
+
     # with open('seg_foreground_supervoxel_LRP_graph.npy', 'wb') as f:
     #     np.save(f, seg_foreground_super_voxel_by_ws)
 
@@ -1037,6 +1071,9 @@ def segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, 
 
     # with open('seg_final_LRP_graph.npy', 'wb') as f:
     #     np.save(f, seg_final)
+
+    if test_file_name is not None:
+        compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
 
     # Reassign unique numbers
     # seg_final=reassign(seg_final)

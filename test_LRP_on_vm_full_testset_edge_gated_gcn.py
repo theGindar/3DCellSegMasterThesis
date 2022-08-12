@@ -47,7 +47,7 @@ print(f"current gpu: {torch.cuda.current_device()}")
 # load_path=''
 model = CellSegNet_basic_edge_gated_X(input_channel=1, n_classes=2, output_func="softmax")
 model_name = "model_LRP_edge_gated_limit_background_2"
-results_output_path = "output/results_test_model_LRP_edge_gated_limit_background_2_gcn_2nd_try.csv"
+results_output_path = "output/results_test_model_LRP_edge_gated_limit_background_2_gcn.csv"
 load_path = 'output/model_LRP_edge_gated_limit_background_2.pkl'
 checkpoint = torch.load(load_path)
 model.load_state_dict(checkpoint['model_state_dict'])
@@ -56,7 +56,7 @@ model.eval()
 
 # load graph model
 graph_model = GCN(3, num_classes=1)
-checkpoint_graph = 'output/graph_model_focal_LRP_edge_gated_2nd_try.pt'
+checkpoint_graph = 'output/graph_model_focal_LRP_edge_gated.pt'
 graph_model.load_state_dict(torch.load(checkpoint_graph))
 graph_model.eval()
 
@@ -126,7 +126,8 @@ def pipeline(raw_img, hand_seg, model, device,
              min_touching_area=30,
              min_touching_percentage=0.51,
              min_cell_size_threshold=1,
-             transposes=[[0,1,2],[2,0,1],[0,2,1]], reverse_transposes=[[0,1,2],[1,2,0],[0,2,1]]):
+             transposes=[[0,1,2],[2,0,1],[0,2,1]], reverse_transposes=[[0,1,2],[1,2,0],[0,2,1]],
+             test_file_name=None):
     seg_final = segment_super_vox_2_channel_graph_learning_edge_gated_model(raw_img, model, graph_model, device,
                                              crop_cube_size=crop_cube_size, stride=stride,
                                              how_close_are_the_super_vox_to_boundary=how_close_are_the_super_vox_to_boundary,
@@ -134,7 +135,9 @@ def pipeline(raw_img, hand_seg, model, device,
                                              min_touching_percentage=min_touching_percentage,
                                              min_cell_size_threshold=min_cell_size_threshold,
                                              transposes=transposes,
-                                             reverse_transposes=reverse_transposes)
+                                             reverse_transposes=reverse_transposes,
+                                             test_file_name=test_file_name,
+                                             intermediate_results_save_path="../../../mnt2/lrp_results/edge_gated_gcn/")
 
     ari = adjusted_rand_score(hand_seg.flatten(), seg_final.flatten())
 
@@ -171,7 +174,8 @@ for test_file in LRP_data_dict_test.keys():
     accuracy_record, hand_seg_after_accuracy, seg_final_after_accuracy, ari, voi, seg_final = \
         pipeline(raw_img, hand_seg, model, device,
                  crop_cube_size=128,
-                 stride=64)
+                 stride=64,
+                 test_file_name=test_file)
 
     seg_final_dict[test_file] = seg_final
     accuracy_record_dict[test_file] = accuracy_record

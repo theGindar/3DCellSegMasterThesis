@@ -121,7 +121,8 @@ def pipeline(raw_img, hand_seg, model, device,
              min_touching_area=30,
              min_touching_percentage=0.51,
              min_cell_size_threshold=10,
-             transposes=[[0,1,2],[2,0,1],[0,2,1]], reverse_transposes=[[0,1,2],[1,2,0],[0,2,1]]):
+             transposes=[[0,1,2],[2,0,1],[0,2,1]], reverse_transposes=[[0,1,2],[1,2,0],[0,2,1]],
+             test_file_name=None):
     seg_final = segment_super_vox_2_channel_edge_gated_model(raw_img, model, device,
                                              crop_cube_size=crop_cube_size, stride=stride,
                                              how_close_are_the_super_vox_to_boundary=how_close_are_the_super_vox_to_boundary,
@@ -129,7 +130,9 @@ def pipeline(raw_img, hand_seg, model, device,
                                              min_touching_percentage=min_touching_percentage,
                                              min_cell_size_threshold=min_cell_size_threshold,
                                              transposes=transposes,
-                                             reverse_transposes=reverse_transposes)
+                                             reverse_transposes=reverse_transposes,
+                                             test_file_name=test_file_name,
+                                             intermediate_results_save_path="../../../mnt2/lrp_results/retrained/")
 
     ari = adjusted_rand_score(hand_seg.flatten(), seg_final.flatten())
     voi = VOI(seg_final.astype(np.int), hand_seg.astype(np.int))
@@ -163,7 +166,8 @@ for test_file in data_dict_test.keys():
     accuracy_record, hand_seg_after_accuracy, seg_final_after_accuracy, ari, voi, seg_final = \
         pipeline(raw_img, hand_seg, model, device,
                  crop_cube_size=128,
-                 stride=64)
+                 stride=64,
+                 test_file_name=test_file)
 
     seg_final_dict[test_file] = seg_final
     accuracy_record_dict[test_file] = accuracy_record
