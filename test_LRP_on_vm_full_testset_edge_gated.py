@@ -132,7 +132,7 @@ def pipeline(raw_img, hand_seg, model, device,
                                              transposes=transposes,
                                              reverse_transposes=reverse_transposes,
                                              test_file_name=test_file_name,
-                                             intermediate_results_save_path="../../../mnt2/lrp_results/retrained/")
+                                             intermediate_results_save_path="../../../mnt2/lrp_results/edge_gated/")
 
     ari = adjusted_rand_score(hand_seg.flatten(), seg_final.flatten())
     voi = VOI(seg_final.astype(np.int), hand_seg.astype(np.int))
