@@ -135,6 +135,8 @@ def segment_super_vox_2_channel_gasp(raw_img, model, device,
     seg_final = process_gasp(seg_boundary_comp.astype(np.float32))
     if test_file_name is not None:
         compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
+
+    seg_final = seg_final.astype(np.int8)
     seg_final = seg_final + 500
 
     return seg_final
