@@ -460,6 +460,11 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     print(np.min(seg_final))
     print('unique2')
     print(len(np.unique(seg_final)))
+    seg_final[seg_final == 0] = 9999999
+    seg_final[seg_background == 1] = 0
+
+
+
     return seg_final
 
 
