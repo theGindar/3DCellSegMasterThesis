@@ -136,7 +136,7 @@ def segment_super_vox_2_channel_gasp(raw_img, model, device,
     if test_file_name is not None:
         compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
 
-    seg_final = seg_final.astype(np.int8)
+    seg_final = seg_final.astype(np.int32)
     seg_final = seg_final + 500
 
     return seg_final
@@ -450,7 +450,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     if test_file_name is not None:
         compressed_pickle(intermediate_results_save_path + f"{test_file_name}_seg_final", seg_final)
 
-    seg_final = seg_final.astype(np.int8)
+    seg_final = seg_final.astype(np.int32)
 
     # make sure all elements are positive
     # compressed_pickle("../../../mnt2/debug_HMS_boundary", seg_boundary_comp)
@@ -461,7 +461,7 @@ def segment_super_vox_3_channel_gasp(raw_img, model, device,
     print('unique2')
     print(len(np.unique(seg_final)))
     seg_final[seg_final == 0] = 9999999
-    seg_final[seg_background == 1] = 0
+    seg_final[np.where(seg_background == 1)] = 0
 
 
 
