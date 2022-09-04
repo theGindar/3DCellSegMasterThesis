@@ -31,8 +31,10 @@ from __future__ import division
 
 import os
 
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import ndimage
 
 from matplotlib import animation
 from tensorflow.python.keras import backend as K
@@ -273,3 +275,48 @@ def make_outline_overlay(rgb_data, predictions):
     overlay_data[boundaries > 0] = 1
 
     return overlay_data
+
+
+def colorful_seg(seg):
+    unique_vals, val_counts = np.unique(seg, return_counts=True)
+
+    background_val = unique_vals[np.argsort(val_counts)[::-1][0]]
+
+    seg_RGB = []
+    for i in range(seg.shape[0]):
+        mask_gray = cv2.normalize(src=seg[i, :, :], dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX,
+                                  dtype=cv2.CV_8UC1)
+        seg_slice_RGB = cv2.cvtColor(mask_gray, cv2.COLOR_GRAY2RGB)
+        seg_RGB.append(seg_slice_RGB)
+    seg_RGB = np.array(seg_RGB)
+
+    for idx, unique_val in enumerate(unique_vals):
+        print(str(idx / len(unique_vals)), end="\r")
+        if unique_val == background_val:
+            COLOR = np.array([0, 0, 0], dtype=int)
+        else:
+            COLOR = np.array(np.random.choice(np.arange(256), size=3, replace=False), dtype=int)
+
+        locs = np.where(seg == unique_val)
+
+        for i in range(3):
+            seg_RGB[locs[0], locs[1], locs[2], i] = COLOR[i]
+
+    return seg_RGB
+
+
+def fill_noise(seg_image):
+    footprint = np.ones((3, 3, 3))
+
+    def remove_holes(values):
+        if values[13] == 0 and np.count_nonzero(values == 0) <= 7:
+            unique_values, counts = np.unique(values, return_counts=True)
+            unique_dict = dict(zip(unique_values, counts))
+            return max(unique_dict, key=unique_dict.get)
+
+        else:
+            return values[13]
+
+    return ndimage.generic_filter(seg_image, remove_holes,
+                                         footprint=footprint,
+                                         mode='constant')
